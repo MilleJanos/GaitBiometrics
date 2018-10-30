@@ -84,6 +84,7 @@ public class StepCounterActivity extends AppCompatActivity implements SensorEven
     @Override
     public void step(long timeNs) {
         numSteps++;
+
         TvSteps.setText(TEXT_NUM_STEPS + numSteps);
     }
 

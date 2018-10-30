@@ -112,7 +112,7 @@ public class RecorderActivity extends AppCompatActivity {
                 textViewAZ.setText("Z: " + z);
                 if (isRecording) {
                     long timeStamp = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
-                    accArray.add(new Accelerometer(timeStamp, x, y, z));
+                    accArray.add(new Accelerometer(timeStamp, x, y, z, 0));
                     recordCount++;
                     textViewResultStatus.setText("Recorded: " + recordCount);
                 }
@@ -136,7 +136,7 @@ public class RecorderActivity extends AppCompatActivity {
                 textViewGX.setText("X: " + x);
                 textViewGY.setText("Y: " + y);
                 textViewGZ.setText("Z: " + z);
-                // TODO if gyroscope needs too
+                // TODO if gyroscope is needed too
             }
 
             @Override

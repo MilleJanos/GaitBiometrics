@@ -20,8 +20,19 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
+
+/* SEND PACKAGE FORMATS:
+
+One record:
+    "timestamp,x,y,x,end"
+Miltiple records:
+    "timestamp,x,y,x,timestamp,x,y,x,timestamp,x,y,x,timestamp,x,y,x,timestamp,x,y,x, ... ,end"          - 20 record / package  (just 1 ",end")
+Open command:
+    "open"
+*/
 
 public class ConnectionActivity extends AppCompatActivity {
 
@@ -45,25 +56,36 @@ public class ConnectionActivity extends AppCompatActivity {
     //Orange4G: 192.168.1.101:21567
     //SapiInternet: 10.0.92.29:21567
     //KRS: 192.168.43.37
+    //myPcHotspot: 192.168.137.139
+    //
     //PORT: 21567
-    String IP_ADDRESS = "192.168.43.37:21567";  //PI address + port
+    //      "<ipw4>:<port>" !
+    String IP_ADDRESS = "192.168.137.76:21456";  //PI address + port
 
     public static String wifiModuleIp = "";
     public static int wifiModulePort = 0;
 
     public static String CMD = "0";
 
-
-
     private boolean isRecording = false;
 
     private ArrayList<Accelerometer> accArray = new ArrayList<>();
     private long recordCount = 0;
 
+    private ArrayList<String> accArrayStringGroups = new ArrayList<>();
+    private final int RECORDS_PER_PACKAGE_LIMIT = 3;
+
+    public static int stepNumber=0;
+
+    TextView textViewStatus;
+    TextView currentTextView;
+    TextView sendCurrentStatusTextView;
+    Button sendCurrentButton;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.connection_activiry);
+        setContentView(R.layout.connection_activity);
 
         //SENSOR:
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -74,10 +96,10 @@ public class ConnectionActivity extends AppCompatActivity {
             finish();
         }
 
-        final TextView textViewStatus = (TextView) findViewById(R.id.statusTextView);
-        final TextView currentTextView = (TextView) findViewById(R.id.currentTextView);
-        final TextView sendCurrentStatusTextView = (TextView) findViewById(R.id.sendCurrentStatusTextView);
-        final Button sendCurrentButton= (Button) findViewById(R.id.sendCurrentButton);
+        textViewStatus = (TextView) findViewById(R.id.statusTextView);
+        currentTextView = (TextView) findViewById(R.id.currentTextView);
+        sendCurrentStatusTextView = (TextView) findViewById(R.id.sendCurrentStatusTextView);
+        sendCurrentButton= (Button) findViewById(R.id.sendCurrentButton);
 
         sendButton = (Button) findViewById(R.id.sendButton);
         openButton = (Button) findViewById(R.id.openButton);
@@ -96,6 +118,12 @@ public class ConnectionActivity extends AppCompatActivity {
         sendButton.setEnabled(false);
         openButton.setEnabled(false);
 
+        //TODO
+        final DecimalFormat df = new DecimalFormat("0");
+        //df.setMaximumFractionDigits(20);
+        df.setMaximumIntegerDigits(20);
+        // 123...45E9 -> 123...459234
+        //         ==
 
         accelerometerEventListener = new SensorEventListener() {
             @Override
@@ -108,9 +136,9 @@ public class ConnectionActivity extends AppCompatActivity {
                 accX = x;
                 accY = y;
                 accZ = z;
-                currentTextView.setText("TimeStamp: " + ts + "\nX: " + accX + "\nY: " + accY + "\nZ: " + accZ);
+                currentTextView.setText("TimeStamp: " + df.format(ts) + "\nX: " + accX + "\nY: " + accY + "\nZ: " + accZ +"\nStep:" + stepNumber );
                 if (isRecording) {
-                    accArray.add(new Accelerometer(timeStamp, x, y, z));
+                    accArray.add(new Accelerometer(timeStamp, x, y, z, stepNumber));
                     recordCount++;
                     textViewStatus.setText("Recording: " + recordCount);
                 }
@@ -151,7 +179,9 @@ public class ConnectionActivity extends AppCompatActivity {
                 sendButton.setEnabled(true);
                 openButton.setEnabled(true);
                 Log.d("ConnectionActivity", "Stop Rec. - Generating CMD");
+                textViewStatus.setText("Calculating...");
                 CMD = accArrayToString();
+                CMD += ",end";
                 Log.d("ConnectionActivity","CMD Generated.");
                 sentTextView.setText( CMD );
                 textViewStatus.setText("Recorded: " + recordCount);
@@ -178,16 +208,23 @@ public class ConnectionActivity extends AppCompatActivity {
         });
 
 
-        //SEND
+        //SEND   (MULTIPLE RECORDS)
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // STOP button generates the CMD
-                sentTextView.setText( CMD );
-                //Prepare and Send
-                getIPandPort();
-                Socket_AsyncTask cmd_send_data = new Socket_AsyncTask();
-                cmd_send_data.execute();
+                //sentTextView.setText( CMD );
+                // Sending the array in multiple packages:
+                accArrayGroupArrayToString();
+                for(int i=0; i<accArrayStringGroups.size(); ++i) {
+                    Log.i("accArrayString","aASG.get("+i+")= " + accArrayStringGroups.get(i) );
+                    CMD = accArrayStringGroups.get(i);  //group of RECORDS_LIMIT_PER_PACKAGE records
+                    //Prepare and Send
+                    getIPandPort();
+                    Socket_AsyncTask cmd_send_data = new Socket_AsyncTask();
+                    cmd_send_data.execute();
+                }
+                sentTextView.setText( "Sent: " +accArrayStringGroups.size()+ "packages."  );
             }
         });
 
@@ -203,6 +240,7 @@ public class ConnectionActivity extends AppCompatActivity {
                 sentTextView.setText( CMD );
                 Socket_AsyncTask cmd_send_data = new Socket_AsyncTask();
                 cmd_send_data.execute();
+                sentTextView.setText( "Sent: 1 package with content of:\nopen");
             }
         });
 
@@ -212,7 +250,9 @@ public class ConnectionActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Log.i("SendCurrent","SendCurrent: START");
-                CMD = "TimeStamp: " + ts*1000 + "\nX: " + accX + "\nY: " + accY + "\nZ: " + accZ;
+                DecimalFormat df = new DecimalFormat("0");
+                df.setMaximumFractionDigits(20);
+                CMD = df.format(ts) + "," + accX + "," + accY + "," + accZ + ",end";
                 Log.i("SenDCurrent","Message(CMD): " + CMD );
                 sendCurrentStatusTextView.setText( CMD );
                 //Prepare and Send
@@ -236,10 +276,52 @@ public class ConnectionActivity extends AppCompatActivity {
     }
 
 
-
     // ===============================
     // =====  END OF: ON CREATE  =====
     // ===============================
+
+
+    // ArrayList<Accelerometer> accArray ==> String str
+    //
+    // output format:   "timestamp,x,y,x,timestamp,x,y,x,timestamp,x,y,x,timestamp,x,y,x,timestamp,x,y,x, ... ,end"
+    public String accArrayToString(){
+        String str = "";
+        int i;
+        for( i=0; i< accArray.size()-1; ++i ){
+            str += accArray.get(i).getTimeStamp() +","+ accArray.get(i).getX() +","+ accArray.get(i).getY() +","+ accArray.get(i).getZ() +",";
+        }
+        str += accArray.get(i).getTimeStamp() +","+ accArray.get(i).getX() +","+ accArray.get(i).getY() +","+ accArray.get(i).getZ();
+        return str;
+    }
+
+
+    // Same as accArrayToString just grouped in N groups
+    // NO return value, the result is in accArrayStringGroups variable !
+    // adds "end" to the end of the package-chain
+    public void accArrayGroupArrayToString(){
+        accArrayStringGroups.clear();
+        String str = "";
+        int i ;
+        int c = 0;  // counter
+        boolean limitReached = true;
+        for( i=0; i < accArray.size(); ++i ){
+            ++c;
+            str += accArray.get(i).getTimeStamp() +","+ accArray.get(i).getX() +","+ accArray.get(i).getY() +","+ accArray.get(i).getZ();
+            limitReached = false;
+            if( c == RECORDS_PER_PACKAGE_LIMIT ){
+                accArrayStringGroups.add(str);
+                str = "";
+                c = 0;
+                limitReached = true;
+                continue;
+            }
+            str += ",";
+        }
+        if( limitReached == false ){                //If the last group has no exactly N elements then we have to add it on the end
+            str += "end";
+            accArrayStringGroups.add(str);
+        }
+    }
 
 
     public void getIPandPort(){
@@ -252,19 +334,7 @@ public class ConnectionActivity extends AppCompatActivity {
         Log.d("getIPandPort", "Port: " + wifiModulePort);
     }
 
-
-    // ArrayList<Accelerometer> accArray ==> String str
-    public String accArrayToString(){
-        String str = "";
-        int i;
-        for( i=0; i< accArray.size()-1; i++ ){
-            str += accArray.get(i).getTimeStamp() +","+ accArray.get(i).getX() +","+ accArray.get(i).getY() +","+ accArray.get(i).getZ() +",";
-        }
-        str += accArray.get(i).getTimeStamp() +","+ accArray.get(i).getX() +","+ accArray.get(i).getY() +","+ accArray.get(i).getZ();
-        return str;
-    }
-
-
+    // <String, String, TCPClient>            // TODO simple TCP client and C++ server on Raspberry Pi
     public class Socket_AsyncTask extends AsyncTask<Void,Void,Void>{
         Socket socket;
         @Override
@@ -283,14 +353,13 @@ public class ConnectionActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
             return null;
-        }
-    }
+        }    }
 
 
     @Override
     protected void onResume() {
         super.onResume();
-        sensorManager.registerListener(accelerometerEventListener, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
+        sensorManager.registerListener(accelerometerEventListener, accelerometerSensor, SensorManager.SENSOR_DELAY_NORMAL);    //SENSOR_DELAY_FASTEST
     }
 
 
