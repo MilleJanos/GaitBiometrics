@@ -1,12 +1,14 @@
-package com.example.jancsi_pc.playingwithsensors;
+package com.example.jancsi_pc.playingwithsensors.Old;
 
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.view.ViewAnimationUtils;
 import android.widget.Button;
+
+import com.example.jancsi_pc.playingwithsensors.R;
+import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepCounterActivity;
 
 public class MainActivity extends AppCompatActivity  {
 

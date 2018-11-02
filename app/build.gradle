@@ -1,11 +1,11 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion 28
     defaultConfig {
         applicationId "com.example.jancsi_pc.playingwithsensors"
         minSdkVersion 15
-        targetSdkVersion 27
+        targetSdkVersion 28
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -27,21 +27,18 @@ allprojects {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support.constraint:constraint-layout:1.1.0'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-
     //testCompile 'junit:junit:4.12'
     //implementation 'org.junit:junit5-api:5.0.0-ALPHA'
-
     //compile 'com.github.PhilJay:MPAndroidChart:v2.1.6'
-
+    implementation 'com.android.support:appcompat-v7:28.0.0'
 }
 
 repositories {
-        maven {
-            url "https://jitpack.io"
-        }
+    maven {
+        url "https://jitpack.io"
+    }
 }

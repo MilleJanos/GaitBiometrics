@@ -5,44 +5,34 @@ public class Accelerometer {
     private float x;
     private float y;
     private float z;
+    private int step;
 
-    public Accelerometer(long tt, float xx, float yy, float zz) {   //TODO private ?
+    public Accelerometer(long tt, float xx, float yy, float zz, int step) {
         this.timestamp = tt;
         this.x = xx;
         this.y = yy;
         this.z = zz;
+        this.step = step;
     }
+
+    public int getStep() { return step; }
 
     public float getX() {
         return x;
-    }
-
-    public void setX(float x) {
-        this.x = x;
     }
 
     public float getY() {
         return y;
     }
 
-    public void setY(float y) {
-        this.y = y;
-    }
-
     public float getZ() {
         return z;
     }
 
-    public void setZ(float z) {
-        this.z = z;
-    }
-
     public long getTimeStamp(){ return this.timestamp; }
-
-    public void setTimeStamp( long t ){ this.timestamp = t; }
 
     @Override
     public String toString() {
-        return timestamp +", "+ x +", "+ y +", "+ z;
+        return timestamp +", "+ x +", "+ y +", "+ z + ", " + step;
     }
 }
