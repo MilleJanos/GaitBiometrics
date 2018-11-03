@@ -36,13 +36,9 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 /* SEND PACKAGE FORMATS:
-
-One record:
-    "timestamp,x,y,x,end"
-Miltiple records:
-    "timestamp,x,y,x,timestamp,x,y,x,timestamp,x,y,x,timestamp,x,y,x,timestamp,x,y,x, ... ,end"          - 20 record / package  (just 1 ",end")
-Open command:
-    "open"
+*
+*    "timestamp,x,y,x,timestamp,x,y,x,timestamp,x,y,x,timestamp,x,y,x,timestamp,x,y,x, ... ,end"
+*    *
 */
 
 public class NewMainActivity extends AppCompatActivity implements SensorEventListener, StepListener {
@@ -51,28 +47,23 @@ public class NewMainActivity extends AppCompatActivity implements SensorEventLis
     private Sensor accelerometerSensor;
     private SensorEventListener accelerometerEventListener;
 
-    float ts;
-    float accX;
-    float accY;
-    float accZ;
+    private float ts;
+    private float accX;
+    private float accY;
+    private float accZ;
 
-    Button sendButton;
-    Button openButton;
-    EditText txtAddress;
-    TextView sentTextView;
+    private Button sendButton;
+    private EditText txtAddress;
+    private TextView sentTextView;
+    private Button startButton;
+    private Button stopButton;
+    private Button clearButton;
 
-    Socket myAppSocket = null;
+    private Socket myAppSocket = null;
 
-    MediaPlayer mpStart;
-
-    //Orange4G: 192.168.1.101:21567
-    //SapiInternet: 10.0.92.29:21567
-    //KRS: 192.168.43.37
-    //myPcHotspot: 192.168.137.139
-    //
     //PORT: 21567
-    //      "<ipw4>:<port>" !
-    String IP_ADDRESS = "192.168.0.109:21456";  //IP address + port
+    //                              "<ip>:<port>"
+    private String IP_ADDRESS = "192.168.43.54:21456";
 
     public static String wifiModuleIp = "";
     public static int wifiModulePort = 0;
@@ -88,7 +79,7 @@ public class NewMainActivity extends AppCompatActivity implements SensorEventLis
     private int numSteps = 0;
 
     private ArrayList<String> accArrayStringGroups = new ArrayList<>();
-    private final int RECORDS_PER_PACKAGE_LIMIT = 1;
+    private final int RECORDS_PER_PACKAGE_LIMIT = 10;
 
     public static int stepNumber=0;
     public static final int MAX_STEP_NUMBER=10;
@@ -106,6 +97,11 @@ public class NewMainActivity extends AppCompatActivity implements SensorEventLis
     //private SensorManager sensorManager;
     //private Sensor accel;
 
+    /*
+    *
+    *   OnCreate
+    *
+    */
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,27 +119,23 @@ public class NewMainActivity extends AppCompatActivity implements SensorEventLis
 
         textViewStatus = (TextView) findViewById(R.id.statusTextView);
         currentTextView = (TextView) findViewById(R.id.currentTextView);
-
         sendButton = (Button) findViewById(R.id.sendButton);
         txtAddress = (EditText) findViewById(R.id.ipAddress);
         sentTextView = (TextView) findViewById(R.id.sentScrollView);
-
-        txtAddress.setText(IP_ADDRESS);
-
-        final Button startButton = findViewById( R.id.startButton );
-        final Button stopButton  = findViewById( R.id.stopButton  );
-        final Button clearButton  = findViewById( R.id.clearButton  );
+        startButton = findViewById( R.id.startButton );
+        stopButton  = findViewById( R.id.stopButton  );
+        clearButton  = findViewById( R.id.clearButton  );
         sendButton = (Button) findViewById( R.id.sendButton );
         stopButton.setEnabled(false);
         clearButton.setEnabled(false);
         sendButton.setEnabled(false);
 
-        //TODO
+        txtAddress.setText(IP_ADDRESS);
+
         final DecimalFormat df = new DecimalFormat("0");
-        //df.setMaximumFractionDigits(20);
         df.setMaximumIntegerDigits(20);
         // 123...45E9 -> 123...459234
-        //         ==
+        //         ==            ====
 
         //Step Detecting:
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -151,8 +143,6 @@ public class NewMainActivity extends AppCompatActivity implements SensorEventLis
         simpleStepDetector = new StepDetector();
         simpleStepDetector.registerListener(this);
         sensorManager.registerListener(NewMainActivity.this, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
-
-
 
         accelerometerEventListener = new SensorEventListener() {
             @Override
@@ -390,11 +380,11 @@ public class NewMainActivity extends AppCompatActivity implements SensorEventLis
                 socket = new java.net.Socket( inetAddress,ConnectionActivity.wifiModulePort );
                 DataOutputStream dataOutputStream  = new DataOutputStream(socket.getOutputStream() );
                 Log.i("SocketAsyncT","SENDING: " + CMD + " ("+ConnectionActivity.wifiModuleIp+" : "+ConnectionActivity.wifiModulePort+")");
-                //ataOutputStream.writeBytes( CMD );
+                //DataOutputStream.writeBytes( CMD );
                 byte byteArray[] = CMD.getBytes();
                 dataOutputStream.write(byteArray);
                 dataOutputStream.flush();
-                //dataOutputStream.close();
+                dataOutputStream.close();
                 socket.close();
             }catch( UnknownHostException e ){
                 e.printStackTrace();
@@ -440,4 +430,3 @@ public class NewMainActivity extends AppCompatActivity implements SensorEventLis
 
 
 }
-
