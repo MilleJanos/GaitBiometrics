@@ -13,8 +13,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.media.MediaPlayer;
 
 import com.example.jancsi_pc.playingwithsensors.Old.ConnectionActivity;
+import com.example.jancsi_pc.playingwithsensors.Old.MainActivity;
+import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepCounterActivity;
+import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepDetector;
+import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepListener;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -40,7 +45,7 @@ Open command:
     "open"
 */
 
-public class NewMainActivity extends AppCompatActivity {
+public class NewMainActivity extends AppCompatActivity implements SensorEventListener, StepListener {
 
     private SensorManager sensorManager;
     private Sensor accelerometerSensor;
@@ -58,6 +63,7 @@ public class NewMainActivity extends AppCompatActivity {
 
     Socket myAppSocket = null;
 
+    MediaPlayer mpStart;
 
     //Orange4G: 192.168.1.101:21567
     //SapiInternet: 10.0.92.29:21567
@@ -66,7 +72,7 @@ public class NewMainActivity extends AppCompatActivity {
     //
     //PORT: 21567
     //      "<ipw4>:<port>" !
-    String IP_ADDRESS = "192.168.137.102:21456";  //IP address + port
+    String IP_ADDRESS = "192.168.0.109:21456";  //IP address + port
 
     public static String wifiModuleIp = "";
     public static int wifiModulePort = 0;
@@ -77,6 +83,9 @@ public class NewMainActivity extends AppCompatActivity {
 
     private ArrayList<Accelerometer> accArray = new ArrayList<>();
     private long recordCount = 0;
+
+    private ArrayList<Integer> stepArray = new ArrayList<>();
+    private int numSteps = 0;
 
     private ArrayList<String> accArrayStringGroups = new ArrayList<>();
     private final int RECORDS_PER_PACKAGE_LIMIT = 1;
@@ -90,10 +99,18 @@ public class NewMainActivity extends AppCompatActivity {
     TextView sendCurrentStatusTextView;
     Button sendCurrentButton;
 
+    //MediaPlayer mediaPlayer;
+
+    // For Step Detecting:
+    private StepDetector simpleStepDetector;
+    //private SensorManager sensorManager;
+    //private Sensor accel;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.connection_activity);
+        setContentView(R.layout.activity_new_main);   // TODO: Change .xml name
 
         //SENSOR:
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -106,25 +123,20 @@ public class NewMainActivity extends AppCompatActivity {
 
         textViewStatus = (TextView) findViewById(R.id.statusTextView);
         currentTextView = (TextView) findViewById(R.id.currentTextView);
-        sendCurrentStatusTextView = (TextView) findViewById(R.id.sendCurrentStatusTextView);
-        sendCurrentButton= (Button) findViewById(R.id.sendCurrentButton);
 
         sendButton = (Button) findViewById(R.id.sendButton);
-        openButton = (Button) findViewById(R.id.openButton);
         txtAddress = (EditText) findViewById(R.id.ipAddress);
         sentTextView = (TextView) findViewById(R.id.sentScrollView);
 
-        txtAddress.setText(IP_ADDRESS );
+        txtAddress.setText(IP_ADDRESS);
 
         final Button startButton = findViewById( R.id.startButton );
         final Button stopButton  = findViewById( R.id.stopButton  );
         final Button clearButton  = findViewById( R.id.clearButton  );
         sendButton = (Button) findViewById( R.id.sendButton );
-        openButton = (Button) findViewById( R.id.openButton );
         stopButton.setEnabled(false);
         clearButton.setEnabled(false);
         sendButton.setEnabled(false);
-        openButton.setEnabled(false);
 
         //TODO
         final DecimalFormat df = new DecimalFormat("0");
@@ -132,6 +144,15 @@ public class NewMainActivity extends AppCompatActivity {
         df.setMaximumIntegerDigits(20);
         // 123...45E9 -> 123...459234
         //         ==
+
+        //Step Detecting:
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        simpleStepDetector = new StepDetector();
+        simpleStepDetector.registerListener(this);
+        sensorManager.registerListener(NewMainActivity.this, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
+
+
 
         accelerometerEventListener = new SensorEventListener() {
             @Override
@@ -153,6 +174,7 @@ public class NewMainActivity extends AppCompatActivity {
                 currentTextView.setText("TimeStamp: " + df.format(ts) + "\nX: " + accX + "\nY: " + accY + "\nZ: " + accZ +"\nStep:" + stepNumber );
                 if (isRecording) {
                     accArray.add(new Accelerometer(timeStamp, x, y, z, stepNumber));
+                    stepArray.add(numSteps);
                     recordCount++;
                     textViewStatus.setText("Recording: " + recordCount);
                 }
@@ -164,24 +186,34 @@ public class NewMainActivity extends AppCompatActivity {
             }
         };
 
+        /*
+        *
+        *   Start / Continue
+        *   recording
+        *
+        */
 
-        //START / CONTINUE  RECORDING
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //mediaPlayer.create(null,R.raw.start);
+                //mediaPlayer.start();
                 isRecording = true;
                 startButton.setEnabled(false);
                 stopButton.setEnabled(true);
                 clearButton.setEnabled(false);
                 sendButton.setEnabled(false);
-                openButton.setEnabled(false);
                 Log.d("ConnectionActivity_", "Start Rec.");
                 //textViewStatus.setText("Recording ...");
             }
         });
 
+        /*
+        *
+        *   Stop recording
+        *
+        */
 
-        //STOP RECORDING
         stopButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -191,7 +223,6 @@ public class NewMainActivity extends AppCompatActivity {
                 stopButton.setEnabled(false);
                 clearButton.setEnabled(true);
                 sendButton.setEnabled(true);
-                openButton.setEnabled(true);
                 Log.d("ConnectionActivity", "Stop Rec. - Generating CMD");
                 textViewStatus.setText("Calculating...");
                 CMD = accArrayToString();
@@ -202,8 +233,12 @@ public class NewMainActivity extends AppCompatActivity {
             }
         });
 
+        /*
+        *
+        *   Clear recorded records
+        *
+        */
 
-        //CLEAR RECORDS
         clearButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -212,7 +247,6 @@ public class NewMainActivity extends AppCompatActivity {
                 stopButton.setEnabled(false);
                 clearButton.setEnabled(false);
                 sendButton.setEnabled(false);
-                openButton.setEnabled(false);
                 recordCount = 0;
                 accArray.clear();
                 Log.d("ConnectionActivity_", "Clear Rec.");
@@ -221,6 +255,12 @@ public class NewMainActivity extends AppCompatActivity {
             }
         });
 
+        /*
+        *
+        *   Sending multiple records
+        *   from Start to End
+        *
+        */
 
         //SEND   (MULTIPLE RECORDS)
         sendButton.setOnClickListener(new View.OnClickListener() {
@@ -243,74 +283,92 @@ public class NewMainActivity extends AppCompatActivity {
         });
 
 
-        //OPEN BUTTON
-        openButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //Prepare and Send
-                getIPandPort();
-                CMD = "open";
-                sendButton.setEnabled(false);
-                sentTextView.setText( CMD );
-                Socket_AsyncTask cmd_send_data = new Socket_AsyncTask();
-                cmd_send_data.execute();
-                sentTextView.setText( "Sent: 1 package with content of:\nopen");
-            }
-        });
+    }// OnCreate
 
-    }
+    /*
+    *
+    * ArrayList<Accelerometer> accArray ==> String str
+    *
+    * output format:   "timestamp,x,y,z,currentStepCount,timestamp,x,y,z,currentStepCount,timestamp,x,y,z,timestamp,currentStepCount, ... ,end"
+    *
+    *
+    */
 
-
-    // ===============================
-    // =====  END OF: ON CREATE  =====
-    // ===============================
-
-
-
-
-
-    // ArrayList<Accelerometer> accArray ==> String str
-    //
-    // output format:   "timestamp,x,y,x,timestamp,x,y,x,timestamp,x,y,x,timestamp,x,y,x,timestamp,x,y,x, ... ,end"
     public String accArrayToString(){
-        String str = "";
+        StringBuilder sb = new StringBuilder();
         int i;
         for( i=0; i< accArray.size()-1; ++i ){
-            str += accArray.get(i).getTimeStamp() +","+ accArray.get(i).getX() +","+ accArray.get(i).getY() +","+ accArray.get(i).getZ() +",";
+            sb.append(accArray.get(i).getTimeStamp())
+                .append(",")
+                .append(accArray.get(i).getX())
+                .append(",")
+                .append(accArray.get(i).getY())
+                .append(",")
+                .append(accArray.get(i).getTimeStamp())
+                .append(",")
+                .append(stepArray.get(i))
+                .append(",");
         }
-        str += accArray.get(i).getTimeStamp() +","+ accArray.get(i).getX() +","+ accArray.get(i).getY() +","+ accArray.get(i).getZ();
-        return str;
+        sb.append(accArray.get(i).getTimeStamp())
+            .append(",")
+            .append(accArray.get(i).getX())
+            .append(",")
+            .append(accArray.get(i).getY())
+            .append(",")
+            .append(accArray.get(i).getTimeStamp())
+            .append(",")
+            .append(stepArray.get(i));
+        return sb.toString();
     }
 
+    /*
+    *
+    * Same as accArrayToString just grouped in N groups
+    * NO return value, the result is in accArrayStringGroups variable !
+    * adds "end" to the end of the package-chain
+    *
+    */
 
-    // Same as accArrayToString just grouped in N groups
-    // NO return value, the result is in accArrayStringGroups variable !
-    // adds "end" to the end of the package-chain
     public void accArrayGroupArrayToString(){
         accArrayStringGroups.clear();
-        String str = "";
+        //String str = "";
+        StringBuilder sb = new StringBuilder();
         int i ;
         int c = 0;  // counter
         boolean limitReached = true;
         for( i=0; i < accArray.size(); ++i ){
             ++c;
-            str += accArray.get(i).getTimeStamp() +","+ accArray.get(i).getX() +","+ accArray.get(i).getY() +","+ accArray.get(i).getZ();
+            //str += accArray.get(i).getTimeStamp() +","+ accArray.get(i).getX() +","+ accArray.get(i).getY() +","+ accArray.get(i).getZ();
+            sb.append(accArray.get(i).getTimeStamp())
+                    .append(",")
+                    .append(accArray.get(i).getX())
+                    .append(",")
+                    .append(accArray.get(i).getY())
+                    .append(",")
+                    .append(accArray.get(i).getZ())
+                    .append(",")
+                    .append(stepArray.get(i));
             limitReached = false;
             if( c == RECORDS_PER_PACKAGE_LIMIT ){
-                accArrayStringGroups.add(str);
-                str = "";
+                //accArrayStringGroups.add(str);
+                accArrayStringGroups.add( sb.toString() );
+                //str = "";
+                sb.setLength(0);
                 c = 0;
                 limitReached = true;
                 continue;
             }
-            str += ",";
+            //str += ",";
+            sb.append(",");
         }
-        if( limitReached == false ){                //If the last group has no exactly N elements then we have to add it on the end
-            str += "end";
-            accArrayStringGroups.add(str);
+        //If the last group has no exactly N elements then we have to add it on the end
+        if( limitReached == false ){
+            //str += "end";
+            sb.append("end");
+            //accArrayStringGroups.add(str);
+            accArrayStringGroups.add( sb.toString() );
         }
     }
-
 
     public void getIPandPort(){
         String iPandPort = txtAddress.getText().toString();
@@ -322,7 +380,7 @@ public class NewMainActivity extends AppCompatActivity {
         Log.d("getIPandPort", "Port: " + wifiModulePort);
     }
 
-    // <String, String, TCPClient>            // TODO simple TCP client and C++ server on Raspberry Pi
+                                           // <String, String, TCPClient>            // TODO: Modify if needed
     public class Socket_AsyncTask extends AsyncTask<Void,Void,Void>{
         Socket socket;
         @Override
@@ -332,8 +390,11 @@ public class NewMainActivity extends AppCompatActivity {
                 socket = new java.net.Socket( inetAddress,ConnectionActivity.wifiModulePort );
                 DataOutputStream dataOutputStream  = new DataOutputStream(socket.getOutputStream() );
                 Log.i("SocketAsyncT","SENDING: " + CMD + " ("+ConnectionActivity.wifiModuleIp+" : "+ConnectionActivity.wifiModulePort+")");
-                dataOutputStream.writeBytes( CMD );
-                dataOutputStream.close();
+                //ataOutputStream.writeBytes( CMD );
+                byte byteArray[] = CMD.getBytes();
+                dataOutputStream.write(byteArray);
+                dataOutputStream.flush();
+                //dataOutputStream.close();
                 socket.close();
             }catch( UnknownHostException e ){
                 e.printStackTrace();
@@ -347,7 +408,7 @@ public class NewMainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        sensorManager.registerListener(accelerometerEventListener, accelerometerSensor, SensorManager.SENSOR_DELAY_NORMAL);    //SENSOR_DELAY_FASTEST
+        sensorManager.registerListener(accelerometerEventListener, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
     }
 
 
@@ -357,5 +418,26 @@ public class NewMainActivity extends AppCompatActivity {
         super.onPause();
         sensorManager.unregisterListener(accelerometerEventListener);
     }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+            simpleStepDetector.updateAccel(
+                    event.timestamp, event.values[0], event.values[1], event.values[2]);
+        }
+    }
+
+    @Override
+    public void step(long timeNs) {
+        numSteps++;
+        NewMainActivity.stepNumber++;
+        //TvSteps.setText(TEXT_NUM_STEPS + numSteps);
+    }
+
+
 }
 
