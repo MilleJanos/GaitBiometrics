@@ -16,6 +16,19 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    //prevent: More than one file was found with OS independent path 'META-INF/proguard/androidx-annotations.pro'
+    packagingOptions {
+        /*exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/ASL2.0'*/
+        exclude 'META-INF/proguard/androidx-annotations.pro'
+    }
 }
 /*
 allprojects {
@@ -25,9 +38,12 @@ allprojects {
 }
 */
 
+
+
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'com.android.support.constraint:constraint-layout:1.1.0'
+    //implementation 'com.github.PhilJay:MPAndroidChart:v3.0.3'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
@@ -35,10 +51,5 @@ dependencies {
     //implementation 'org.junit:junit5-api:5.0.0-ALPHA'
     //compile 'com.github.PhilJay:MPAndroidChart:v2.1.6'
     implementation 'com.android.support:appcompat-v7:28.0.0'
-}
-
-repositories {
-    maven {
-        url "https://jitpack.io"
-    }
+    implementation project(':MPChartLib')
 }
