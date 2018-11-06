@@ -10,7 +10,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.example.jancsi_pc.playingwithsensors.NewMainActivity;
+import com.example.jancsi_pc.playingwithsensors.DataCollectorActivity;
 import com.example.jancsi_pc.playingwithsensors.R;
 
 public class StepCounterActivity extends AppCompatActivity implements SensorEventListener, StepListener {
@@ -86,7 +86,7 @@ public class StepCounterActivity extends AppCompatActivity implements SensorEven
     @Override
     public void step(long timeNs) {
         numSteps++;
-        NewMainActivity.stepNumber++;
+        DataCollectorActivity.stepNumber++;
         TvSteps.setText(TEXT_NUM_STEPS + numSteps);
     }
 

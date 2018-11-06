@@ -10,12 +10,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.jancsi_pc.playingwithsensors.Old.ConnectionActivity;
-import com.example.jancsi_pc.playingwithsensors.Old.MainActivity;
 import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepDetector;
 import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepListener;
 
@@ -26,37 +23,34 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
 /* SEND PACKAGE FORMATS:
 *
-*    "timestamp,x,y,x,timestamp,x,y,x,timestamp,x,y,x,timestamp,x,y,x,timestamp,x,y,x, ... ,end"
-*    *
+*    "timestamp,x,y,z,step,timestamp,x,y,z,step,timestamp,x,y,z,step,timestamp,x,y,z,step,timestamp,x,y,z,step, ... ,end"
+*
 */
 
-public class NewMainActivity extends AppCompatActivity /*(STEPCOUNT) implements SensorEventListener, StepListener */ {
+public class DataCollectorActivity extends AppCompatActivity implements SensorEventListener, StepListener {
+    private final String TAG = "DataCollectorActivity";
 
     private SensorManager sensorManager;
     private Sensor accelerometerSensor;
     private SensorEventListener accelerometerEventListener;
 
-    private float ts;
-    private float accX;
-    private float accY;
-    private float accZ;
+   // private float ts;
+   // private float accX;
+   // private float accY;
+   // private float accZ;
 
     private Button sendButton;
-    private EditText txtAddress;
-    private TextView sentTextView;
     private Button startButton;
     private Button stopButton;
-    private Button clearButton;
-
-    private Socket myAppSocket = null;
 
     //PORT: 21567
     //                              "<ip>:<port>"
-    private String IP_ADDRESS = "192.168.43.54:21456";
+    private String IP_ADDRESS = "192.168.137.90:21456";
 
     public static String wifiModuleIp = "";
     public static int wifiModulePort = 0;
@@ -72,16 +66,19 @@ public class NewMainActivity extends AppCompatActivity /*(STEPCOUNT) implements 
     private int numSteps = 0;
     */
     private ArrayList<String> accArrayStringGroups = new ArrayList<>();
-    private final int RECORDS_PER_PACKAGE_LIMIT = 10;
+    private final int RECORDS_PER_PACKAGE_LIMIT = 128;
 
     public static int stepNumber=0;
     public static final int MAX_STEP_NUMBER=10;
     public static final int MIN_STEP_NUMBER=5;
 
-    TextView textViewStatus;
-    TextView currentTextView;
-    TextView sendCurrentStatusTextView;
-    Button sendCurrentButton;
+    private TextView textViewStatus;
+    private TextView accelerometerX;
+    private TextView accelerometerY;
+    private TextView accelerometerZ;
+
+    //queue for containing the fixed number of steps that has to be processed
+    //TODO
 
     //MediaPlayer mediaPlayer;
 
@@ -99,7 +96,7 @@ public class NewMainActivity extends AppCompatActivity /*(STEPCOUNT) implements 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_new_main);
+        setContentView(R.layout.activity_final_main);
 
         //SENSOR:
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -110,59 +107,67 @@ public class NewMainActivity extends AppCompatActivity /*(STEPCOUNT) implements 
             finish();
         }
 
-        textViewStatus = (TextView) findViewById(R.id.statusTextView);
-        currentTextView = (TextView) findViewById(R.id.currentTextView);
-        sendButton = (Button) findViewById(R.id.sendButton);
-        txtAddress = (EditText) findViewById(R.id.ipAddress);
-        sentTextView = (TextView) findViewById(R.id.sentScrollView);
-        startButton = findViewById( R.id.startButton );
-        stopButton  = findViewById( R.id.stopButton  );
-        clearButton  = findViewById( R.id.clearButton  );
-        sendButton = (Button) findViewById( R.id.sendButton );
+        textViewStatus = findViewById(R.id.textViewStatus);
+        textViewStatus.setText("Press START to start recording.");
+
+        startButton = findViewById(R.id.buttonStart);
+        stopButton  = findViewById(R.id.buttonStop);
+        sendButton = findViewById(R.id.buttonSend);
+
         stopButton.setEnabled(false);
-        clearButton.setEnabled(false);
         sendButton.setEnabled(false);
 
-        txtAddress.setText(IP_ADDRESS);
+        accelerometerX = findViewById(R.id.textViewAX2);
+        accelerometerY = findViewById(R.id.textViewAY2);
+        accelerometerZ = findViewById(R.id.textViewAZ2);
 
         final DecimalFormat df = new DecimalFormat("0");
         df.setMaximumIntegerDigits(20);
         // 123...45E9 -> 123...459234
         //         ==            ====
-        /*(STEPDETECTOR)
+
         //Step Detecting:
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         simpleStepDetector = new StepDetector();
         simpleStepDetector.registerListener(this);
-        sensorManager.registerListener(NewMainActivity.this, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
-        */
+        sensorManager.registerListener(DataCollectorActivity.this, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
+
 
         accelerometerEventListener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent event) {
-                if(stepNumber>MAX_STEP_NUMBER){ //only N steps allowed
-                    stopButton.callOnClick();
-                }
-                if(stepNumber>MIN_STEP_NUMBER && !stopButton.isEnabled()){ //at least M steps
+                //if(stepNumber>MAX_STEP_NUMBER){ //only N steps allowed
+                    //stopButton.callOnClick();
+                //}
+                //if(stepNumber>MIN_STEP_NUMBER && !stopButton.isEnabled()){ //at least M steps
                     //stopButton.setEnabled(true);
-                }
+                //}
                 long timeStamp = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
                 float x = event.values[0];
                 float y = event.values[1];
                 float z = event.values[2];
-                ts = timeStamp;
-                accX = x;
-                accY = y;
-                accZ = z;
-                currentTextView.setText("TimeStamp: " + df.format(ts) + "\nX: " + accX + "\nY: " + accY + "\nZ: " + accZ +"\nStep:" + stepNumber );
+
+                //ts = timeStamp;
+                //accX = x;
+                //accY = y;
+                //accZ = z;
+
+                //queueing
+                //keeping the queue size fixed
+
+                accelerometerX.setText("X: "+x);
+                accelerometerY.setText("Y: "+y);
+                accelerometerZ.setText("Z: "+z);
+
+
                 if (isRecording) {
                     accArray.add(new Accelerometer(timeStamp, x, y, z, stepNumber));
+                    recordCount++;
                     /*(STEPCOUNT)
                     stepArray.add(numSteps);
-                    recordCount++;
                     */
-                    textViewStatus.setText("Recording: " + recordCount);
+                    textViewStatus.setText("Recording: " + stepNumber + " steps made.");
                 }
             }
 
@@ -174,8 +179,7 @@ public class NewMainActivity extends AppCompatActivity /*(STEPCOUNT) implements 
 
         /*
         *
-        *   Start / Continue
-        *   recording
+        *   Start recording
         *
         */
 
@@ -184,10 +188,12 @@ public class NewMainActivity extends AppCompatActivity /*(STEPCOUNT) implements 
             public void onClick(View v) {
                 //mediaPlayer.create(null,R.raw.start);
                 //mediaPlayer.start();
+                recordCount = 0;
+                stepNumber = 0;
+                accArray.clear();
                 isRecording = true;
                 startButton.setEnabled(false);
                 stopButton.setEnabled(true);
-                clearButton.setEnabled(false);
                 sendButton.setEnabled(false);
                 Log.d("ConnectionActivity_", "Start Rec.");
                 //textViewStatus.setText("Recording ...");
@@ -204,40 +210,15 @@ public class NewMainActivity extends AppCompatActivity /*(STEPCOUNT) implements 
             @Override
             public void onClick(View v) {
                 isRecording = false;
-                startButton.setText("CONTINUE");
                 startButton.setEnabled(true);
                 stopButton.setEnabled(false);
-                clearButton.setEnabled(true);
                 sendButton.setEnabled(true);
                 Log.d("ConnectionActivity", "Stop Rec. - Generating CMD");
                 textViewStatus.setText("Calculating...");
                 CMD = accArrayToString();
                 CMD += ",end";
                 Log.d("ConnectionActivity","CMD Generated.");
-                sentTextView.setText( CMD );
-                textViewStatus.setText("Recorded: " + recordCount);
-            }
-        });
-
-        /*
-        *
-        *   Clear recorded records
-        *
-        */
-
-        clearButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startButton.setText("START");
-                startButton.setEnabled(true);
-                stopButton.setEnabled(false);
-                clearButton.setEnabled(false);
-                sendButton.setEnabled(false);
-                recordCount = 0;
-                accArray.clear();
-                Log.d("ConnectionActivity_", "Clear Rec.");
-                sentTextView.setText("-cleared-");
-                textViewStatus.setText("Press START to new record.");
+                textViewStatus.setText("Recorded: " + recordCount + " datapoints and " + stepNumber +" step cycles.");
             }
         });
 
@@ -252,7 +233,11 @@ public class NewMainActivity extends AppCompatActivity /*(STEPCOUNT) implements 
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                IP_ADDRESS = txtAddress.getText().toString();
+                sendButton.setEnabled(false);
+                //TODO check if connected to wifi before attempting to send
+                //extract features first TODO
+                //ArrayList<byte[]> byteList = new FeatureExtractor(accArray).getByteList();
+
                 // STOP button generates the CMD
                 //sentTextView.setText( CMD );
                 // Sending the array in multiple packages:
@@ -265,6 +250,7 @@ public class NewMainActivity extends AppCompatActivity /*(STEPCOUNT) implements 
                     Socket_AsyncTask cmd_send_data = new Socket_AsyncTask();
                     cmd_send_data.execute();
                 }
+                Toast.makeText(DataCollectorActivity.this,"Data has been sent. " + Calendar.getInstance().getTime(), Toast.LENGTH_LONG).show();
             }
         });
 
@@ -290,10 +276,10 @@ public class NewMainActivity extends AppCompatActivity /*(STEPCOUNT) implements 
                 .append(",")
                 .append(accArray.get(i).getY())
                 .append(",")
-                .append(accArray.get(i).getTimeStamp())
+                .append(accArray.get(i).getZ())
+                .append(",")
+                .append(accArray.get(i).getStep())
                 .append(",");
-                /*(STEPCOUNT).append(stepArray.get(i))
-                .append(",");*/
         }
         sb.append(accArray.get(i).getTimeStamp())
             .append(",")
@@ -301,9 +287,10 @@ public class NewMainActivity extends AppCompatActivity /*(STEPCOUNT) implements 
             .append(",")
             .append(accArray.get(i).getY())
             .append(",")
-            .append(accArray.get(i).getTimeStamp());
-            /*(STEPCOUNT).append(",")
-            .append(stepArray.get(i)); */
+            .append(accArray.get(i).getZ())
+            .append(",")
+            .append(accArray.get(i).getStep())
+            .append(",");
         return sb.toString();
     }
 
@@ -331,9 +318,9 @@ public class NewMainActivity extends AppCompatActivity /*(STEPCOUNT) implements 
                     .append(",")
                     .append(accArray.get(i).getY())
                     .append(",")
-                    .append(accArray.get(i).getZ());
-                    /*(STEPCOUNT).append(",")
-                    .append(stepArray.get(i)); */
+                    .append(accArray.get(i).getZ())
+                    .append(accArray.get(i).getStep())
+                    .append(",");
             limitReached = false;
             if( c == RECORDS_PER_PACKAGE_LIMIT ){
                 //accArrayStringGroups.add(str);
@@ -357,7 +344,7 @@ public class NewMainActivity extends AppCompatActivity /*(STEPCOUNT) implements 
     }
 
     public void getIPandPort(){
-        String iPandPort = txtAddress.getText().toString();
+        String iPandPort = IP_ADDRESS;
         Log.d("getIPandPort","IP String: " + iPandPort);
         String temp[] = iPandPort.split(":");
         wifiModuleIp = temp[0];
@@ -372,10 +359,10 @@ public class NewMainActivity extends AppCompatActivity /*(STEPCOUNT) implements 
         @Override
         protected Void doInBackground(Void... voids) {
             try{
-                InetAddress inetAddress = InetAddress.getByName( NewMainActivity.wifiModuleIp );
-                socket = new java.net.Socket( inetAddress, NewMainActivity.wifiModulePort );
+                InetAddress inetAddress = InetAddress.getByName( DataCollectorActivity.wifiModuleIp );
+                socket = new java.net.Socket( inetAddress, DataCollectorActivity.wifiModulePort );
                 DataOutputStream dataOutputStream  = new DataOutputStream(socket.getOutputStream() );
-                Log.i("SocketAsyncT","SENDING: " + CMD + " ("+ NewMainActivity.wifiModuleIp+" : "+ NewMainActivity.wifiModulePort+")");
+                Log.i("SocketAsyncT","SENDING: " + CMD + " ("+ DataCollectorActivity.wifiModuleIp+" : "+ DataCollectorActivity.wifiModulePort+")");
                 //DataOutputStream.writeBytes( CMD );
                 byte byteArray[] = CMD.getBytes();
                 dataOutputStream.write(byteArray);
@@ -388,7 +375,8 @@ public class NewMainActivity extends AppCompatActivity /*(STEPCOUNT) implements 
                 e.printStackTrace();
             }
             return null;
-        }    }
+        }
+    }
 
 
     @Override
@@ -398,13 +386,12 @@ public class NewMainActivity extends AppCompatActivity /*(STEPCOUNT) implements 
     }
 
 
-
     @Override
     protected void onPause() {
         super.onPause();
         sensorManager.unregisterListener(accelerometerEventListener);
     }
-    /*(STEPCOUNT)
+    //(STEPCOUNT)
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
     }
@@ -419,10 +406,10 @@ public class NewMainActivity extends AppCompatActivity /*(STEPCOUNT) implements 
 
     @Override
     public void step(long timeNs) {
-        numSteps++;
-        NewMainActivity.stepNumber++;
+        //numSteps++;
+        DataCollectorActivity.stepNumber++;
         //TvSteps.setText(TEXT_NUM_STEPS + numSteps);
     }
-    */
+
 
 }
