@@ -281,7 +281,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                 .append(",")
                 .append(accArray.get(i).getZ())
                 .append(",")
-                .append(accArray.get(i).getStep())
+                .append(stepNumber)
                 .append(",");
         }
         sb.append(accArray.get(i).getTimeStamp())
@@ -292,8 +292,8 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
             .append(",")
             .append(accArray.get(i).getZ())
             .append(",")
-            .append(accArray.get(i).getStep())
-            .append(",");
+            .append(stepNumber);
+            //.append(",");
         return sb.toString();
     }
 
@@ -363,14 +363,22 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         protected Void doInBackground(Void... voids) {
             try{
                 InetAddress inetAddress = InetAddress.getByName( DataCollectorActivity.wifiModuleIp );
+                Log.i(TAG,"doInBackground: 1");
+                Log.d(TAG,"doInBackground: 1");
                 socket = new java.net.Socket( inetAddress, DataCollectorActivity.wifiModulePort );
+                Log.d(TAG,"doInBackground: 2");
                 DataOutputStream dataOutputStream  = new DataOutputStream(socket.getOutputStream() );
+                Log.d(TAG,"doInBackground: 3");
                 Log.i("SocketAsyncT","SENDING: " + CMD + " ("+ DataCollectorActivity.wifiModuleIp+" : "+ DataCollectorActivity.wifiModulePort+")");
                 //DataOutputStream.writeBytes( CMD );
                 byte byteArray[] = CMD.getBytes();
+                Log.d(TAG,"doInBackground: 4");
                 dataOutputStream.write(byteArray);
+                Log.d(TAG,"doInBackground: 5");
                 dataOutputStream.flush();
+                Log.d(TAG,"doInBackground: 6");
                 dataOutputStream.close();
+                Log.d(TAG,"doInBackground: 7");
                 socket.close();
             }catch( UnknownHostException e ){
                 e.printStackTrace();
