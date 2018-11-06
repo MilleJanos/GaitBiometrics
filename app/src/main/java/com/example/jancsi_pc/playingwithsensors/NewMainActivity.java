@@ -13,23 +13,16 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.media.MediaPlayer;
 
 import com.example.jancsi_pc.playingwithsensors.Old.ConnectionActivity;
 import com.example.jancsi_pc.playingwithsensors.Old.MainActivity;
-import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepCounterActivity;
 import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepDetector;
 import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepListener;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.InetAddress;
-import java.net.Proxy;
 import java.net.Socket;
-import java.net.SocketAddress;
-import java.net.URL;
 import java.net.UnknownHostException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -41,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 *    *
 */
 
-public class NewMainActivity extends AppCompatActivity implements SensorEventListener, StepListener {
+public class NewMainActivity extends AppCompatActivity /*(STEPCOUNT) implements SensorEventListener, StepListener */ {
 
     private SensorManager sensorManager;
     private Sensor accelerometerSensor;
@@ -74,10 +67,10 @@ public class NewMainActivity extends AppCompatActivity implements SensorEventLis
 
     private ArrayList<Accelerometer> accArray = new ArrayList<>();
     private long recordCount = 0;
-
+    /*(STEPCOUNT)
     private ArrayList<Integer> stepArray = new ArrayList<>();
     private int numSteps = 0;
-
+    */
     private ArrayList<String> accArrayStringGroups = new ArrayList<>();
     private final int RECORDS_PER_PACKAGE_LIMIT = 10;
 
@@ -106,7 +99,7 @@ public class NewMainActivity extends AppCompatActivity implements SensorEventLis
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_new_main);   // TODO: Change .xml name
+        setContentView(R.layout.activity_new_main);
 
         //SENSOR:
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -136,13 +129,14 @@ public class NewMainActivity extends AppCompatActivity implements SensorEventLis
         df.setMaximumIntegerDigits(20);
         // 123...45E9 -> 123...459234
         //         ==            ====
-
+        /*(STEPDETECTOR)
         //Step Detecting:
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         simpleStepDetector = new StepDetector();
         simpleStepDetector.registerListener(this);
         sensorManager.registerListener(NewMainActivity.this, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
+        */
 
         accelerometerEventListener = new SensorEventListener() {
             @Override
@@ -164,8 +158,10 @@ public class NewMainActivity extends AppCompatActivity implements SensorEventLis
                 currentTextView.setText("TimeStamp: " + df.format(ts) + "\nX: " + accX + "\nY: " + accY + "\nZ: " + accZ +"\nStep:" + stepNumber );
                 if (isRecording) {
                     accArray.add(new Accelerometer(timeStamp, x, y, z, stepNumber));
+                    /*(STEPCOUNT)
                     stepArray.add(numSteps);
                     recordCount++;
+                    */
                     textViewStatus.setText("Recording: " + recordCount);
                 }
             }
@@ -295,9 +291,9 @@ public class NewMainActivity extends AppCompatActivity implements SensorEventLis
                 .append(accArray.get(i).getY())
                 .append(",")
                 .append(accArray.get(i).getTimeStamp())
-                .append(",")
-                .append(stepArray.get(i))
                 .append(",");
+                /*(STEPCOUNT).append(stepArray.get(i))
+                .append(",");*/
         }
         sb.append(accArray.get(i).getTimeStamp())
             .append(",")
@@ -305,9 +301,9 @@ public class NewMainActivity extends AppCompatActivity implements SensorEventLis
             .append(",")
             .append(accArray.get(i).getY())
             .append(",")
-            .append(accArray.get(i).getTimeStamp())
-            .append(",")
-            .append(stepArray.get(i));
+            .append(accArray.get(i).getTimeStamp());
+            /*(STEPCOUNT).append(",")
+            .append(stepArray.get(i)); */
         return sb.toString();
     }
 
@@ -335,9 +331,9 @@ public class NewMainActivity extends AppCompatActivity implements SensorEventLis
                     .append(",")
                     .append(accArray.get(i).getY())
                     .append(",")
-                    .append(accArray.get(i).getZ())
-                    .append(",")
-                    .append(stepArray.get(i));
+                    .append(accArray.get(i).getZ());
+                    /*(STEPCOUNT).append(",")
+                    .append(stepArray.get(i)); */
             limitReached = false;
             if( c == RECORDS_PER_PACKAGE_LIMIT ){
                 //accArrayStringGroups.add(str);
@@ -376,10 +372,10 @@ public class NewMainActivity extends AppCompatActivity implements SensorEventLis
         @Override
         protected Void doInBackground(Void... voids) {
             try{
-                InetAddress inetAddress = InetAddress.getByName( ConnectionActivity.wifiModuleIp );
-                socket = new java.net.Socket( inetAddress,ConnectionActivity.wifiModulePort );
+                InetAddress inetAddress = InetAddress.getByName( NewMainActivity.wifiModuleIp );
+                socket = new java.net.Socket( inetAddress, NewMainActivity.wifiModulePort );
                 DataOutputStream dataOutputStream  = new DataOutputStream(socket.getOutputStream() );
-                Log.i("SocketAsyncT","SENDING: " + CMD + " ("+ConnectionActivity.wifiModuleIp+" : "+ConnectionActivity.wifiModulePort+")");
+                Log.i("SocketAsyncT","SENDING: " + CMD + " ("+ NewMainActivity.wifiModuleIp+" : "+ NewMainActivity.wifiModulePort+")");
                 //DataOutputStream.writeBytes( CMD );
                 byte byteArray[] = CMD.getBytes();
                 dataOutputStream.write(byteArray);
@@ -408,7 +404,7 @@ public class NewMainActivity extends AppCompatActivity implements SensorEventLis
         super.onPause();
         sensorManager.unregisterListener(accelerometerEventListener);
     }
-
+    /*(STEPCOUNT)
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
     }
@@ -427,6 +423,6 @@ public class NewMainActivity extends AppCompatActivity implements SensorEventLis
         NewMainActivity.stepNumber++;
         //TvSteps.setText(TEXT_NUM_STEPS + numSteps);
     }
-
+    */
 
 }

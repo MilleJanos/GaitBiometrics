@@ -3,6 +3,23 @@ package com.example.jancsi_pc.playingwithsensors;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+public class FinalMainActivity extends AppCompatActivity { //extend AdsFragmentActivity
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_final_main);
+    }
+}
+
+////////////////////////// IDEIGLENES A FELETTI
+
+/*
+package com.example.jancsi_pc.playingwithsensors;
+
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Description;
 import com.github.mikephil.charting.data.Entry;
@@ -27,7 +44,7 @@ public class FinalMainActivity extends AppCompatActivity { //extend AdsFragmentA
         //drawLineChart();
     }
 
-    /*
+
     private void drawLineChart(){
         LineChart lineChart = findViewById(R.id.myLineChart);
         Description description = new Description();
@@ -90,5 +107,6 @@ public class FinalMainActivity extends AppCompatActivity { //extend AdsFragmentA
             }
         }
     }
-    */
+
 }
+*/
