@@ -8,7 +8,7 @@ public class FinalMainActivity extends AppCompatActivity { //extend AdsFragmentA
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_final_main);
+        setContentView(R.layout.activity_data_collector);
     }
 }
 
@@ -38,7 +38,7 @@ public class FinalMainActivity extends AppCompatActivity { //extend AdsFragmentA
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_final_main);
+        setContentView(R.layout.activity_data_collector);
 
         //help: https://www.youtube.com/watch?v=xLaC0Z6wej0
         //drawLineChart();
