@@ -10,12 +10,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.jancsi_pc.playingwithsensors.Old.ConnectionActivity;
-import com.example.jancsi_pc.playingwithsensors.Old.MainActivity;
 import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepDetector;
 import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepListener;
 
@@ -26,6 +23,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
 /* SEND PACKAGE FORMATS:
@@ -34,7 +32,8 @@ import java.util.concurrent.TimeUnit;
 *
 */
 
-public class NewMainActivity extends AppCompatActivity implements SensorEventListener, StepListener {
+public class DataCollectorActivity extends AppCompatActivity implements SensorEventListener, StepListener {
+    private final String TAG = "DataCollectorActivity";
 
     private SensorManager sensorManager;
     private Sensor accelerometerSensor;
@@ -51,7 +50,7 @@ public class NewMainActivity extends AppCompatActivity implements SensorEventLis
 
     //PORT: 21567
     //                              "<ip>:<port>"
-    private String IP_ADDRESS = "192.168.43.54:21456";
+    private String IP_ADDRESS = "192.168.137.90:21456";
 
     public static String wifiModuleIp = "";
     public static int wifiModulePort = 0;
@@ -67,7 +66,7 @@ public class NewMainActivity extends AppCompatActivity implements SensorEventLis
     private int numSteps = 0;
     */
     private ArrayList<String> accArrayStringGroups = new ArrayList<>();
-    private final int RECORDS_PER_PACKAGE_LIMIT = 10;
+    private final int RECORDS_PER_PACKAGE_LIMIT = 128;
 
     public static int stepNumber=0;
     public static final int MAX_STEP_NUMBER=10;
@@ -132,7 +131,7 @@ public class NewMainActivity extends AppCompatActivity implements SensorEventLis
         accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         simpleStepDetector = new StepDetector();
         simpleStepDetector.registerListener(this);
-        sensorManager.registerListener(NewMainActivity.this, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
+        sensorManager.registerListener(DataCollectorActivity.this, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
 
 
         accelerometerEventListener = new SensorEventListener() {
@@ -148,6 +147,7 @@ public class NewMainActivity extends AppCompatActivity implements SensorEventLis
                 float x = event.values[0];
                 float y = event.values[1];
                 float z = event.values[2];
+
                 //ts = timeStamp;
                 //accX = x;
                 //accY = y;
@@ -163,9 +163,9 @@ public class NewMainActivity extends AppCompatActivity implements SensorEventLis
 
                 if (isRecording) {
                     accArray.add(new Accelerometer(timeStamp, x, y, z, stepNumber));
+                    recordCount++;
                     /*(STEPCOUNT)
                     stepArray.add(numSteps);
-                    recordCount++;
                     */
                     textViewStatus.setText("Recording: " + stepNumber + " steps made.");
                 }
@@ -218,7 +218,7 @@ public class NewMainActivity extends AppCompatActivity implements SensorEventLis
                 CMD = accArrayToString();
                 CMD += ",end";
                 Log.d("ConnectionActivity","CMD Generated.");
-                textViewStatus.setText("Recorded: " + recordCount + " datapoints and " + stepNumber +" steps.");
+                textViewStatus.setText("Recorded: " + recordCount + " datapoints and " + stepNumber +" step cycles.");
             }
         });
 
@@ -233,6 +233,7 @@ public class NewMainActivity extends AppCompatActivity implements SensorEventLis
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                sendButton.setEnabled(false);
                 //TODO check if connected to wifi before attempting to send
                 //extract features first TODO
                 //ArrayList<byte[]> byteList = new FeatureExtractor(accArray).getByteList();
@@ -249,6 +250,7 @@ public class NewMainActivity extends AppCompatActivity implements SensorEventLis
                     Socket_AsyncTask cmd_send_data = new Socket_AsyncTask();
                     cmd_send_data.execute();
                 }
+                Toast.makeText(DataCollectorActivity.this,"Data has been sent. " + Calendar.getInstance().getTime(), Toast.LENGTH_LONG).show();
             }
         });
 
@@ -357,10 +359,10 @@ public class NewMainActivity extends AppCompatActivity implements SensorEventLis
         @Override
         protected Void doInBackground(Void... voids) {
             try{
-                InetAddress inetAddress = InetAddress.getByName( NewMainActivity.wifiModuleIp );
-                socket = new java.net.Socket( inetAddress, NewMainActivity.wifiModulePort );
+                InetAddress inetAddress = InetAddress.getByName( DataCollectorActivity.wifiModuleIp );
+                socket = new java.net.Socket( inetAddress, DataCollectorActivity.wifiModulePort );
                 DataOutputStream dataOutputStream  = new DataOutputStream(socket.getOutputStream() );
-                Log.i("SocketAsyncT","SENDING: " + CMD + " ("+ NewMainActivity.wifiModuleIp+" : "+ NewMainActivity.wifiModulePort+")");
+                Log.i("SocketAsyncT","SENDING: " + CMD + " ("+ DataCollectorActivity.wifiModuleIp+" : "+ DataCollectorActivity.wifiModulePort+")");
                 //DataOutputStream.writeBytes( CMD );
                 byte byteArray[] = CMD.getBytes();
                 dataOutputStream.write(byteArray);
@@ -405,7 +407,7 @@ public class NewMainActivity extends AppCompatActivity implements SensorEventLis
     @Override
     public void step(long timeNs) {
         //numSteps++;
-        NewMainActivity.stepNumber++;
+        DataCollectorActivity.stepNumber++;
         //TvSteps.setText(TEXT_NUM_STEPS + numSteps);
     }
 
