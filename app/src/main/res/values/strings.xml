@@ -1,3 +1,20 @@
 <resources>
     <string name="app_name">PlayingWithSensors</string>
+    <string name="Send">Send</string>
+    <string name="Stop">Stop</string>
+    <string name="Start">Start</string>
+    <string name="Calculating">Calculating...</string>
+    <!--
+    <string name="X"></string>
+    <string name="Y"></string>
+    <string name="Z"></string>
+    <string name=""></string>
+    <string name=""></string>
+    <string name=""></string>
+    <string name=""></string>
+    <string name=""></string>
+    <string name=""></string>
+    <string name=""></string>
+    <string name=""></string>
+    -->
 </resources>
