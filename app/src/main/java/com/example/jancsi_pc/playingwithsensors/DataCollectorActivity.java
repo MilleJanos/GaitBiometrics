@@ -38,6 +38,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     private SensorManager sensorManager;
     private Sensor accelerometerSensor;
     private SensorEventListener accelerometerEventListener;
+    private Sensor builtInStepCounterSensor;
 
    // private float ts;
    // private float accX;
@@ -96,11 +97,12 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_final_main);
+        setContentView(R.layout.activity_new_main);
 
         //SENSOR:
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
+        builtInStepCounterSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
         if( accelerometerSensor == null ){
             Toast.makeText(this, "The device has no com.example.jancsi_pc.playingwithsensors.Accelerometer !", Toast.LENGTH_SHORT).show();
@@ -360,14 +362,21 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         protected Void doInBackground(Void... voids) {
             try{
                 InetAddress inetAddress = InetAddress.getByName( DataCollectorActivity.wifiModuleIp );
+                Log.d(TAG,"doInBackground: 1");
                 socket = new java.net.Socket( inetAddress, DataCollectorActivity.wifiModulePort );
+                Log.d(TAG,"doInBackground: 2");
                 DataOutputStream dataOutputStream  = new DataOutputStream(socket.getOutputStream() );
+                Log.d(TAG,"doInBackground: 3");
                 Log.i("SocketAsyncT","SENDING: " + CMD + " ("+ DataCollectorActivity.wifiModuleIp+" : "+ DataCollectorActivity.wifiModulePort+")");
                 //DataOutputStream.writeBytes( CMD );
                 byte byteArray[] = CMD.getBytes();
+                Log.d(TAG,"doInBackground: 4");
                 dataOutputStream.write(byteArray);
+                Log.d(TAG,"doInBackground: 5");
                 dataOutputStream.flush();
+                Log.d(TAG,"doInBackground: 6");
                 dataOutputStream.close();
+                Log.d(TAG,"doInBackground: 7");
                 socket.close();
             }catch( UnknownHostException e ){
                 e.printStackTrace();
