@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepDetector;
 import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepListener;
+import com.example.jancsi_pc.playingwithsensors.Utils.Util;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -38,7 +39,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     private SensorManager sensorManager;
     private Sensor accelerometerSensor;
     private SensorEventListener accelerometerEventListener;
-    private Sensor builtInStepCounterSensor;
 
    // private float ts;
    // private float accX;
@@ -97,12 +97,11 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_new_main);
+        setContentView(R.layout.activity_data_collector);
 
         //SENSOR:
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
-        builtInStepCounterSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
         if( accelerometerSensor == null ){
             Toast.makeText(this, "The device has no com.example.jancsi_pc.playingwithsensors.Accelerometer !", Toast.LENGTH_SHORT).show();
@@ -145,7 +144,8 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                 //if(stepNumber>MIN_STEP_NUMBER && !stopButton.isEnabled()){ //at least M steps
                     //stopButton.setEnabled(true);
                 //}
-                long timeStamp = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
+                //long timeStamp = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
+                long timeStamp = event.timestamp;
                 float x = event.values[0];
                 float y = event.values[1];
                 float z = event.values[2];
@@ -236,6 +236,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
             @Override
             public void onClick(View v) {
                 sendButton.setEnabled(false);
+                Toast.makeText(DataCollectorActivity.this,"freq1: " + Util.samplingFrequency(accArray) + "freq2: " + Util.samplingFrequency2(accArray),Toast.LENGTH_LONG).show();
                 //TODO check if connected to wifi before attempting to send
                 //extract features first TODO
                 //ArrayList<byte[]> byteList = new FeatureExtractor(accArray).getByteList();
@@ -280,7 +281,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                 .append(",")
                 .append(accArray.get(i).getZ())
                 .append(",")
-                .append(accArray.get(i).getStep())
+                .append(stepNumber)
                 .append(",");
         }
         sb.append(accArray.get(i).getTimeStamp())
@@ -291,8 +292,8 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
             .append(",")
             .append(accArray.get(i).getZ())
             .append(",")
-            .append(accArray.get(i).getStep())
-            .append(",");
+            .append(stepNumber);
+            //.append(",");
         return sb.toString();
     }
 
@@ -362,6 +363,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         protected Void doInBackground(Void... voids) {
             try{
                 InetAddress inetAddress = InetAddress.getByName( DataCollectorActivity.wifiModuleIp );
+                Log.i(TAG,"doInBackground: 1");
                 Log.d(TAG,"doInBackground: 1");
                 socket = new java.net.Socket( inetAddress, DataCollectorActivity.wifiModulePort );
                 Log.d(TAG,"doInBackground: 2");
