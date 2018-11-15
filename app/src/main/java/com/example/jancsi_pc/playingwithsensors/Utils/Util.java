@@ -28,4 +28,13 @@ public class Util {
         Log.i(TAG, "samplingFrequency2: "+1/period);
         return 1/period;
     }
+
+    // logged in user
+    public static String userEmail = "";
+    public static Boolean isSignedIn = false;
+
+    // login/register
+    public enum ScreenModeEnum { EMAIL_MODE, PASSWORD_MODE, REGISTER_MODE }
+    public static ScreenModeEnum screenMode;
+
 }

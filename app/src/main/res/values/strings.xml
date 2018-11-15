@@ -1,9 +1,15 @@
 <resources>
-    <string name="app_name">PlayingWithSensors</string>
+    <string name="app_name">Let Me In</string>
     <string name="Send">Send</string>
     <string name="Stop">Stop</string>
     <string name="Start">Start</string>
     <string name="Calculating">Calculating...</string>
+    <string name="samePassword">Passwords has to be the same!</string>
+    <string name="wrongPassword">Password fields must to be filled!</string>
+    <string name="wrongEmail">Wrong Email!</string>
+    <string name="registerFailed">Register Failed!</string>
+    <string name="wrongPasswordLessThen6char">The password must be at least 6 character!</string>
+    <string name="verifyMailbox">Verify your mailbox!</string>
     <!--
     <string name="X"></string>
     <string name="Y"></string>

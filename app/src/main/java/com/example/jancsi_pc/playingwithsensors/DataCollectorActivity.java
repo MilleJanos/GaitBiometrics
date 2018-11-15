@@ -1,10 +1,27 @@
 package com.example.jancsi_pc.playingwithsensors;
 
+import android.Manifest;
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.media.MediaPlayer;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.Uri;
+import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
+import android.os.Environment;
+import android.provider.ContactsContract;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,25 +30,39 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepCounterActivity;
 import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepDetector;
 import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepListener;
 import com.example.jancsi_pc.playingwithsensors.Utils.Util;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-/* SEND PACKAGE FORMATS:
-*
-*    "timestamp,x,y,z,step,timestamp,x,y,z,step,timestamp,x,y,z,step,timestamp,x,y,z,step,timestamp,x,y,z,step, ... ,end"
-*
-*/
 
 public class DataCollectorActivity extends AppCompatActivity implements SensorEventListener, StepListener {
     private final String TAG = "DataCollectorActivity";
@@ -39,54 +70,46 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     private SensorManager sensorManager;
     private Sensor accelerometerSensor;
     private SensorEventListener accelerometerEventListener;
-
-   // private float ts;
-   // private float accX;
-   // private float accY;
-   // private float accZ;
-
     private Button sendButton;
     private Button startButton;
     private Button stopButton;
-
-    //PORT: 21567
-    //                              "<ip>:<port>"
+    private Button saveToFirebaseButton;
+    //PORT: 21567                         "<ip>:<port>"
     private String IP_ADDRESS = "192.168.137.90:21456";
-
     public static String wifiModuleIp = "";
     public static int wifiModulePort = 0;
-
     public static String CMD = "0";
-
     private boolean isRecording = false;
-
     private ArrayList<Accelerometer> accArray = new ArrayList<>();
     private long recordCount = 0;
-    /*(STEPCOUNT)
-    private ArrayList<Integer> stepArray = new ArrayList<>();
-    private int numSteps = 0;
-    */
     private ArrayList<String> accArrayStringGroups = new ArrayList<>();
     private final int RECORDS_PER_PACKAGE_LIMIT = 128;
-
     public static int stepNumber=0;
     public static final int MAX_STEP_NUMBER=10;
     public static final int MIN_STEP_NUMBER=5;
-
     private TextView textViewStatus;
     private TextView accelerometerX;
     private TextView accelerometerY;
     private TextView accelerometerZ;
+    private TextView loggedInUserEmailTextView;
+    private TextView goToRegistrationTextView;
+    private TextView goToLoginTextView;
+
+    //private final MediaPlayer mp = MediaPlayer.create(DataCollectorActivity.this, R.raw.sound2);
 
     //queue for containing the fixed number of steps that has to be processed
     //TODO
 
-    //MediaPlayer mediaPlayer;
-
     // For Step Detecting:
     private StepDetector simpleStepDetector;
-    //private SensorManager sensorManager;
-    //private Sensor accel;
+    private static final int REQUEST_CODE = 212;
+
+    //Firebase:
+    private FirebaseStorage mFirestore;            // used to upload files
+    private StorageReference mStorageReference;  // to storage
+    private FirebaseAuth mAuth = FirebaseAuth.getInstance();
+
+
 
     /*
     *
@@ -98,6 +121,16 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_data_collector);
+
+        //Asking the user to enable WiFi
+        CheckWiFiNetwork();
+
+        //Asking the user to connect to WiFi or Mobile Data network
+        //RequireInternetConnection();      // TODO :not doinig anything
+
+        //FIREBASE INIT:
+        mFirestore = FirebaseStorage.getInstance();
+        mStorageReference = mFirestore.getReference();
 
         //SENSOR:
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -114,13 +147,19 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         startButton = findViewById(R.id.buttonStart);
         stopButton  = findViewById(R.id.buttonStop);
         sendButton = findViewById(R.id.buttonSend);
+        saveToFirebaseButton = findViewById(R.id.saveToFirebaseButton);
+        loggedInUserEmailTextView = findViewById(R.id.showLoggedInUserEmailTextView);
 
         stopButton.setEnabled(false);
         sendButton.setEnabled(false);
+        saveToFirebaseButton.setEnabled(false);
 
         accelerometerX = findViewById(R.id.textViewAX2);
         accelerometerY = findViewById(R.id.textViewAY2);
         accelerometerZ = findViewById(R.id.textViewAZ2);
+
+        //goToRegistrationTextView = findViewById(R.id.);
+        //goToLoginTextView = findViewById(R.id.goToLoginTextView);
 
         final DecimalFormat df = new DecimalFormat("0");
         df.setMaximumIntegerDigits(20);
@@ -132,7 +171,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         simpleStepDetector = new StepDetector();
         simpleStepDetector.registerListener(this);
-        sensorManager.registerListener(DataCollectorActivity.this, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
 
 
         accelerometerEventListener = new SensorEventListener() {
@@ -192,11 +230,13 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                 //mediaPlayer.start();
                 recordCount = 0;
                 stepNumber = 0;
+                sensorManager.registerListener(DataCollectorActivity.this, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
                 accArray.clear();
                 isRecording = true;
                 startButton.setEnabled(false);
                 stopButton.setEnabled(true);
                 sendButton.setEnabled(false);
+                saveToFirebaseButton.setEnabled(false);
                 Log.d("ConnectionActivity_", "Start Rec.");
                 //textViewStatus.setText("Recording ...");
             }
@@ -215,6 +255,8 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                 startButton.setEnabled(true);
                 stopButton.setEnabled(false);
                 sendButton.setEnabled(true);
+                saveToFirebaseButton.setEnabled(true);
+                sensorManager.unregisterListener(DataCollectorActivity.this);
                 Log.d("ConnectionActivity", "Stop Rec. - Generating CMD");
                 textViewStatus.setText("Calculating...");
                 CMD = accArrayToString();
@@ -257,8 +299,196 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
             }
         });
 
+        /*
+         *
+         *   Sending to FireStorage
+         *   from Start to End
+         *
+         */
+
+        saveToFirebaseButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if (checkCallingOrSelfPermission("android.permission.WRITE_EXTERNAL_STORAGE") != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(DataCollectorActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
+                }
+                //
+                // Saving into .CSV file
+                //
+                Log.d(TAG,"Saving to .CSV");
+
+                File root = android.os.Environment.getExternalStorageDirectory();
+                File dir = new File (root.getAbsolutePath() /*+ "/accelerometer"*/);
+                if(!dir.exists()) {
+                    dir.mkdirs();
+                }
+                String randomIdName = UUID.randomUUID().toString();
+                File file = new File(dir, randomIdName + ".csv");
+
+
+                //Log.d("RecorderActivity", file.getAbsolutePath());
+
+                //try {
+                //    File root = new File(Environment.getExternalStorageDirectory(), "Aux");
+                //    if (!root.exists()) {
+                //        root.mkdirs();
+                //    }
+                //    File gpxfile = new File(root, "data.csv");
+                //    Log.d(TAG, root.getAbsolutePath() );
+                //    FileWriter writer = new FileWriter(gpxfile);
+                //    writer.append("HELLO WORLD!");
+                //    writer.flush();
+                //    writer.close();
+                //}catch (FileNotFoundException e){ Log.d(TAG, "***********FILE NOT FOUND*******"); e.printStackTrace(); }
+                //catch ( Exception e){ e.printStackTrace(); }
+                try {
+                    FileOutputStream f = new FileOutputStream(file);
+                    PrintWriter pw = new PrintWriter(f);
+                    for( Accelerometer a : accArray){
+                        pw.println( a.toString() );
+                    }
+                    pw.flush();
+                    pw.close();
+                    f.close();
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                    Log.d(TAG, "******* File not found.");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+
+                Log.d(TAG,"Saving CSV to FireStore...");
+                //
+                // Saving CSV to firestore
+                //
+                if (checkCallingOrSelfPermission("android.permission.INTERNET") != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(DataCollectorActivity.this, new String[]{Manifest.permission.INTERNET}, REQUEST_CODE);
+                }
+
+                Log.d(TAG ,"FILE PATH:" + file.getAbsolutePath());
+
+                Uri path = Uri.fromFile( new File(file.getAbsolutePath()) );
+
+                if( path != null){
+                    final ProgressDialog progressDialog = new ProgressDialog(DataCollectorActivity.this);
+                    progressDialog.setTitle("Uploading...");
+                    progressDialog.show();
+                    /*
+                    *
+                    *  Generate
+                    *
+                     */
+                    StorageReference ref = mStorageReference.child("files/" + UUID.randomUUID().toString() + path.getLastPathSegment() );
+                    ref.putFile(path)
+                            .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                                @Override
+                                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                    progressDialog.dismiss();
+                                    Toast.makeText(DataCollectorActivity.this, "Uploaded", Toast.LENGTH_LONG).show();
+                                }
+                            })
+                            .addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    Toast.makeText(DataCollectorActivity.this, "Upload Failed", Toast.LENGTH_LONG).show();
+                                }
+                            })
+                            .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                                @Override
+                                public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                                    double progress = (100.0*taskSnapshot.getBytesTransferred()/taskSnapshot.getTotalByteCount());
+                                    progressDialog.setMessage("Uploaded " + (int)progress + "%" );
+                                }
+                            });
+                }
+
+                //file.delete();
+
+                //
+                // Updating JSON in the Firestore
+                //
+
+                //Query mQuery = mFirestore.collection("files");
+
+                //CollectionReference files = mFirestor.collection("files");
+
+                // TODO
+                // TODO
+                // TODO
+
+            }
+        });
+
 
     }// OnCreate
+
+    private void RequireInternetConnection() {
+        ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+
+
+
+        while( !(activeNetworkInfo != null && activeNetworkInfo.isConnected()) ){
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(DataCollectorActivity.this);
+
+            // set title
+            alertDialogBuilder.setTitle("Wifi Settings");
+
+            // set dialog message
+            alertDialogBuilder
+                    .setMessage("Make you shure you are connected to the internet")
+                    .setCancelable(false)
+                    .setPositiveButton("Retry", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            //Nothing (Retry)
+                        }
+                    })
+                    .setNegativeButton("Exit", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            finish(); //close the App
+                        }
+                    });
+        };
+
+    }
+
+    private void CheckWiFiNetwork() {
+        final WifiManager mWifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+
+        if( ! mWifiManager.isWifiEnabled() ) {
+
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(DataCollectorActivity.this);
+
+            // set title
+            alertDialogBuilder.setTitle("Wifi Settings");
+
+            // set dialog message
+            alertDialogBuilder
+                    .setMessage("Do you want to enable WIFI ?")
+                    .setCancelable(false)
+                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            //enable wifi
+                            mWifiManager.setWifiEnabled(true);
+                        }
+                    })
+                    .setNegativeButton("Exit", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            //disable wifi
+                            //mWifiManager.setWifiEnabled(false);
+                            finish(); //close the App
+                        }
+                    });
+
+            // create alert dialog
+            AlertDialog alertDialog = alertDialogBuilder.create();
+
+            // show it
+            alertDialog.show();
+        }
+    }
 
     /*
     *
@@ -307,14 +537,12 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
     public void accArrayGroupArrayToString(){
         accArrayStringGroups.clear();
-        //String str = "";
         StringBuilder sb = new StringBuilder();
         int i ;
         int c = 0;  // counter
         boolean limitReached = true;
         for( i=0; i < accArray.size(); ++i ){
             ++c;
-            //str += accArray.get(i).getTimeStamp() +","+ accArray.get(i).getX() +","+ accArray.get(i).getY() +","+ accArray.get(i).getZ();
             sb.append(accArray.get(i).getTimeStamp())
                     .append(",")
                     .append(accArray.get(i).getX())
@@ -322,11 +550,11 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                     .append(accArray.get(i).getY())
                     .append(",")
                     .append(accArray.get(i).getZ())
+                    .append(",")
                     .append(accArray.get(i).getStep())
                     .append(",");
             limitReached = false;
             if( c == RECORDS_PER_PACKAGE_LIMIT ){
-                //accArrayStringGroups.add(str);
                 accArrayStringGroups.add( sb.toString() );
                 //str = "";
                 sb.setLength(0);
@@ -334,14 +562,11 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                 limitReached = true;
                 continue;
             }
-            //str += ",";
             sb.append(",");
         }
         //If the last group has no exactly N elements then we have to add it on the end
         if( limitReached == false ){
-            //str += "end";
             sb.append("end");
-            //accArrayStringGroups.add(str);
             accArrayStringGroups.add( sb.toString() );
         }
     }
@@ -391,6 +616,20 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
 
     @Override
+    public void onStart() {
+        super.onStart();
+        // Check if user is signed in (non-null) and update UI accordingly.
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if( ! Util.isSignedIn ) {
+            Util.screenMode = Util.ScreenModeEnum.EMAIL_MODE;
+            Intent intent = new Intent(DataCollectorActivity.this, AuthenticationActivity.class);
+            startActivity(intent);
+        }
+        loggedInUserEmailTextView.setText( Util.userEmail );
+        //updateUI(currentUser);
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         sensorManager.registerListener(accelerometerEventListener, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
@@ -402,14 +641,18 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         super.onPause();
         sensorManager.unregisterListener(accelerometerEventListener);
     }
+
     //(STEPCOUNT)
+
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
     }
 
     @Override
     public void onSensorChanged(SensorEvent event) {
+        Log.d("TEST","*");
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+            Log.d("TEST","#");
             simpleStepDetector.updateAccel(
                     event.timestamp, event.values[0], event.values[1], event.values[2]);
         }
@@ -417,9 +660,9 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
     @Override
     public void step(long timeNs) {
-        //numSteps++;
+        //mp.start();
+        Log.d("TEST"," + ");
         DataCollectorActivity.stepNumber++;
-        //TvSteps.setText(TEXT_NUM_STEPS + numSteps);
     }
 
 

@@ -1,13 +1,24 @@
 package com.example.jancsi_pc.playingwithsensors;
 
+//import com.google.firebase.firestore.IgnoreExtraProperties;
+
+
+//@IgnoreExtraProperties
 public class Accelerometer {
+    /*
+    public static final String FIELD_TIMESTAMP = "timestamp";
+    public static final String FIELD_X = "x";
+    public static final String FIELD_Y = "y";
+    public static final String FIELD_Z = "z";
+    public static final String FIELD_STEP = "step";
+    */
     private long timestamp;
-    private float x;
-    private float y;
-    private float z;
+    private double x;
+    private double y;
+    private double z;
     private int step;
 
-    public Accelerometer(long tt, float xx, float yy, float zz, int step) {
+    public Accelerometer(long tt, double xx, double yy, double zz, int step) {
         this.timestamp = tt;
         this.x = xx;
         this.y = yy;
@@ -15,24 +26,44 @@ public class Accelerometer {
         this.step = step;
     }
 
-    public int getStep() { return step; }
-
-    public float getX() {
+    public double getX() {
         return x;
     }
 
-    public float getY() {
+    public double getY() {
         return y;
     }
 
-    public float getZ() {
+    public double getZ() {
         return z;
     }
 
     public long getTimeStamp(){ return this.timestamp; }
 
+    public int getStep() { return step; }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public void setX(double x) {
+        this.x = x;
+    }
+
+    public void setY(double y) {
+        this.y = y;
+    }
+
+    public void setZ(double z) {
+        this.z = z;
+    }
+
+    public void setStep(int step) {
+        this.step = step;
+    }
+
     @Override
     public String toString() {
-        return timestamp +", "+ x +", "+ y +", "+ z + ", " + step;
+        return timestamp +","+ x +","+ y +","+ z + "," + step;
     }
 }

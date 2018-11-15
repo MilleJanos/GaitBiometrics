@@ -1,5 +1,7 @@
 package com.example.jancsi_pc.playingwithsensors.StepCounterPackage;
 
+import android.util.Log;
+
 public class StepDetector {
 
     private static final int ACCEL_RING_SIZE = 50;

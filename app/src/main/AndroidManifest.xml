@@ -3,6 +3,7 @@
     package="com.example.jancsi_pc.playingwithsensors">
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -33,7 +34,8 @@
         <activity android:name=".Old.RecorderActivity" />
         <activity android:name=".Old.ConnectionActivity" />
         <activity android:name=".StepCounterPackage.StepCounterActivity" />
-        <!--<activity android:name=".DataCollectorActivity"></activity>-->
+        <!-- <activity android:name=".DataCollectorActivity"></activity> -->
+        <activity android:name=".AuthenticationActivity"></activity>
     </application>
 
 </manifest>
