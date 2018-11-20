@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "486263756214",
+    "firebase_url": "https://gaitbiometrics.firebaseio.com",
+    "project_id": "gaitbiometrics",
+    "storage_bucket": "gaitbiometrics.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:486263756214:android:b0b27b3887243080",
+        "android_client_info": {
+          "package_name": "com.example.jancsi_pc.playingwithsensors"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "486263756214-ui37950369q7l30r40n7muddjgj066ho.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCJHl2CF7LvnlTZaOwpmLUaoNjwEWJTE98"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
