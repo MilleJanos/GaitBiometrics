@@ -257,7 +257,7 @@ public class AuthenticationActivity extends AppCompatActivity {
             return;
         }
 
-        if( password.length() <= 6 ){
+        if( password.length() < 6 ){
             passwordEditText.setError("At least 6 character!");
             passwordEditText.requestFocus();
             return;
@@ -352,7 +352,15 @@ public class AuthenticationActivity extends AppCompatActivity {
         forgetPassTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO SEND EMAIL WITH RESET PASSWORD
+                mAuth.sendPasswordResetEmail( Util.userEmail )
+                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if (task.isSuccessful()) {
+                                    Log.d(TAG, "Reset e mail sent.");
+                                }
+                            }
+                        });
             }
         });
 
