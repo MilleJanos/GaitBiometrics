@@ -126,8 +126,8 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         //Asking the user to enable WiFi
         CheckWiFiNetwork();
 
-        //Asking the user to connect to WiFi or Mobile Data network
-        //RequireInternetConnection();      // TODO :not doinig anything
+        //Asking for connection
+        // RequireInternetConnection()
 
         //FIREBASE INIT:
         mFirestore = FirebaseStorage.getInstance();
@@ -448,9 +448,17 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
 
+        /*
+        if(connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
+                connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
+            //we are connected to a network
+            connected = true;
+        }else{
+            connected = false;
+        }
+         */
 
-
-        while( !(activeNetworkInfo != null && activeNetworkInfo.isConnected()) ){
+        while( ! activeNetworkInfo.isConnected() ){
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(DataCollectorActivity.this);
 
             // set title
