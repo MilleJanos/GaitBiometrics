@@ -6,6 +6,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/green_background"
     tools:context=".FinalMainActivity">
 
     <TextView
@@ -142,8 +143,14 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:layout_marginLeft="32dp"
-        android:layout_marginBottom="44dp"
+        android:layout_marginBottom="32dp"
+        android:background="@android:color/holo_green_dark"
+        android:shadowRadius="@android:integer/config_longAnimTime"
         android:text="@string/Start"
+        android:textAlignment="center"
+        android:textAllCaps="false"
+        android:textColor="#000000"
+        android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/buttonStop"
         app:layout_constraintHorizontal_bias="0.5"
@@ -151,16 +158,20 @@
 
     <Button
         android:id="@+id/buttonSend"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="40dp"
-        android:layout_marginRight="40dp"
-        android:layout_marginBottom="44dp"
-        android:text="@string/Send"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/buttonStop" />
+        android:layout_width="96dp"
+        android:layout_height="46dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginBottom="8dp"
+        android:background="@android:color/holo_green_dark"
+        android:shadowRadius="@android:integer/config_longAnimTime"
+        android:text="Send to Python server"
+        android:textAlignment="center"
+        android:textAllCaps="false"
+        android:textColor="#000000"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/buttonStop"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <Button
         android:id="@+id/buttonStop"
@@ -170,8 +181,14 @@
         android:layout_marginLeft="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
-        android:layout_marginBottom="44dp"
+        android:layout_marginBottom="32dp"
+        android:background="@android:color/holo_green_dark"
+        android:shadowRadius="@android:integer/config_longAnimTime"
         android:text="@string/Stop"
+        android:textAlignment="center"
+        android:textAllCaps="false"
+        android:textColor="#000000"
+        android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/buttonSend"
         app:layout_constraintHorizontal_bias="0.5"
@@ -205,12 +222,18 @@
 
     <Button
         android:id="@+id/saveToFirebaseButton"
-        android:layout_width="153dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="48dp"
-        android:layout_marginRight="48dp"
+        android:layout_width="96dp"
+        android:layout_height="46dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
         android:layout_marginBottom="16dp"
+        android:background="@android:color/holo_green_dark"
+        android:shadowRadius="@android:integer/config_longAnimTime"
         android:text="Save to Firebase"
+        android:textAlignment="center"
+        android:textAllCaps="false"
+        android:textColor="#000000"
+        android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/buttonSend"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -236,6 +259,28 @@
         android:text="User:"
         app:layout_constraintEnd_toStartOf="@+id/showLoggedInUserEmailTextView"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/firebaseImageView"
+        android:layout_width="37dp"
+        android:layout_height="37dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginBottom="20dp"
+        app:layout_constraintBottom_toTopOf="@+id/buttonSend"
+        app:layout_constraintEnd_toStartOf="@+id/saveToFirebaseButton"
+        app:srcCompat="@drawable/firebase_icon" />
+
+    <ImageView
+        android:id="@+id/pythonServerImageView"
+        android:layout_width="37dp"
+        android:layout_height="37dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginBottom="12dp"
+        app:layout_constraintBottom_toTopOf="@+id/buttonStop"
+        app:layout_constraintEnd_toStartOf="@+id/saveToFirebaseButton"
+        app:srcCompat="@drawable/python_server_icon" />
 
 </android.support.constraint.ConstraintLayout>
     <!--</LinearLayout>-->

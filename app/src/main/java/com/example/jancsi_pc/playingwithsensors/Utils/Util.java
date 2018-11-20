@@ -37,4 +37,7 @@ public class Util {
     public enum ScreenModeEnum { EMAIL_MODE, PASSWORD_MODE, REGISTER_MODE }
     public static ScreenModeEnum screenMode;
 
+    // show errors for user
+    public static String intoTextViewString = "";
+
 }

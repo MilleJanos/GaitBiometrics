@@ -11,36 +11,32 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
-import android.os.Environment;
-import android.provider.ContactsContract;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepCounterActivity;
 import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepDetector;
 import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepListener;
 import com.example.jancsi_pc.playingwithsensors.Utils.Util;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
@@ -51,17 +47,19 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
+
 
 
 public class DataCollectorActivity extends AppCompatActivity implements SensorEventListener, StepListener {
@@ -108,6 +106,9 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     private FirebaseStorage mFirestore;            // used to upload files
     private StorageReference mStorageReference;  // to storage
     private FirebaseAuth mAuth = FirebaseAuth.getInstance();
+    private FirebaseFirestore mFirebaseFirestore = FirebaseFirestore.getInstance();
+    private FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
+    private DocumentReference mDocRef; // = FirebaseFirestore.getInstance().document("usersFiles/information");
 
 
 
@@ -323,8 +324,14 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                 if(!dir.exists()) {
                     dir.mkdirs();
                 }
-                String randomIdName = UUID.randomUUID().toString();
-                File file = new File(dir, randomIdName + ".csv");
+
+                Date d = new Date();
+                CharSequence s  = DateFormat.format("yyyyMMdd_HHmmss", d.getTime());
+
+                String fileName = "data_" + mAuth.getUid() + "_" + s  ;
+
+
+                File file = new File(dir, fileName+ ".csv");
 
 
                 //Log.d("RecorderActivity", file.getAbsolutePath());
@@ -380,7 +387,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                     *  Generate
                     *
                      */
-                    StorageReference ref = mStorageReference.child("files/" + UUID.randomUUID().toString() + path.getLastPathSegment() );
+                    StorageReference ref = mStorageReference.child("files/" + path.getLastPathSegment() );
                     ref.putFile(path)
                             .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                                 @Override
@@ -404,23 +411,36 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                             });
                 }
 
-                //file.delete();
+                file.delete();
 
                 //
                 // Updating JSON in the Firestore
                 //
 
-                //Query mQuery = mFirestore.collection("files");
 
-                //CollectionReference files = mFirestor.collection("files");
 
-                // TODO
-                // TODO
-                // TODO
+                String deviceId = Settings.Secure.getString(DataCollectorActivity.this.getContentResolver(), Settings.Secure.ANDROID_ID);
+                String randomUserRecordID = UUID.randomUUID().toString();
+
+                mDocRef = FirebaseFirestore.getInstance().document("user_records/" + randomUserRecordID );
+                UserAndHisFile info = new UserAndHisFile(deviceId, mAuth.getUid(), fileName );
+                FirebaseUser user = mAuth.getCurrentUser();
+
+                mDocRef.set(info).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d(TAG,"Document has been saved!");
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG,"Oh no!");
+                    }
+                });
+
 
             }
         });
-
 
     }// OnCreate
 

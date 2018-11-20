@@ -10,6 +10,7 @@
     <string name="registerFailed">Register Failed!</string>
     <string name="wrongPasswordLessThen6char">The password must be at least 6 character!</string>
     <string name="verifyMailbox">Verify your mailbox!</string>
+    <string name="errorReportTextView">Report Error</string>
     <!--
     <string name="X"></string>
     <string name="Y"></string>

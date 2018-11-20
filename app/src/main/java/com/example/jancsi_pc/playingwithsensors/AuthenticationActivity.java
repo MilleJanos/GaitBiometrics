@@ -1,6 +1,9 @@
 package com.example.jancsi_pc.playingwithsensors;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -24,15 +27,15 @@ public class AuthenticationActivity extends AppCompatActivity {
     private TextView titleTextView;
     private TextView selectedEmailTextView;
 
-    private TextView emailTextView;
+    private ImageView emailImageView;
     private EditText emailEditText;
     private ImageView deleteEmailImageView;
 
-    private TextView passwordTextView;
+    private ImageView passwordImageView;
     private EditText passwordEditText;
     private ImageView deletePasswordImageView;
 
-    private TextView passwordTextView2;
+    private ImageView passwordImageView2;
     private EditText passwordEditText2;
     private ImageView deletePasswordImageView2;
 
@@ -41,7 +44,10 @@ public class AuthenticationActivity extends AppCompatActivity {
     private TextView forgetPassTextView;
 
     private Button backButton;
+    private TextView reportErrorTextView;
+    private TextView infoTextView;
 
+    private ConstraintLayout.LayoutParams params;
 
     private String email = "";
     private String password = "";
@@ -51,7 +57,6 @@ public class AuthenticationActivity extends AppCompatActivity {
 
     private final String TAG = "AuthenticationActivity";
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,23 +65,43 @@ public class AuthenticationActivity extends AppCompatActivity {
         titleTextView = findViewById(R.id.titleTextView);
         selectedEmailTextView= findViewById(R.id.selectedEmailTextView);
 
-        emailTextView = findViewById(R.id.emailTextView);
+        emailImageView = findViewById(R.id.emailImageView);
         emailEditText = findViewById(R.id.emailEditText);
         deleteEmailImageView = findViewById(R.id.deleteEmailImageView);
 
-        passwordTextView = findViewById(R.id.passwordTextView);
+        passwordImageView = findViewById(R.id.passwordImageView);
         passwordEditText = findViewById(R.id.passwordEditText);
         deletePasswordImageView = findViewById(R.id.deletePasswordImageView);
 
-        passwordTextView2 = findViewById(R.id.passwordTextView2);
+        passwordImageView2 = findViewById(R.id.passwordImageView2);
         passwordEditText2 = findViewById(R.id.passwordEditText2);
         deletePasswordImageView2 = findViewById(R.id.deletePasswordImageView2);
 
         authButton = findViewById(R.id.button);
         registerORloginTextView = findViewById(R.id.registerORloginTextView);
         forgetPassTextView = findViewById(R.id.forgetPassTextView);
+        infoTextView = findViewById(R.id.infoTextView);
 
         backButton = findViewById(R.id.backButton);
+
+        forgetPassTextView.setText("Forget password.");
+
+        reportErrorTextView = findViewById(R.id.errorReportTextView);
+        reportErrorTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto","abc@gmail.com", null));
+                emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Problem with authentication.");
+                emailIntent.putExtra(Intent.EXTRA_TEXT, "");
+                emailIntent.putExtra(Intent.EXTRA_EMAIL, "");
+                startActivity(Intent.createChooser(emailIntent, "Send email..."));
+            }
+        });
+
+        emailImageView.setVisibility(View.VISIBLE);
+        passwordImageView.setVisibility(View.VISIBLE);
+        passwordImageView2.setVisibility(View.VISIBLE);
+
 
         /*
         *
@@ -138,27 +163,31 @@ public class AuthenticationActivity extends AppCompatActivity {
 
         Log.d(TAG, "\nemail=\""+email+"\"" + "\npassword=\""+password+"\"\n" + "\npassword2=\""+password2+"\"\n" );
 
-
         if( email.equals("") ){
-            Toast.makeText(AuthenticationActivity.this, getString(R.string.wrongEmail),Toast.LENGTH_LONG).show();
+            emailEditText.setError("Wrong email");
+            emailEditText.requestFocus();
             return;
         }
 
         if( password.length() <= 6 ){
-            Toast.makeText(AuthenticationActivity.this, getString(R.string.wrongPasswordLessThen6char),Toast.LENGTH_LONG).show();
+            passwordEditText.setError("At least 6 character!");
+            passwordEditText.requestFocus();
             return;
         }
 
         if(  password.equals("") ){
-            Toast.makeText(AuthenticationActivity.this, getString(R.string.wrongPassword),Toast.LENGTH_LONG).show();
+            passwordEditText.setError("Must to be filled!");
+            passwordEditText.requestFocus();
             return;
         }
 
         if( ! password.equals(password2) ){
-            Toast.makeText(AuthenticationActivity.this, getString(R.string.samePassword),Toast.LENGTH_LONG).show();
+            passwordEditText2.setError("Passwords has to be the same!");
+            passwordEditText2.requestFocus();
             return;
         }
 
+        //Ha Nincs hiba:
 
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -223,20 +252,22 @@ public class AuthenticationActivity extends AppCompatActivity {
         Log.d(TAG, "\nemail=\""+email+"\"" + "\npassword=\""+password+"\"\n");
 
         if( email == "" ){
-            Toast.makeText(AuthenticationActivity.this, "Wrong Email!",Toast.LENGTH_LONG).show();
+            emailEditText.setError("Wrong email");
+            emailEditText.requestFocus();
             return;
         }
 
         if( password.length() <= 6 ){
-            Toast.makeText(AuthenticationActivity.this, getString(R.string.wrongPasswordLessThen6char),Toast.LENGTH_LONG).show();
+            passwordEditText.setError("At least 6 character!");
+            passwordEditText.requestFocus();
             return;
         }
 
         if(  password == "" ){
-            Toast.makeText(AuthenticationActivity.this, "Wrong Password!",Toast.LENGTH_LONG).show();
+            passwordEditText2.setError("Wrong Password!");
+            passwordEditText2.requestFocus();
             return;
         }
-
 
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -269,8 +300,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         selectedEmailTextView.setText("");
         selectedEmailTextView.setVisibility(View.INVISIBLE);
 
-        //emailEditText.setText("Email");
-        emailTextView.setVisibility(View.VISIBLE);
+        emailImageView.setVisibility(View.VISIBLE);
         emailEditText.setVisibility(View.VISIBLE);
         deleteEmailImageView.setVisibility(View.VISIBLE);
         deleteEmailImageView.setOnClickListener(new View.OnClickListener() {
@@ -280,13 +310,11 @@ public class AuthenticationActivity extends AppCompatActivity {
             }
         });
 
-        //passwordTextView.setText("Password");
-        passwordTextView.setVisibility(View.INVISIBLE);
+        passwordImageView.setVisibility(View.INVISIBLE);
         passwordEditText.setVisibility(View.INVISIBLE);
         deletePasswordImageView.setVisibility(View.INVISIBLE);
 
-        //passwordTextView2.setText("Confirm\nPassword");
-        passwordTextView2.setVisibility(View.INVISIBLE);
+        passwordImageView2.setVisibility(View.INVISIBLE);
         passwordEditText2.setVisibility(View.INVISIBLE);
         deletePasswordImageView2.setVisibility(View.INVISIBLE);
 
@@ -304,6 +332,10 @@ public class AuthenticationActivity extends AppCompatActivity {
                 }
             }
         });
+        // params = (ConstraintLayout.LayoutParams) authButton.getLayoutParams();
+        // params.startToEnd = emailEditText.getId();
+        // authButton.setLayoutParams(params);
+        // authButton.requestLayout();
 
         registerORloginTextView.setText("Create new account.");
         registerORloginTextView.setVisibility(View.VISIBLE);
@@ -316,7 +348,6 @@ public class AuthenticationActivity extends AppCompatActivity {
             }
         });
 
-        forgetPassTextView.setText("Forget password.");
         forgetPassTextView.setVisibility(View.VISIBLE);
         forgetPassTextView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -336,13 +367,11 @@ public class AuthenticationActivity extends AppCompatActivity {
         selectedEmailTextView.setText( email );
         selectedEmailTextView.setVisibility(View.VISIBLE);
 
-        //emailEditText.setText("Email");
-        emailTextView.setVisibility(View.VISIBLE);
+        emailImageView.setVisibility(View.VISIBLE);
         emailEditText.setVisibility(View.INVISIBLE);
         deleteEmailImageView.setVisibility(View.INVISIBLE);
 
-        //passwordTextView.setText("Password");
-        passwordTextView.setVisibility(View.VISIBLE);
+        passwordImageView.setVisibility(View.VISIBLE);
         passwordEditText.setVisibility(View.VISIBLE);
         deletePasswordImageView.setVisibility(View.VISIBLE);
         deletePasswordImageView.setOnClickListener(new View.OnClickListener() {
@@ -352,8 +381,7 @@ public class AuthenticationActivity extends AppCompatActivity {
             }
         });
 
-        //passwordTextView2.setText("Comfirm\nPassword");
-        passwordTextView2.setVisibility(View.INVISIBLE);
+        passwordImageView2.setVisibility(View.INVISIBLE);
         passwordEditText2.setVisibility(View.INVISIBLE);
         deletePasswordImageView2.setVisibility(View.INVISIBLE);
 
@@ -362,16 +390,11 @@ public class AuthenticationActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 password = passwordEditText.getText().toString();
-                /*if( ! password.equals("") ){
-                    Toast.makeText(AuthenticationActivity.this, "Please fill the Password field!",Toast.LENGTH_LONG).show();
-                }else {
-                    Login();
-                }*/
                 Login();
             }
         });
 
-        //registerORloginTextView.setText("Back.");
+        //registerORloginTextView.setText("Back."); //Van Back gomb bal oldalt fent
         registerORloginTextView.setVisibility(View.INVISIBLE);
         //registerORloginTextView.setOnClickListener(new View.OnClickListener() {
         //    @Override
@@ -410,8 +433,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         selectedEmailTextView.setText("");
         selectedEmailTextView.setVisibility(View.INVISIBLE);
 
-        //emailEditText.setText("Email");
-        emailTextView.setVisibility(View.VISIBLE);
+        emailImageView.setVisibility(View.VISIBLE);
         emailEditText.setVisibility(View.VISIBLE);
         deleteEmailImageView.setVisibility(View.VISIBLE);
         deleteEmailImageView.setOnClickListener(new View.OnClickListener() {
@@ -422,8 +444,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         });
 
 
-        //passwordTextView.setText("Password");
-        passwordTextView.setVisibility(View.VISIBLE);
+        passwordImageView.setVisibility(View.VISIBLE);
         passwordEditText.setVisibility(View.VISIBLE);
         deletePasswordImageView.setVisibility(View.VISIBLE);
         deletePasswordImageView.setOnClickListener(new View.OnClickListener() {
@@ -433,8 +454,7 @@ public class AuthenticationActivity extends AppCompatActivity {
             }
         });
 
-        //passwordTextView2.setText("Comfirm\nPassword");
-        passwordTextView2.setVisibility(View.VISIBLE);
+        passwordImageView2.setVisibility(View.VISIBLE);
         passwordEditText2.setVisibility(View.VISIBLE);
         deletePasswordImageView2.setVisibility(View.VISIBLE);
         deletePasswordImageView2.setOnClickListener(new View.OnClickListener() {
