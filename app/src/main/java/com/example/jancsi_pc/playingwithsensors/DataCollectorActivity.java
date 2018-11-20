@@ -127,7 +127,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         CheckWiFiNetwork();
 
         //Asking for connection
-        // RequireInternetConnection()
+        RequireInternetConnection();
 
         //FIREBASE INIT:
         mFirestore = FirebaseStorage.getInstance();
