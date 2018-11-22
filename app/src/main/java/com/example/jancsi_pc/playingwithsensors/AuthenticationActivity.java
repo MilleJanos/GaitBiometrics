@@ -23,8 +23,10 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.Toolbar;
 
 import com.example.jancsi_pc.playingwithsensors.Utils.Util;
+import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -71,6 +73,8 @@ public class AuthenticationActivity extends AppCompatActivity {
     private final String TAG = "AuthenticationActivity";
 
     private CoordinatorLayout coordinatorLayoutForSnackbar;
+
+    private int requestPasswordResetCount = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -354,10 +358,10 @@ public class AuthenticationActivity extends AppCompatActivity {
 
             }
         });
-        // params = (ConstraintLayout.LayoutParams) authButton.getLayoutParams();
-        // params.startToEnd = emailEditText.getId();
-        // authButton.setLayoutParams(params);
-        // authButton.requestLayout();
+        params = (ConstraintLayout.LayoutParams) authButton.getLayoutParams();
+        params.topToBottom = emailEditText.getId();
+        authButton.setLayoutParams(params);
+        authButton.requestLayout();
 
         registerORloginTextView.setText("Create new account.");
         registerORloginTextView.setVisibility(View.VISIBLE);
@@ -376,15 +380,7 @@ public class AuthenticationActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Log.d(TAG, ">>>RUN>>>forgetPassTextViewClickListener");
-                mAuth.sendPasswordResetEmail( Util.userEmail )
-                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                if (task.isSuccessful()) {
-                                    Log.d(TAG, "Reset e mail sent.");
-                                }
-                            }
-                        });
+                resetPassword();
             }
         });
 
@@ -423,6 +419,11 @@ public class AuthenticationActivity extends AppCompatActivity {
             passwordEditText.setText("01234567");
         }
 
+        params = (ConstraintLayout.LayoutParams) authButton.getLayoutParams();
+        params.topToBottom = passwordEditText.getId();
+        authButton.setLayoutParams( params );
+        authButton.requestLayout();
+
         authButton.setText("Login");
         authButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -453,15 +454,7 @@ public class AuthenticationActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Log.d(TAG, ">>>RUN>>>forgetPassTextViewClickListener");
-                mAuth.sendPasswordResetEmail( Util.userEmail )
-                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                if (task.isSuccessful()) {
-                                    Log.d(TAG, "Reset e mail sent.");
-                                }
-                            }
-                        });
+                resetPassword();
             }
         });
 
@@ -526,6 +519,11 @@ public class AuthenticationActivity extends AppCompatActivity {
             }
         });
 
+        params = (ConstraintLayout.LayoutParams) authButton.getLayoutParams();
+        params.topToBottom = passwordEditText2.getId();
+        authButton.setLayoutParams( params );
+        authButton.requestLayout();
+
         authButton.setText("Register");
         authButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -552,15 +550,7 @@ public class AuthenticationActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Log.d(TAG, ">>>RUN>>>forgetPassTextViewClickListener");
-                mAuth.sendPasswordResetEmail( Util.userEmail )
-                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                if (task.isSuccessful()) {
-                                    Log.d(TAG, "Reset e mail sent.");
-                                }
-                            }
-                        });
+                resetPassword();
             }
         });
 
@@ -692,5 +682,66 @@ public class AuthenticationActivity extends AppCompatActivity {
         // else:
         return true;
     }
+
+    /*
+     *
+     *  Common used methods
+     *
+     */
+
+
+    private void resetPassword() {
+        Log.d(TAG,">>>RUN>>>resetPassword()");
+        forgetPassTextView.setVisibility(View.INVISIBLE);
+        if (emailEditText.getText().toString().trim().equals("")) {
+            Log.d(TAG,">>>RUN>>>Email field is empty ==> \"please fill it\"");
+            emailEditText.setError("Type your email before password request.");
+            //emailEditText.requestFocus();
+            forgetPassTextView.setVisibility(View.VISIBLE);
+            return;
+        }
+
+        if( requestPasswordResetCount > 0 ){
+            // If the user tries to send password reset multiple times in a row
+            Log.d(TAG,"requestPasswordResetCount(" + requestPasswordResetCount + ") > 0 ==> AlertDialog");
+            AlertDialog.Builder builder = new AlertDialog.Builder(AuthenticationActivity.this);
+            builder.setTitle("Confirm");
+            builder.setMessage("Are you sure to send another email?");
+            builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    // leave the method to run
+                }
+            });
+            builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                    forgetPassTextView.setVisibility(View.VISIBLE);
+                    return;
+                }
+            });
+            AlertDialog alert = builder.create();
+            alert.show();
+        }
+
+        requestPasswordResetCount++;
+        Util.userEmail = emailEditText.getText().toString().trim();
+        Log.d(TAG, ">>>RUN>>>forgetPassTextViewClickListener");
+        Toast.makeText(AuthenticationActivity.this, "SEND REQUEST NUMBER: " + requestPasswordResetCount, Toast.LENGTH_SHORT).show();
+         mAuth.sendPasswordResetEmail(Util.userEmail)
+                 .addOnCompleteListener(new OnCompleteListener<Void>() {
+                     @Override
+                     public void onComplete(@NonNull Task<Void> task) {
+                         if (task.isSuccessful()) {
+                             Log.d(TAG, "Reset email sent.");
+                             View mainLayoutView = findViewById(R.id.main_layout);
+                             //Snackbar .make(mainLayoutView, "Reset email is sent!", Snackbar.LENGTH_SHORT).show();
+                             Toast.makeText(AuthenticationActivity.this, "Reset email is sent!", Toast.LENGTH_LONG ).show();
+                         }
+                     }
+                 });
+        forgetPassTextView.setVisibility(View.VISIBLE);
+    }
+
 
 }
