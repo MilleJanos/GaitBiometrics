@@ -6,7 +6,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:minHeight="164dp"
-    tools:context=".AuthenticationActivity">
+    tools:context=".AuthenticationActivity"
+    android:background="@color/colorGreen">
 
     <!--android:background="@drawable/green_background"
     android:gravity="center"-->
@@ -165,7 +166,7 @@
         android:padding="4dp"
         android:textAlignment="center"
         android:text="registerORlogin"
-        android:textColor="@color/colorPrimary"
+        android:textColor="@color/colorPrimaryDarker"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/button" />
@@ -181,7 +182,7 @@
         android:layout_marginRight="8dp"
         android:padding="4dp"
         android:text="forgetPass"
-        android:textColor="@color/colorPrimary"
+        android:textColor="@color/colorPrimaryDarker"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.501"
         app:layout_constraintStart_toStartOf="parent"
