@@ -1,13 +1,23 @@
 package com.example.jancsi_pc.playingwithsensors;
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
+import android.net.wifi.WifiManager;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -21,6 +31,8 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.ProviderQueryResult;
+
+import static android.support.design.widget.Snackbar.LENGTH_LONG;
 
 public class AuthenticationActivity extends AppCompatActivity {
 
@@ -57,10 +69,19 @@ public class AuthenticationActivity extends AppCompatActivity {
 
     private final String TAG = "AuthenticationActivity";
 
+    private CoordinatorLayout coordinatorLayoutForSnackbar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_authentication);
+
+        Log.d(TAG, ">>>RUN>>>onCreate()");
+
+        if( Util.isFinished ){
+            Log.d(TAG," isFinished() = true");
+            //finish();
+        }
 
         titleTextView = findViewById(R.id.titleTextView);
         selectedEmailTextView= findViewById(R.id.selectedEmailTextView);
@@ -90,6 +111,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         reportErrorTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.d(TAG, ">>>RUN>>>reportErrorTextViewClickListener");
                 Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto","abc@gmail.com", null));
                 emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Problem with authentication.");
                 emailIntent.putExtra(Intent.EXTRA_TEXT, "");
@@ -101,7 +123,6 @@ public class AuthenticationActivity extends AppCompatActivity {
         emailImageView.setVisibility(View.VISIBLE);
         passwordImageView.setVisibility(View.VISIBLE);
         passwordImageView2.setVisibility(View.VISIBLE);
-
 
         /*
         *
@@ -124,39 +145,11 @@ public class AuthenticationActivity extends AppCompatActivity {
                 break;
             }
         }
-        /*
-        authButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Register();
-            }
-
-        });
-
-        authButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Login();
-            }
-        });
-
-        TextView skip = findViewById(R.id.skip);
-        skip.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Util.isSignedIn= true;
-                Util.userEmail= "(Guest)" +
-                        "";
-                finish();
-            }
-        });
-        */
-
     }
 
 
     private void Register() {
-
+        Log.d(TAG, ">>>RUN>>>Register()");
         email = emailEditText.getText().toString();
         password = passwordEditText.getText().toString().trim(); //TODO ENCODE PASSWORD
         password2 = passwordEditText2.getText().toString().trim();
@@ -199,13 +192,15 @@ public class AuthenticationActivity extends AppCompatActivity {
                             FirebaseUser user = mAuth.getCurrentUser();
                             //updateUI(user);
                             sendVerificationEmail();
-                            Toast.makeText(AuthenticationActivity.this, getString(R.string.verifyMailbox),Toast.LENGTH_LONG).show();
+                            //Toast.makeText(AuthenticationActivity.this, getString(R.string.verifyMailbox),Toast.LENGTH_LONG).show();
+                            Snackbar.make(findViewById(R.id.main_layout),getString(R.string.verifyMailbox),Snackbar.LENGTH_LONG).show();
                             finish();
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "createUserWithEmail:failure", task.getException());
                             //updateUI(null);
-                            Toast.makeText(AuthenticationActivity.this, getString(R.string.registerFailed),Toast.LENGTH_LONG).show();
+                            //Toast.makeText(AuthenticationActivity.this, getString(R.string.registerFailed),Toast.LENGTH_LONG).show();
+                            Snackbar.make(findViewById(R.id.main_layout),getString(R.string.registerFailed),Snackbar.LENGTH_LONG).show();
                         }
                         // ...
                     }
@@ -243,8 +238,31 @@ public class AuthenticationActivity extends AppCompatActivity {
                 });
     }
 
-
     private void Login(){
+        Log.d(TAG, ">>>RUN>>>Login()");
+
+        //Asking the user to enable WiFi
+        boolean isNetworkEnabled = CheckWiFiNetwork();
+
+        //Asking for connection
+        boolean isNetworkConnection = RequireInternetConnection();
+
+        if( ! isNetworkEnabled ){
+            //authButton.setError("Please enable internet connection!");
+            Log.d("TAG", " isNetworkEnabled = false");
+            CharSequence text = "Please enable internet connection!";
+            View view = findViewById(R.id.main_layout);
+            Snackbar.make(view,text,Snackbar.LENGTH_SHORT).show();
+            emailEditText.requestFocus();
+        }
+
+        if( ! isNetworkConnection ){
+            //authButton.setError("No internet connection detected!");
+            Log.d("TAG", " isNetworkConnection = false");
+            CharSequence text = "No internet connection detected!";
+            Snackbar.make(coordinatorLayoutForSnackbar,text,Snackbar.LENGTH_SHORT).show();
+            emailEditText.requestFocus();
+        }
 
         email = emailEditText.getText().toString();
         password = passwordEditText.getText().toString(); //TODO ENCODE PASSWORD
@@ -284,7 +302,8 @@ public class AuthenticationActivity extends AppCompatActivity {
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithEmail:failure", task.getException());
-                            Toast.makeText(AuthenticationActivity.this, "Login Failed!", Toast.LENGTH_LONG).show();
+                            //Toast.makeText(AuthenticationActivity.this, "Login Failed!", Toast.LENGTH_LONG).show();
+                            Snackbar.make(findViewById(R.id.main_layout),"Email or Password is incorrect!",Snackbar.LENGTH_LONG).show();
                             //updateUI(null);
                         }
                         // ...
@@ -292,8 +311,15 @@ public class AuthenticationActivity extends AppCompatActivity {
                 });
     }
 
+    /*
+     *
+     *  Preparing the Authentication View for different Login and Register:
+     *
+     */
+
 
     private void prepareScreenUIFor_email(){
+        Log.d(TAG, ">>>RUN>>>prepareScreenUIFor_email()");
         titleTextView.setText("Login");
         titleTextView.setVisibility(View.VISIBLE);
 
@@ -322,14 +348,22 @@ public class AuthenticationActivity extends AppCompatActivity {
         authButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                email = emailEditText.getText().toString();
-                if( ! email.equals("") ){
-                    Log.d(TAG,"Go To: PASSWORD_MODE");
-                    Util.screenMode = Util.ScreenModeEnum.PASSWORD_MODE;
-                    prepareScreenUIFor_password();
-                }else{
-                    Toast.makeText(AuthenticationActivity.this, "Please fill the Email field!",Toast.LENGTH_LONG).show();
+                Log.d(TAG, ">>>RUN>>>authButtonClickListener");
+                if (RequireEnabledInternetAndIternetConnection()) {            // This method gives feedback using Snackbar
+                    Log.d("TAG", " isNetworkEnabled = true");
+                    Log.d("TAG", " isNetworkConnection = true");
+                    email = emailEditText.getText().toString();
+                    if (!email.equals("")) {
+                        Log.d(TAG, "Go To: PASSWORD_MODE");
+                        Util.screenMode = Util.ScreenModeEnum.PASSWORD_MODE;
+                        prepareScreenUIFor_password();
+                    } else {
+                        //Toast.makeText(AuthenticationActivity.this, "Please fill the Email field!", Toast.LENGTH_LONG).show();
+                        emailEditText.setError("Please fill the Email field!");
+                        emailEditText.requestFocus();
+                    }
                 }
+
             }
         });
         // params = (ConstraintLayout.LayoutParams) authButton.getLayoutParams();
@@ -342,6 +376,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         registerORloginTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.d(TAG, ">>>RUN>>>registerORloginTextViewClickListener");
                 Log.d(TAG,"Go To: REGISTER_MODE");
                 Util.screenMode = Util.ScreenModeEnum.REGISTER_MODE;
                 prepareScreenUIFor_register();
@@ -352,6 +387,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         forgetPassTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.d(TAG, ">>>RUN>>>forgetPassTextViewClickListener");
                 mAuth.sendPasswordResetEmail( Util.userEmail )
                         .addOnCompleteListener(new OnCompleteListener<Void>() {
                             @Override
@@ -367,8 +403,8 @@ public class AuthenticationActivity extends AppCompatActivity {
         backButton.setVisibility(View.INVISIBLE);
     }
 
-
     private void prepareScreenUIFor_password(){
+        Log.d(TAG, ">>>RUN>>>prepareScreenUIFor_password()");
         titleTextView.setText("Login");
         titleTextView.setVisibility(View.VISIBLE);
 
@@ -397,8 +433,12 @@ public class AuthenticationActivity extends AppCompatActivity {
         authButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                password = passwordEditText.getText().toString();
-                Login();
+                Log.d(TAG, ">>>RUN>>>authButtonClickListener");
+                if( RequireEnabledInternetAndIternetConnection() ) {            // This method gives feedback using Snackbar
+                    password = passwordEditText.getText().toString();
+                    Login();
+                }
+
             }
         });
 
@@ -418,7 +458,16 @@ public class AuthenticationActivity extends AppCompatActivity {
         forgetPassTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO SEND EMAIL WITH RESET PASSWORD
+                Log.d(TAG, ">>>RUN>>>forgetPassTextViewClickListener");
+                mAuth.sendPasswordResetEmail( Util.userEmail )
+                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if (task.isSuccessful()) {
+                                    Log.d(TAG, "Reset e mail sent.");
+                                }
+                            }
+                        });
             }
         });
 
@@ -426,6 +475,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.d(TAG, ">>>RUN>>>backButtonClickListener");
                 Log.d(TAG,"Go To: EMAIL_MODE");
                 Util.screenMode = Util.ScreenModeEnum.EMAIL_MODE;
                 prepareScreenUIFor_email();
@@ -433,8 +483,8 @@ public class AuthenticationActivity extends AppCompatActivity {
         });
     }
 
-
     private void prepareScreenUIFor_register(){
+        Log.d(TAG, ">>>RUN>>>prepareScreenUIFor_register()");
         titleTextView.setText("Register");
         titleTextView.setVisibility(View.VISIBLE);
 
@@ -485,6 +535,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         registerORloginTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.d(TAG, ">>>RUN>>>registerORloginTextViewClickListener");
                 Log.d(TAG,"Go To: EMAIL_MODE");
                 Util.screenMode = Util.ScreenModeEnum.EMAIL_MODE;
                 prepareScreenUIFor_email();
@@ -496,12 +547,145 @@ public class AuthenticationActivity extends AppCompatActivity {
         forgetPassTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO SEND EMAIL WITH RESET PASSWORD
+                Log.d(TAG, ">>>RUN>>>forgetPassTextViewClickListener");
+                mAuth.sendPasswordResetEmail( Util.userEmail )
+                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if (task.isSuccessful()) {
+                                    Log.d(TAG, "Reset e mail sent.");
+                                }
+                            }
+                        });
             }
         });
 
         backButton.setVisibility(View.INVISIBLE);
     }
 
+    /*
+     *
+     *  Connection Testers:
+     *
+     */
+
+
+    // A + B and feedback with Snackbar to the user
+    private boolean RequireEnabledInternetAndIternetConnection() {          // TODO: altalanositas: RequireEnabledInternetAndIternetConnection(Activity activity) {...}
+        Log.d(TAG, ">>>RUN>>>RequireEnabledInternetAndIternetConnection()");
+        // If keyboard is shown then hide:
+        Activity activity = AuthenticationActivity.this;
+        InputMethodManager imm = (InputMethodManager) activity.getSystemService(AuthenticationActivity.INPUT_METHOD_SERVICE);
+        // Find the currently focused view, so we can grab the correct window token from it.
+        View activityOnFocusView = activity.getCurrentFocus();
+        // If no view currently has focus, create a new one, just so we can grab a window token from it
+        if (activityOnFocusView == null) {
+            activityOnFocusView = new View(activity);
+        }
+        imm.hideSoftInputFromWindow(activityOnFocusView.getWindowToken(), 0);
+
+        //Asking the user to enable WiFi:
+        boolean isNetworkEnabled = CheckWiFiNetwork();
+
+        //Asking for connection:
+        boolean isNetworkConnection = RequireInternetConnection();
+
+        if (!isNetworkEnabled) {
+            //authButton.setError("Please enable internet connection!");
+            Log.d("TAG", " isNetworkEnabled = false");
+            View mainLayoutView = findViewById(R.id.main_layout);
+            Snackbar.make(mainLayoutView, "Please enable internet connection!", Snackbar.LENGTH_SHORT).show();
+        } else {
+            if (!isNetworkConnection) {
+                //authButton.setError("No internet connection detected!");
+                Log.d("TAG", " isNetworkConnection = false");
+                View view = findViewById(R.id.main_layout);
+                Snackbar.make(view, "No internet connection detected!", Snackbar.LENGTH_SHORT).show();
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
+    // B
+    private boolean RequireInternetConnection() {
+        Log.d(TAG, ">>>RUN>>>RequireInternetConnection()");
+        ConnectivityManager cm = (ConnectivityManager) AuthenticationActivity.this.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        boolean isConnected = activeNetwork != null && activeNetwork.isConnected();
+        // While there is no connection, force the user to connect
+        while( ! isConnected ){
+            /*
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(AuthenticationActivity.this);
+
+            // set title
+            alertDialogBuilder.setTitle("No internet detected");
+
+            // set dialog message
+            alertDialogBuilder
+                    .setMessage("Make you shore you are connected to the internet")
+                    .setCancelable(false)
+                    .setPositiveButton("Retry", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            //Nothing (Retry)
+                        }
+                    })
+                    .setNegativeButton("Exit", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            Util.isFinished = true;
+                            finish(); //close the App
+                        }
+                    });
+            isConnected = activeNetwork != null && activeNetwork.isConnected();
+            */
+            return false;
+        }
+        // else:
+        return true;
+    }
+    // A
+    private boolean CheckWiFiNetwork() {
+        Log.d(TAG, ">>>RUN>>>CheckWiFiNetwork()");
+
+        final WifiManager mWifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+
+        if( ! mWifiManager.isWifiEnabled() ) {
+            /*
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(AuthenticationActivity.this);
+
+            // set title
+            alertDialogBuilder.setTitle("Wifi Settings");
+
+            // set dialog message
+            alertDialogBuilder
+                    .setMessage("Do you want to enable WIFI ?")
+                    .setCancelable(false)
+                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // enable wifi
+                            mWifiManager.setWifiEnabled(true);
+
+                        }
+                    })
+                    .setNegativeButton("Exit", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            //disable wifi
+                            //mWifiManager.setWifiEnabled(false);
+                            Util.isFinished = true;
+                            finish(); //close the App
+                        }
+                    });
+
+            // create alert dialog
+            AlertDialog alertDialog = alertDialogBuilder.create();
+
+            // show it
+            alertDialog.show();
+            */
+            return false;
+        }
+        // else:
+        return true;
+    }
 
 }

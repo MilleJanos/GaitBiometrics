@@ -6,40 +6,59 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/green_background"
-    tools:context=".FinalMainActivity">
+    android:fitsSystemWindows="true"
+    tools:context=".DataCollectorActivity"
+    tools:openDrawer="start">
+
+    <!--android:background="@drawable/green_background"
+    android:gravity="center"-->
+
+    <!--
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <android.support.v7.widget.Toolbar
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:background="@color/colorPrimary"
+            android:id="@+id/toolbar"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+            android:elevation="3dp"/>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/fragment_container"/>
+
+    </LinearLayout>
+
+    <android.support.design.widget.NavigationView
+        android:id="@+id/nav_view"
+        android:layout_width="200dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        app:headerLayout="@layout/nav_header"
+        app:menu="@menu/drawer_menu" />
+
+    -->
+
 
     <TextView
         android:id="@+id/textViewAccelerometer2"
         android:layout_width="119dp"
         android:layout_height="22dp"
         android:layout_marginStart="32dp"
-        android:layout_marginLeft="32dp"
         android:layout_marginTop="64dp"
+        android:layout_marginEnd="8dp"
         android:text="Accelerometer:"
-        android:textColor="@color/colorPrimary"
+        android:textColor="@color/colorPrimaryDarker"
         app:layout_constraintBottom_toTopOf="@+id/textViewAX2"
-        app:layout_constraintEnd_toStartOf="@+id/textViewGyroscopemeter2"
-        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_chainStyle="spread"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/textViewGyroscopemeter2"
-        android:layout_width="128dp"
-        android:layout_height="22dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginTop="64dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginRight="32dp"
-        android:text="Gyroscope"
-        android:textColor="@color/colorPrimary"
-        app:layout_constraintBottom_toTopOf="@+id/textViewGX2"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/textViewAccelerometer2"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
@@ -47,88 +66,41 @@
         android:layout_width="119dp"
         android:layout_height="20dp"
         android:layout_marginStart="32dp"
-        android:layout_marginLeft="32dp"
         android:layout_marginTop="24dp"
+        android:layout_marginEnd="8dp"
         android:text="X: "
+        android:textColor="@color/colorPrimaryDarker"
         app:layout_constraintBottom_toTopOf="@+id/textViewAY2"
-        app:layout_constraintEnd_toStartOf="@+id/textViewGX2"
-        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewAccelerometer2" />
-
-    <TextView
-        android:id="@+id/textViewGX2"
-        android:layout_width="129dp"
-        android:layout_height="20dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginRight="32dp"
-        android:text="X: "
-        app:layout_constraintBottom_toTopOf="@+id/textViewGY2"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/textViewAX2"
-        app:layout_constraintTop_toBottomOf="@+id/textViewGyroscopemeter2" />
 
     <TextView
         android:id="@+id/textViewAY2"
         android:layout_width="119dp"
         android:layout_height="20dp"
         android:layout_marginStart="32dp"
-        android:layout_marginLeft="32dp"
         android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
         android:text="Y: "
+        android:textColor="@color/colorPrimaryDarker"
         app:layout_constraintBottom_toTopOf="@+id/textViewAZ2"
-        app:layout_constraintEnd_toStartOf="@+id/textViewGY2"
-        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewAX2" />
-
-    <TextView
-        android:id="@+id/textViewGY2"
-        android:layout_width="129dp"
-        android:layout_height="20dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginRight="32dp"
-        android:text="Y: "
-        app:layout_constraintBottom_toTopOf="@+id/textViewGZ2"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/textViewAY2"
-        app:layout_constraintTop_toBottomOf="@+id/textViewGX2" />
 
     <TextView
         android:id="@+id/textViewAZ2"
         android:layout_width="119dp"
         android:layout_height="20dp"
         android:layout_marginStart="32dp"
-        android:layout_marginLeft="32dp"
         android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
         android:text="Z: "
-        app:layout_constraintEnd_toStartOf="@+id/textViewGZ2"
-        app:layout_constraintHorizontal_bias="0.5"
+
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewAY2" />
-
-    <TextView
-        android:id="@+id/textViewGZ2"
-        android:layout_width="130dp"
-        android:layout_height="20dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginRight="32dp"
-        android:text="Z: "
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/textViewAZ2"
-        app:layout_constraintTop_toBottomOf="@+id/textViewGY2" />
 
     <!--
         <com.github.mikephil.charting.charts.LineChart
@@ -144,12 +116,12 @@
         android:layout_marginStart="32dp"
         android:layout_marginLeft="32dp"
         android:layout_marginBottom="32dp"
-        android:background="@android:color/holo_green_dark"
+        android:background="@color/colorPrimaryDark"
         android:shadowRadius="@android:integer/config_longAnimTime"
         android:text="@string/Start"
         android:textAlignment="center"
         android:textAllCaps="false"
-        android:textColor="#000000"
+        android:textColor="@color/colorBlack"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/buttonStop"
@@ -163,12 +135,12 @@
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginBottom="8dp"
-        android:background="@android:color/holo_green_dark"
+        android:background="@color/colorPrimaryDark"
         android:shadowRadius="@android:integer/config_longAnimTime"
         android:text="Send to Python server"
         android:textAlignment="center"
         android:textAllCaps="false"
-        android:textColor="#000000"
+        android:textColor="@color/colorBlack"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/buttonStop"
         app:layout_constraintEnd_toEndOf="parent" />
@@ -182,12 +154,12 @@
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginBottom="32dp"
-        android:background="@android:color/holo_green_dark"
+        android:background="@color/colorPrimaryDark"
         android:shadowRadius="@android:integer/config_longAnimTime"
         android:text="@string/Stop"
         android:textAlignment="center"
         android:textAllCaps="false"
-        android:textColor="#000000"
+        android:textColor="@color/colorBlack"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/buttonSend"
@@ -227,12 +199,12 @@
         android:layout_marginEnd="16dp"
         android:layout_marginRight="16dp"
         android:layout_marginBottom="16dp"
-        android:background="@android:color/holo_green_dark"
+        android:background="@color/colorPrimaryDark"
         android:shadowRadius="@android:integer/config_longAnimTime"
         android:text="Save to Firebase"
         android:textAlignment="center"
         android:textAllCaps="false"
-        android:textColor="#000000"
+        android:textColor="@color/colorBlack"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/buttonSend"
         app:layout_constraintEnd_toEndOf="parent" />

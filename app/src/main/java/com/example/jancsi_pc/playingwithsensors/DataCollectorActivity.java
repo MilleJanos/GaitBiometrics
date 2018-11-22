@@ -1,6 +1,7 @@
 package com.example.jancsi_pc.playingwithsensors;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -16,14 +17,18 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
+import android.provider.ContactsContract;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -110,7 +115,9 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     private FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
     private DocumentReference mDocRef; // = FirebaseFirestore.getInstance().document("usersFiles/information");
 
-
+    // ############################################################################################################################################################
+    // / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / OnCreate \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \
+    // ############################################################################################################################################################
 
     /*
     *
@@ -123,11 +130,12 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_data_collector);
 
-        //Asking the user to enable WiFi
-        CheckWiFiNetwork();
+        Log.d(TAG, ">>>RUN>>>onCreate()");
 
-        //Asking for connection
-        RequireInternetConnection();
+        if( Util.isFinished ){
+            Log.d(TAG," isFinished() = true");
+            //finish();
+        }
 
         //FIREBASE INIT:
         mFirestore = FirebaseStorage.getInstance();
@@ -189,18 +197,12 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                 float y = event.values[1];
                 float z = event.values[2];
 
-                //ts = timeStamp;
-                //accX = x;
-                //accY = y;
-                //accZ = z;
-
                 //queueing
                 //keeping the queue size fixed
 
                 accelerometerX.setText("X: "+x);
                 accelerometerY.setText("Y: "+y);
                 accelerometerZ.setText("Z: "+z);
-
 
                 if (isRecording) {
                     accArray.add(new Accelerometer(timeStamp, x, y, z, stepNumber));
@@ -227,6 +229,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.d(TAG, ">>>RUN>>>startButtonClickListener");
                 //mediaPlayer.create(null,R.raw.start);
                 //mediaPlayer.start();
                 recordCount = 0;
@@ -252,6 +255,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         stopButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.d(TAG, ">>>RUN>>>stopButtonClickListener");
                 isRecording = false;
                 startButton.setEnabled(true);
                 stopButton.setEnabled(false);
@@ -278,6 +282,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.d(TAG, ">>>RUN>>>sendButtonClickListener");
                 sendButton.setEnabled(false);
                 Toast.makeText(DataCollectorActivity.this,"freq1: " + Util.samplingFrequency(accArray) + "freq2: " + Util.samplingFrequency2(accArray),Toast.LENGTH_LONG).show();
                 //TODO check if connected to wifi before attempting to send
@@ -310,7 +315,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         saveToFirebaseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                Log.d(TAG, ">>>RUN>>>saveToFirebaseButtonClickListener");
                 if (checkCallingOrSelfPermission("android.permission.WRITE_EXTERNAL_STORAGE") != PackageManager.PERMISSION_GRANTED) {
                     ActivityCompat.requestPermissions(DataCollectorActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
                 }
@@ -442,81 +447,17 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
             }
         });
 
+        /*
+        // Toolbar:
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        */
+
     }// OnCreate
 
-    private void RequireInternetConnection() {
-        ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-
-        /*
-        if(connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
-                connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
-            //we are connected to a network
-            connected = true;
-        }else{
-            connected = false;
-        }
-         */
-
-        while( ! activeNetworkInfo.isConnected() ){
-            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(DataCollectorActivity.this);
-
-            // set title
-            alertDialogBuilder.setTitle("Wifi Settings");
-
-            // set dialog message
-            alertDialogBuilder
-                    .setMessage("Make you shure you are connected to the internet")
-                    .setCancelable(false)
-                    .setPositiveButton("Retry", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            //Nothing (Retry)
-                        }
-                    })
-                    .setNegativeButton("Exit", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            finish(); //close the App
-                        }
-                    });
-        };
-
-    }
-
-    private void CheckWiFiNetwork() {
-        final WifiManager mWifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-
-        if( ! mWifiManager.isWifiEnabled() ) {
-
-            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(DataCollectorActivity.this);
-
-            // set title
-            alertDialogBuilder.setTitle("Wifi Settings");
-
-            // set dialog message
-            alertDialogBuilder
-                    .setMessage("Do you want to enable WIFI ?")
-                    .setCancelable(false)
-                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            //enable wifi
-                            mWifiManager.setWifiEnabled(true);
-                        }
-                    })
-                    .setNegativeButton("Exit", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            //disable wifi
-                            //mWifiManager.setWifiEnabled(false);
-                            finish(); //close the App
-                        }
-                    });
-
-            // create alert dialog
-            AlertDialog alertDialog = alertDialogBuilder.create();
-
-            // show it
-            alertDialog.show();
-        }
-    }
+    // ############################################################################################################################################################
+    // / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / Methods  / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \
+    // ############################################################################################################################################################
 
     /*
     *
@@ -528,6 +469,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     */
 
     public String accArrayToString(){
+        Log.d(TAG, ">>>RUN>>>accArrayToString()");
         StringBuilder sb = new StringBuilder();
         int i;
         for( i=0; i< accArray.size()-1; ++i ){
@@ -564,6 +506,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     */
 
     public void accArrayGroupArrayToString(){
+        Log.d(TAG, ">>>RUN>>>accArrayGroupArrayToString()");
         accArrayStringGroups.clear();
         StringBuilder sb = new StringBuilder();
         int i ;
@@ -600,6 +543,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     }
 
     public void getIPandPort(){
+        Log.d(TAG, ">>>RUN>>>getIPandPort()");
         String iPandPort = IP_ADDRESS;
         Log.d("getIPandPort","IP String: " + iPandPort);
         String temp[] = iPandPort.split(":");
@@ -645,6 +589,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
     @Override
     public void onStart() {
+        Log.d(TAG, ">>>RUN>>>onStart()");
         super.onStart();
         // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = mAuth.getCurrentUser();
@@ -659,6 +604,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
     @Override
     protected void onResume() {
+        Log.d(TAG, ">>>RUN>>>onResume()");
         super.onResume();
         sensorManager.registerListener(accelerometerEventListener, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
     }
@@ -666,6 +612,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
     @Override
     protected void onPause() {
+        Log.d(TAG, ">>>RUN>>>onPause()");
         super.onPause();
         sensorManager.unregisterListener(accelerometerEventListener);
     }
@@ -688,6 +635,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
     @Override
     public void step(long timeNs) {
+        Log.d(TAG, ">>>RUN>>>step()");
         //mp.start();
         Log.d("TEST"," + ");
         DataCollectorActivity.stepNumber++;

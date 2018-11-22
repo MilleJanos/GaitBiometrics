@@ -1,8 +1,15 @@
 package com.example.jancsi_pc.playingwithsensors.Utils;
 
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.wifi.WifiManager;
 import android.util.Log;
 
 import com.example.jancsi_pc.playingwithsensors.Accelerometer;
+import com.example.jancsi_pc.playingwithsensors.DataCollectorActivity;
 
 import java.util.ArrayList;
 
@@ -39,5 +46,12 @@ public class Util {
 
     // show errors for user
     public static String intoTextViewString = "";
+
+    // used to finish all activities
+    public static boolean isFinished = false;
+
+
+
+
 
 }
