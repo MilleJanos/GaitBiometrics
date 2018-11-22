@@ -7,10 +7,9 @@
     android:layout_height="match_parent"
     android:minHeight="164dp"
     tools:context=".AuthenticationActivity"
-    android:background="@color/colorGreen">
+    android:background="@drawable/green_background_50"
+    android:gravity="center">
 
-    <!--android:background="@drawable/green_background"
-    android:gravity="center"-->
 
     <TextView
         android:id="@+id/activityTitleTextView"
@@ -25,7 +24,7 @@
         android:textAlignment="center"
         android:textAllCaps="false"
         android:textAppearance="@android:style/TextAppearance.DeviceDefault.Widget.ActionBar.Title"
-        android:textColor="@color/colorPrimary"
+        android:textColor="@color/colorBlack"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -41,7 +40,7 @@
         android:layout_marginBottom="8dp"
         android:textStyle="bold"
         android:text="title"
-        android:textColor="@android:color/holo_green_dark"
+        android:textColor="@color/colorPrimaryDarker"
         android:textSize="24sp"
         app:layout_constraintBottom_toTopOf="@+id/guidelineHorisontal2"
         app:layout_constraintStart_toStartOf="parent"
@@ -74,7 +73,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintGuide_begin="330dp" />
+        app:layout_constraintGuide_begin="324dp" />
 
     <EditText
         android:id="@+id/emailEditText"
@@ -126,9 +125,8 @@
         android:id="@+id/selectedEmailTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:layout_marginLeft="12dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="28dp"
         android:text="abcd@mail.com"
         android:textSize="16sp"
         app:layout_constraintStart_toStartOf="@+id/guidelineVertical1"
@@ -143,7 +141,7 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
-        android:background="@android:color/holo_green_dark"
+        android:background="@drawable/button_selector"
         android:shadowRadius="@android:integer/config_longAnimTime"
         android:textStyle="bold"
         android:text="login/register"
@@ -204,13 +202,12 @@
 
     <ImageView
         android:id="@+id/deleteEmailImageView"
-        android:layout_width="25dp"
+        android:layout_width="46dp"
         android:layout_height="46dp"
         android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
+        android:padding="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.1"
         app:layout_constraintStart_toStartOf="@+id/guidelineVertical"
@@ -219,13 +216,12 @@
 
     <ImageView
         android:id="@+id/deletePasswordImageView"
-        android:layout_width="25dp"
+        android:layout_width="46dp"
         android:layout_height="46dp"
         android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
+        android:padding="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.1"
         app:layout_constraintStart_toStartOf="@+id/guidelineVertical"
@@ -234,15 +230,14 @@
 
     <ImageView
         android:id="@+id/deletePasswordImageView2"
-        android:layout_width="25dp"
+        android:layout_width="46dp"
         android:layout_height="46dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
+        android:layout_marginStart="7dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
+        android:padding="10dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.11"
+        app:layout_constraintHorizontal_bias="0.46"
         app:layout_constraintStart_toStartOf="@+id/guidelineVertical"
         app:layout_constraintTop_toBottomOf="@+id/passwordEditText"
         app:srcCompat="@drawable/ic_clear_black" />
@@ -310,6 +305,19 @@
         app:layout_constraintEnd_toStartOf="@+id/guidelineVertical1"
         app:layout_constraintTop_toBottomOf="@+id/passwordEditText"
         app:srcCompat="@drawable/my_padlock_icon" />
+
+    <ImageView
+        android:id="@+id/editEmailImageView"
+        android:layout_width="46dp"
+        android:layout_height="46dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:padding="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.1"
+        app:layout_constraintStart_toStartOf="@+id/guidelineVertical"
+        app:layout_constraintTop_toTopOf="@+id/guidelineHorisontal2"
+        app:srcCompat="@drawable/ic_edit_black" />
 
 
 </android.support.constraint.ConstraintLayout>

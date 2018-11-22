@@ -56,6 +56,7 @@ public class AuthenticationActivity extends AppCompatActivity {
     private TextView forgetPassTextView;
 
     private Button backButton;
+    private ImageView editEmailImageView;
     private TextView reportErrorTextView;
     private TextView infoTextView;
 
@@ -104,6 +105,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         infoTextView = findViewById(R.id.infoTextView);
 
         backButton = findViewById(R.id.backButton);
+        editEmailImageView = findViewById(R.id.editEmailImageView); // ugyan azt csinalja mint a backButton csak felhasználóbarátabb
 
         forgetPassTextView.setText("Forget password.");
 
@@ -150,6 +152,11 @@ public class AuthenticationActivity extends AppCompatActivity {
 
     private void Register() {
         Log.d(TAG, ">>>RUN>>>Register()");
+
+        if( RequireEnabledInternetAndIternetConnection() ){
+            return;
+        }
+
         email = emailEditText.getText().toString();
         password = passwordEditText.getText().toString().trim(); //TODO ENCODE PASSWORD
         password2 = passwordEditText2.getText().toString().trim();
@@ -241,27 +248,8 @@ public class AuthenticationActivity extends AppCompatActivity {
     private void Login(){
         Log.d(TAG, ">>>RUN>>>Login()");
 
-        //Asking the user to enable WiFi
-        boolean isNetworkEnabled = CheckWiFiNetwork();
-
-        //Asking for connection
-        boolean isNetworkConnection = RequireInternetConnection();
-
-        if( ! isNetworkEnabled ){
-            //authButton.setError("Please enable internet connection!");
-            Log.d("TAG", " isNetworkEnabled = false");
-            CharSequence text = "Please enable internet connection!";
-            View view = findViewById(R.id.main_layout);
-            Snackbar.make(view,text,Snackbar.LENGTH_SHORT).show();
-            emailEditText.requestFocus();
-        }
-
-        if( ! isNetworkConnection ){
-            //authButton.setError("No internet connection detected!");
-            Log.d("TAG", " isNetworkConnection = false");
-            CharSequence text = "No internet connection detected!";
-            Snackbar.make(coordinatorLayoutForSnackbar,text,Snackbar.LENGTH_SHORT).show();
-            emailEditText.requestFocus();
+        if( RequireEnabledInternetAndIternetConnection() ){
+            return;
         }
 
         email = emailEditText.getText().toString();
@@ -401,6 +389,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         });
 
         backButton.setVisibility(View.INVISIBLE);
+        editEmailImageView.setVisibility(View.INVISIBLE);
     }
 
     private void prepareScreenUIFor_password(){
@@ -428,6 +417,11 @@ public class AuthenticationActivity extends AppCompatActivity {
         passwordImageView2.setVisibility(View.INVISIBLE);
         passwordEditText2.setVisibility(View.INVISIBLE);
         deletePasswordImageView2.setVisibility(View.INVISIBLE);
+
+        if(email.trim().equals("millejanos31@gmail.com") || email.trim().equals("wolterwill31@gmail.com") ){  //TODO : DELETE THIS !
+            password = "01234567";
+            passwordEditText.setText("01234567");
+        }
 
         authButton.setText("Login");
         authButton.setOnClickListener(new View.OnClickListener() {
@@ -476,6 +470,16 @@ public class AuthenticationActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Log.d(TAG, ">>>RUN>>>backButtonClickListener");
+                Log.d(TAG,"Go To: EMAIL_MODE");
+                Util.screenMode = Util.ScreenModeEnum.EMAIL_MODE;
+                prepareScreenUIFor_email();
+            }
+        });
+        editEmailImageView.setVisibility(View.VISIBLE);
+        editEmailImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, ">>>RUN>>>editEmailImageViewClickListener");
                 Log.d(TAG,"Go To: EMAIL_MODE");
                 Util.screenMode = Util.ScreenModeEnum.EMAIL_MODE;
                 prepareScreenUIFor_email();
@@ -561,6 +565,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         });
 
         backButton.setVisibility(View.INVISIBLE);
+        editEmailImageView.setVisibility(View.INVISIBLE);
     }
 
     /*

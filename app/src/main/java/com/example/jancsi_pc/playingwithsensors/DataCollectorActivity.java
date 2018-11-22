@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -27,9 +28,11 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.format.DateFormat;
 import android.util.Log;
+import android.view.Display;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -115,9 +118,8 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     private FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
     private DocumentReference mDocRef; // = FirebaseFirestore.getInstance().document("usersFiles/information");
 
-    // ############################################################################################################################################################
-    // / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / OnCreate \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \
-    // ############################################################################################################################################################
+
+
 
     /*
     *
@@ -128,6 +130,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_data_collector);
         setContentView(R.layout.activity_data_collector);
 
         Log.d(TAG, ">>>RUN>>>onCreate()");
@@ -333,27 +336,10 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                 Date d = new Date();
                 CharSequence s  = DateFormat.format("yyyyMMdd_HHmmss", d.getTime());
 
-                String fileName = "data_" + mAuth.getUid() + "_" + s  ;
-
+                String fileName = "rawdata_" + mAuth.getUid() + "_" + s  ;
 
                 File file = new File(dir, fileName+ ".csv");
 
-
-                //Log.d("RecorderActivity", file.getAbsolutePath());
-
-                //try {
-                //    File root = new File(Environment.getExternalStorageDirectory(), "Aux");
-                //    if (!root.exists()) {
-                //        root.mkdirs();
-                //    }
-                //    File gpxfile = new File(root, "data.csv");
-                //    Log.d(TAG, root.getAbsolutePath() );
-                //    FileWriter writer = new FileWriter(gpxfile);
-                //    writer.append("HELLO WORLD!");
-                //    writer.flush();
-                //    writer.close();
-                //}catch (FileNotFoundException e){ Log.d(TAG, "***********FILE NOT FOUND*******"); e.printStackTrace(); }
-                //catch ( Exception e){ e.printStackTrace(); }
                 try {
                     FileOutputStream f = new FileOutputStream(file);
                     PrintWriter pw = new PrintWriter(f);
@@ -419,10 +405,8 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                 file.delete();
 
                 //
-                // Updating JSON in the Firestore
+                // Updating JSON in the Firebase
                 //
-
-
 
                 String deviceId = Settings.Secure.getString(DataCollectorActivity.this.getContentResolver(), Settings.Secure.ANDROID_ID);
                 String randomUserRecordID = UUID.randomUUID().toString();
@@ -455,9 +439,8 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
     }// OnCreate
 
-    // ############################################################################################################################################################
-    // / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / Methods  / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \ / \
-    // ############################################################################################################################################################
+
+
 
     /*
     *
