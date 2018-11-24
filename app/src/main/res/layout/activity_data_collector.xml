@@ -6,6 +6,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fontFamily="@font/aldrich"
     android:fitsSystemWindows="true"
     android:background="@drawable/green_background_50"
     android:gravity="center"
@@ -49,27 +50,27 @@
     <TextView
         android:id="@+id/textViewAccelerometer2"
         android:layout_width="119dp"
-        android:layout_height="22dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="64dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
+        android:fontFamily="@font/aldrich"
         android:text="Accelerometer:"
-        android:textColor="@color/colorPrimaryDarker"
-        app:layout_constraintBottom_toTopOf="@+id/textViewAX2"
+        android:textColor="@color/colorBlack"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_chainStyle="spread"
+        app:layout_constraintHorizontal_bias="0.2"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/logoutImageView" />
 
     <TextView
         android:id="@+id/textViewAX2"
         android:layout_width="119dp"
-        android:layout_height="20dp"
-        android:layout_marginStart="32dp"
+        android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:layout_marginEnd="8dp"
-        android:text="X: "
-        android:textColor="@color/colorPrimaryDarker"
+        android:fontFamily="@font/aldrich"
+        android:text="X: -x.xx-"
+        android:textColor="@color/colorBlack"
         app:layout_constraintBottom_toTopOf="@+id/textViewAY2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -78,12 +79,12 @@
     <TextView
         android:id="@+id/textViewAY2"
         android:layout_width="119dp"
-        android:layout_height="20dp"
-        android:layout_marginStart="32dp"
+        android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="8dp"
-        android:text="Y: "
-        android:textColor="@color/colorPrimaryDarker"
+        android:fontFamily="@font/aldrich"
+        android:text="Y: -y.yy-"
+        android:textColor="@color/colorBlack"
         app:layout_constraintBottom_toTopOf="@+id/textViewAZ2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -92,12 +93,12 @@
     <TextView
         android:id="@+id/textViewAZ2"
         android:layout_width="119dp"
-        android:layout_height="20dp"
-        android:layout_marginStart="32dp"
+        android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="8dp"
-        android:text="Z: "
-
+        android:fontFamily="@font/aldrich"
+        android:text="Z: -z.zz-"
+        android:textColor="@color/colorBlack"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewAY2" />
@@ -113,112 +114,144 @@
         android:id="@+id/buttonStart"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginLeft="32dp"
-        android:layout_marginBottom="32dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/button_selector"
+        android:paddingLeft="50dp"
+        android:paddingRight="50dp"
+        android:fontFamily="@font/aldrich"
         android:shadowRadius="@android:integer/config_longAnimTime"
         android:text="@string/Start"
         android:textAlignment="center"
         android:textAllCaps="false"
         android:textColor="@color/colorBlack"
         android:textStyle="bold"
-        android:background="@drawable/button_selector"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/buttonStop"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline3" />
+
+    <ImageView
+        android:id="@+id/pythonServerImageView"
+        android:layout_width="37dp"
+        android:layout_height="37dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toStartOf="@+id/buttonSend"
+        app:layout_constraintTop_toBottomOf="@+id/saveToFirebaseButton"
+        app:srcCompat="@drawable/python_server_icon" />
 
     <Button
         android:id="@+id/buttonSend"
-        android:layout_width="96dp"
-        android:layout_height="46dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginBottom="8dp"
+        android:layout_width="wrap_content"
+        android:layout_height="37dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/button_selector"
+        android:fontFamily="@font/aldrich"
         android:shadowRadius="@android:integer/config_longAnimTime"
         android:text="Send to Python server"
         android:textAlignment="center"
         android:textAllCaps="false"
         android:textColor="@color/colorBlack"
         android:textStyle="bold"
-        android:background="@drawable/button_selector"
-        app:layout_constraintBottom_toTopOf="@+id/buttonStop"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/saveToFirebaseButton" />
 
     <Button
         android:id="@+id/buttonStop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
+        android:layout_marginTop="16dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginBottom="32dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/button_selector"
+        android:paddingLeft="50dp"
+        android:paddingRight="50dp"
+        android:fontFamily="@font/aldrich"
         android:shadowRadius="@android:integer/config_longAnimTime"
         android:text="@string/Stop"
         android:textAlignment="center"
         android:textAllCaps="false"
         android:textColor="@color/colorBlack"
         android:textStyle="bold"
-        android:background="@drawable/button_selector"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/buttonSend"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toEndOf="@+id/buttonStart" />
+        app:layout_constraintBottom_toTopOf="@+id/guideline2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/buttonStart" />
 
     <TextView
         android:id="@+id/textViewStatus"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="36dp"
-        android:layout_marginLeft="36dp"
         android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/guideline2"
+        android:text="-current status-"
+        android:gravity="center"
+        android:fontFamily="@font/aldrich"
+        android:textColor="@color/colorBlue5"
+        app:layout_constraintBottom_toTopOf="@+id/guideline3"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline3" />
+        app:layout_constraintTop_toBottomOf="@+id/textViewAZ2" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_begin="290dp" />
+        app:layout_constraintGuide_begin="344dp" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_begin="227dp" />
+        app:layout_constraintGuide_begin="226dp" />
+
+    <ImageView
+        android:id="@+id/firebaseImageView"
+        android:layout_width="37dp"
+        android:layout_height="37dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toStartOf="@+id/saveToFirebaseButton"
+        app:layout_constraintTop_toTopOf="@+id/guideline2"
+        app:srcCompat="@drawable/firebase_icon" />
 
     <Button
         android:id="@+id/saveToFirebaseButton"
-        android:layout_width="96dp"
-        android:layout_height="46dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginBottom="16dp"
+        android:layout_width="wrap_content"
+        android:layout_height="37dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/button_selector"
+        android:fontFamily="@font/aldrich"
         android:shadowRadius="@android:integer/config_longAnimTime"
         android:text="Save to Firebase"
-        android:textAlignment="center"
+        android:textAlignment="viewEnd"
         android:textAllCaps="false"
         android:textColor="@color/colorBlack"
         android:textStyle="bold"
-        android:background="@drawable/button_selector"
-        app:layout_constraintBottom_toTopOf="@+id/buttonSend"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline2" />
 
     <TextView
         android:id="@+id/showLoggedInUserEmailTextView"
         android:layout_width="wrap_content"
         android:layout_height="22dp"
         android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
-        android:text="-"
-        android:textColor="@color/colorPrimary"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginEnd="12dp"
+        android:fontFamily="@font/aldrich"
+        android:text="-user email-"
+        android:textColor="@color/colorBlue5"
+        app:layout_constraintEnd_toStartOf="@+id/logoutImageView"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
@@ -226,33 +259,35 @@
         android:layout_width="wrap_content"
         android:layout_height="22dp"
         android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
+        android:layout_marginEnd="16dp"
         android:text="User:"
+        android:fontFamily="@font/aldrich"
+        android:textColor="@color/colorBlack"
         app:layout_constraintEnd_toStartOf="@+id/showLoggedInUserEmailTextView"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageView
-        android:id="@+id/firebaseImageView"
-        android:layout_width="37dp"
-        android:layout_height="37dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginBottom="20dp"
-        app:layout_constraintBottom_toTopOf="@+id/buttonSend"
-        app:layout_constraintEnd_toStartOf="@+id/saveToFirebaseButton"
-        app:srcCompat="@drawable/firebase_icon" />
+
+
 
     <ImageView
-        android:id="@+id/pythonServerImageView"
+        android:id="@+id/logoutImageView"
         android:layout_width="37dp"
         android:layout_height="37dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
-        android:layout_marginBottom="12dp"
-        app:layout_constraintBottom_toTopOf="@+id/buttonStop"
-        app:layout_constraintEnd_toStartOf="@+id/saveToFirebaseButton"
-        app:srcCompat="@drawable/python_server_icon" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_power" />
+
+    <ImageView
+        android:id="@+id/imageView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@android:drawable/screen_background_light"
+        tools:layout_editor_absoluteX="32dp"
+        tools:layout_editor_absoluteY="107dp" />
+
+
 
 </android.support.constraint.ConstraintLayout>
     <!--</LinearLayout>-->

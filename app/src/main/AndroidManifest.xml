@@ -23,7 +23,7 @@
             android:screenOrientation="portrait">
         -->
         <activity
-            android:name=".DataCollectorActivity"
+            android:name=".SpleshScreenActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -34,8 +34,13 @@
         <activity android:name=".Old.RecorderActivity" />
         <activity android:name=".Old.ConnectionActivity" />
         <activity android:name=".StepCounterPackage.StepCounterActivity" />
-        <!-- <activity android:name=".DataCollectorActivity"></activity> -->
-        <activity android:name=".AuthenticationActivity"></activity>
+        <activity android:name=".DataCollectorActivity"></activity>
+        <activity android:name=".AuthenticationActivity" />
+
+        <meta-data
+            android:name="preloaded_fonts"
+            android:resource="@array/preloaded_fonts" />
+        <!--<activity android:name=".SpleshScreenActivity"></activity>-->
     </application>
 
 </manifest>

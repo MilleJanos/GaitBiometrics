@@ -38,18 +38,17 @@ import static android.support.design.widget.Snackbar.LENGTH_LONG;
 
 public class AuthenticationActivity extends AppCompatActivity {
 
+    private TextView appNameTextView;
+
     private TextView titleTextView;
     private TextView selectedEmailTextView;
 
-    private ImageView emailImageView;
     private EditText emailEditText;
     private ImageView deleteEmailImageView;
 
-    private ImageView passwordImageView;
     private EditText passwordEditText;
     private ImageView deletePasswordImageView;
 
-    private ImageView passwordImageView2;
     private EditText passwordEditText2;
     private ImageView deletePasswordImageView2;
 
@@ -88,18 +87,18 @@ public class AuthenticationActivity extends AppCompatActivity {
             //finish();
         }
 
+        appNameTextView = findViewById(R.id.appNameTextView);
+        appNameTextView.setTextColor( R.string.app_name );
+
         titleTextView = findViewById(R.id.titleTextView);
         selectedEmailTextView= findViewById(R.id.selectedEmailTextView);
 
-        emailImageView = findViewById(R.id.emailImageView);
         emailEditText = findViewById(R.id.emailEditText);
         deleteEmailImageView = findViewById(R.id.deleteEmailImageView);
 
-        passwordImageView = findViewById(R.id.passwordImageView);
         passwordEditText = findViewById(R.id.passwordEditText);
         deletePasswordImageView = findViewById(R.id.deletePasswordImageView);
 
-        passwordImageView2 = findViewById(R.id.passwordImageView2);
         passwordEditText2 = findViewById(R.id.passwordEditText2);
         deletePasswordImageView2 = findViewById(R.id.deletePasswordImageView2);
 
@@ -126,9 +125,6 @@ public class AuthenticationActivity extends AppCompatActivity {
             }
         });
 
-        emailImageView.setVisibility(View.VISIBLE);
-        passwordImageView.setVisibility(View.VISIBLE);
-        passwordImageView2.setVisibility(View.VISIBLE);
 
         /*
         *
@@ -252,7 +248,9 @@ public class AuthenticationActivity extends AppCompatActivity {
     private void Login(){
         Log.d(TAG, ">>>RUN>>>Login()");
 
-        if( RequireEnabledInternetAndIternetConnection() ){
+        authButton.setEnabled(false);
+
+        if( ! RequireEnabledInternetAndIternetConnection() ){
             return;
         }
 
@@ -264,18 +262,21 @@ public class AuthenticationActivity extends AppCompatActivity {
         if( email == "" ){
             emailEditText.setError("Wrong email");
             emailEditText.requestFocus();
+            authButton.setEnabled(true);
             return;
         }
 
         if( password.length() < 6 ){
             passwordEditText.setError("At least 6 character!");
             passwordEditText.requestFocus();
+            authButton.setEnabled(true);
             return;
         }
 
         if(  password == "" ){
             passwordEditText2.setError("Wrong Password!");
             passwordEditText2.requestFocus();
+            authButton.setEnabled(true);
             return;
         }
 
@@ -290,6 +291,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                             //updateUI(user);
                             Util.userEmail = email;
                             Util.isSignedIn = true;
+                            authButton.setEnabled(true);
                             finish();
                         } else {
                             // If sign in fails, display a message to the user.
@@ -301,6 +303,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                         // ...
                     }
                 });
+        authButton.setEnabled(true);
     }
 
     /*
@@ -318,7 +321,6 @@ public class AuthenticationActivity extends AppCompatActivity {
         selectedEmailTextView.setText("");
         selectedEmailTextView.setVisibility(View.INVISIBLE);
 
-        emailImageView.setVisibility(View.VISIBLE);
         emailEditText.setVisibility(View.VISIBLE);
         deleteEmailImageView.setVisibility(View.VISIBLE);
         deleteEmailImageView.setOnClickListener(new View.OnClickListener() {
@@ -328,11 +330,9 @@ public class AuthenticationActivity extends AppCompatActivity {
             }
         });
 
-        passwordImageView.setVisibility(View.INVISIBLE);
         passwordEditText.setVisibility(View.INVISIBLE);
         deletePasswordImageView.setVisibility(View.INVISIBLE);
 
-        passwordImageView2.setVisibility(View.INVISIBLE);
         passwordEditText2.setVisibility(View.INVISIBLE);
         deletePasswordImageView2.setVisibility(View.INVISIBLE);
 
@@ -396,11 +396,9 @@ public class AuthenticationActivity extends AppCompatActivity {
         selectedEmailTextView.setText( email );
         selectedEmailTextView.setVisibility(View.VISIBLE);
 
-        emailImageView.setVisibility(View.VISIBLE);
         emailEditText.setVisibility(View.INVISIBLE);
         deleteEmailImageView.setVisibility(View.INVISIBLE);
 
-        passwordImageView.setVisibility(View.VISIBLE);
         passwordEditText.setVisibility(View.VISIBLE);
         deletePasswordImageView.setVisibility(View.VISIBLE);
         deletePasswordImageView.setOnClickListener(new View.OnClickListener() {
@@ -410,7 +408,6 @@ public class AuthenticationActivity extends AppCompatActivity {
             }
         });
 
-        passwordImageView2.setVisibility(View.INVISIBLE);
         passwordEditText2.setVisibility(View.INVISIBLE);
         deletePasswordImageView2.setVisibility(View.INVISIBLE);
 
@@ -488,7 +485,6 @@ public class AuthenticationActivity extends AppCompatActivity {
         selectedEmailTextView.setText("");
         selectedEmailTextView.setVisibility(View.INVISIBLE);
 
-        emailImageView.setVisibility(View.VISIBLE);
         emailEditText.setVisibility(View.VISIBLE);
         deleteEmailImageView.setVisibility(View.VISIBLE);
         deleteEmailImageView.setOnClickListener(new View.OnClickListener() {
@@ -499,7 +495,6 @@ public class AuthenticationActivity extends AppCompatActivity {
         });
 
 
-        passwordImageView.setVisibility(View.VISIBLE);
         passwordEditText.setVisibility(View.VISIBLE);
         deletePasswordImageView.setVisibility(View.VISIBLE);
         deletePasswordImageView.setOnClickListener(new View.OnClickListener() {
@@ -509,7 +504,6 @@ public class AuthenticationActivity extends AppCompatActivity {
             }
         });
 
-        passwordImageView2.setVisibility(View.VISIBLE);
         passwordEditText2.setVisibility(View.VISIBLE);
         deletePasswordImageView2.setVisibility(View.VISIBLE);
         deletePasswordImageView2.setOnClickListener(new View.OnClickListener() {

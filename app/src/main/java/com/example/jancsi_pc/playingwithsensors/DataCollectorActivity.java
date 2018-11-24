@@ -33,6 +33,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -100,6 +101,8 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     private TextView loggedInUserEmailTextView;
     private TextView goToRegistrationTextView;
     private TextView goToLoginTextView;
+    private ImageView logoutImageVirw;
+
 
     //private final MediaPlayer mp = MediaPlayer.create(DataCollectorActivity.this, R.raw.sound2);
 
@@ -129,6 +132,8 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setTheme(R.style.AppTheme);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_data_collector);
         setContentView(R.layout.activity_data_collector);
@@ -161,6 +166,8 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         sendButton = findViewById(R.id.buttonSend);
         saveToFirebaseButton = findViewById(R.id.saveToFirebaseButton);
         loggedInUserEmailTextView = findViewById(R.id.showLoggedInUserEmailTextView);
+
+        logoutImageVirw = findViewById(R.id.logoutImageView);
 
         stopButton.setEnabled(false);
         sendButton.setEnabled(false);
@@ -276,12 +283,10 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
         /*
         *
-        *   Sending multiple records
+        *   Sending records to server
         *   from Start to End
         *
         */
-
-        //SEND   (MULTIPLE RECORDS)
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -436,6 +441,21 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         */
+
+        /*
+         *
+         *  Logout user:
+         *
+         */
+        logoutImageVirw.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mAuth.signOut();
+                Util.screenMode = Util.ScreenModeEnum.EMAIL_MODE;
+                Util.userEmail = "";
+                startActivity( new Intent(DataCollectorActivity.this,AuthenticationActivity.class) );
+            }
+        });
 
     }// OnCreate
 

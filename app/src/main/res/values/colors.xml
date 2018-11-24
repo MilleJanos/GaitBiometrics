@@ -28,5 +28,9 @@
     <color name="colorGray6">#6D7B8D</color>
     <color name="colorGray7">#657383</color>
     <color name="colorGray8">#616D7E</color>
+    <color name="colorGray9">#333333</color>
+
+    <color name="shadow_lighter_color">#60000000</color>
+
 
 </resources>
