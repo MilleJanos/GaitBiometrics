@@ -3,15 +3,19 @@ package com.example.jancsi_pc.playingwithsensors;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-    // loading app activity
+import com.example.jancsi_pc.playingwithsensors.Utils.Util;
+
+// loading app activity
 
 public class SpleshScreenActivity extends AppCompatActivity {
 
+    private String TAG = "SpleshScreenActivity";
     private ImageView imageView;
     private TextView textView;
 
@@ -38,5 +42,17 @@ public class SpleshScreenActivity extends AppCompatActivity {
             }
         };
         timer.start();
+    }
+
+    @Override
+    protected void onResume() {
+        Log.d(TAG, ">>>RUN>>>onResume()");
+        super.onResume();
+
+        if (Util.isFinished) {
+            Log.d(TAG, " isFinished() = true");
+            Util.isFinished = false;    // TODO: VIGYAZZ MERT ITT MEGSZAKITJA A LANCOLT KILEPEST, MIVEL EZ AZ UTOLSO ACTIVITY A STACKBEN, ugy(e nelkul) ujrainditaskor is kikapcsolt
+            finish();
+        }
     }
 }

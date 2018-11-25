@@ -600,14 +600,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     public void onStart() {
         Log.d(TAG, ">>>RUN>>>onStart()");
         super.onStart();
-        // Check if user is signed in (non-null) and update UI accordingly.
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if( ! Util.isSignedIn ) {
-            Util.screenMode = Util.ScreenModeEnum.EMAIL_MODE;
-            Intent intent = new Intent(DataCollectorActivity.this, AuthenticationActivity.class);
-            startActivity(intent);
-        }
-        loggedInUserEmailTextView.setText( Util.userEmail );
         //updateUI(currentUser);
     }
 
@@ -615,10 +607,21 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     protected void onResume() {
         Log.d(TAG, ">>>RUN>>>onResume()");
         super.onResume();
+
         if( Util.isFinished ){
             Log.d(TAG," isFinished() = true");
+            //Util.isFinished = false;    // TODO: VIGYAZZ MERT ITT MEGSZAKITJA A LANCOLT KILEPEST, MIVEL EZ AZ UTOLSO ACTIVITY A STACKBEN, ugy(e nelkul) ujrainditaskor is kikapcsolt
             finish();
         }
+
+        // Check if user is signed in (non-null) and update UI accordingly.
+        if( ! Util.isSignedIn ) {
+            Util.screenMode = Util.ScreenModeEnum.EMAIL_MODE;
+            Intent intent = new Intent(DataCollectorActivity.this, AuthenticationActivity.class);
+            startActivity(intent);
+        }
+        loggedInUserEmailTextView.setText( Util.userEmail );
+
         sensorManager.registerListener(accelerometerEventListener, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
     }
 
