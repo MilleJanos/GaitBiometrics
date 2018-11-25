@@ -30,7 +30,16 @@
     <color name="colorGray8">#616D7E</color>
     <color name="colorGray9">#333333</color>
 
-    <color name="shadow_lighter_color">#60000000</color>
+    <color name="shadow_lighter_color_1">#10000000</color>
+    <color name="shadow_lighter_color_2">#20000000</color>
+    <color name="shadow_lighter_color_3">#30000000</color>
+    <color name="shadow_lighter_color_4">#40000000</color>
+    <color name="shadow_lighter_color_5">#50000000</color>
+    <color name="shadow_lighter_color_6">#60000000</color>
+    <color name="shadow_lighter_color_7">#70000000</color>
+    <color name="shadow_lighter_color_8">#80000000</color>
+    <color name="shadow_lighter_color_9">#90000000</color>
+
 
 
 </resources>

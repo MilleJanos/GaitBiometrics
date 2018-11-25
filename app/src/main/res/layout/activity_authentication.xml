@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:minHeight="164dp"
     tools:context=".AuthenticationActivity"
-    android:background="@drawable/green_background_50"
+    android:background="@drawable/green_background_lighter_50"
     android:gravity="center">
 
 

@@ -8,7 +8,7 @@
     android:layout_height="match_parent"
     android:fontFamily="@font/aldrich"
     android:fitsSystemWindows="true"
-    android:background="@drawable/green_background_50"
+    android:background="@drawable/green_background_lighter_50"
     android:gravity="center"
     tools:context=".DataCollectorActivity"
     tools:openDrawer="start">
@@ -110,7 +110,7 @@
             android:layout_height="match_parent" />
             -->
 
-    <Button
+    adb c<Button
         android:id="@+id/buttonStart"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -167,11 +167,11 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginBottom="7dp"
         android:background="@drawable/button_selector"
+        android:fontFamily="@font/aldrich"
         android:paddingLeft="50dp"
         android:paddingRight="50dp"
-        android:fontFamily="@font/aldrich"
         android:shadowRadius="@android:integer/config_longAnimTime"
         android:text="@string/Stop"
         android:textAlignment="center"
