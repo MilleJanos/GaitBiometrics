@@ -31,11 +31,11 @@
     </item>
 
     <!-- disable state. -->
-    <item android:layout_height="match_parent" android:state_enabled="false">
+    <item android:state_enabled="false">
         <shape android:shape="rectangle">
             <corners android:radius="30dp" />
-            <solid android:color="@color/colorGray9" />
-            <stroke android:width="3dip" android:color="@color/colorBlack" />
+            <solid android:color="@color/colorPrimaryDarker" />
+            <stroke android:width="3dip" android:color="@color/colorRed" />
             <padding
                 android:left="30dp"
                 android:right="30dp"

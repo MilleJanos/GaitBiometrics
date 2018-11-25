@@ -781,7 +781,9 @@ public class AuthenticationActivity extends AppCompatActivity {
             */
             return false;
         }
-        // else:
+
+
+
         return true;
     }
 

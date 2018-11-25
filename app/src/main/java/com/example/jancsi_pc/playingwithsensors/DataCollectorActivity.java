@@ -67,6 +67,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Random;
 import java.util.UUID;
 
 
@@ -77,7 +78,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     private SensorManager sensorManager;
     private Sensor accelerometerSensor;
     private SensorEventListener accelerometerEventListener;
-    private Button sendButton;
+    private Button sendToServerButton;
     private Button startButton;
     private Button stopButton;
     private Button saveToFirebaseButton;
@@ -158,14 +159,14 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
         startButton = findViewById(R.id.buttonStart);
         stopButton  = findViewById(R.id.buttonStop);
-        sendButton = findViewById(R.id.buttonSend);
+        sendToServerButton = findViewById(R.id.buttonSend);
         saveToFirebaseButton = findViewById(R.id.saveToFirebaseButton);
         loggedInUserEmailTextView = findViewById(R.id.showLoggedInUserEmailTextView);
 
         logoutImageVirw = findViewById(R.id.logoutImageView);
 
         stopButton.setEnabled(false);
-        sendButton.setEnabled(false);
+        sendToServerButton.setEnabled(false);
         saveToFirebaseButton.setEnabled(false);
 
         accelerometerX = findViewById(R.id.textViewAX2);
@@ -244,7 +245,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                 isRecording = true;
                 startButton.setEnabled(false);
                 stopButton.setEnabled(true);
-                sendButton.setEnabled(false);
+                sendToServerButton.setEnabled(false);
                 saveToFirebaseButton.setEnabled(false);
                 Log.d("ConnectionActivity_", "Start Rec.");
                 //textViewStatus.setText("Recording ...");
@@ -264,7 +265,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                 isRecording = false;
                 startButton.setEnabled(true);
                 stopButton.setEnabled(false);
-                sendButton.setEnabled(true);
+                sendToServerButton.setEnabled(true);
                 saveToFirebaseButton.setEnabled(true);
                 sensorManager.unregisterListener(DataCollectorActivity.this);
                 Log.d("ConnectionActivity", "Stop Rec. - Generating CMD");
@@ -279,14 +280,13 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         /*
         *
         *   Sending records to server
-        *   from Start to End
         *
         */
-        sendButton.setOnClickListener(new View.OnClickListener() {
+        sendToServerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Log.d(TAG, ">>>RUN>>>sendButtonClickListener");
-                sendButton.setEnabled(false);
+                sendToServerButton.setEnabled(false);
                 Toast.makeText(DataCollectorActivity.this,"freq1: " + Util.samplingFrequency(accArray) + "freq2: " + Util.samplingFrequency2(accArray),Toast.LENGTH_LONG).show();
                 //TODO check if connected to wifi before attempting to send
                 //extract features first TODO
@@ -333,8 +333,8 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                     dir.mkdirs();
                 }
 
-                Date d = new Date();
-                CharSequence s  = DateFormat.format("yyyyMMdd_HHmmss", d.getTime());
+                Date date = new Date();
+                CharSequence s  = DateFormat.format("yyyyMMdd_HHmmss", date.getTime());
 
                 String fileName = "rawdata_" + mAuth.getUid() + "_" + s  ;
 
@@ -405,25 +405,36 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                 file.delete();
 
                 //
-                // Updating JSON in the Firebase
+                // Updating JSON in the FireStore (Collection->Documents->Collection->Documents->...)
                 //
 
                 String deviceId = Settings.Secure.getString(DataCollectorActivity.this.getContentResolver(), Settings.Secure.ANDROID_ID);
-                String randomUserRecordID = UUID.randomUUID().toString();
+                String randomId = UUID.randomUUID().toString();
 
-                mDocRef = FirebaseFirestore.getInstance().document("user_records/" + randomUserRecordID );
-                UserAndHisFile info = new UserAndHisFile(deviceId, mAuth.getUid(), fileName );
-                FirebaseUser user = mAuth.getCurrentUser();
+                // Just to test Different device situations:
+                //Random r = new Random();
+                //deviceId += "_" + r.nextInt(100);
+
+                // OLD:
+                // mDocRef = FirebaseFirestore.getInstance().document("user_records/" + randomUserRecordID );
+                                                                // "user_records" / <userID> / <deviceID> / <randomId> / ...fields...
+                mDocRef = FirebaseFirestore.getInstance()
+                                                        .collection("user_records_2/" )
+                                                        .document( mAuth.getUid() + "" )
+                                                        .collection( deviceId )
+                                                        .document( randomId ) ;
+
+                UserAndHisFile info = new UserAndHisFile(date.toString(), fileName );
 
                 mDocRef.set(info).addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Log.d(TAG,"Document has been saved!");
+                        Log.d(TAG,"Document has been saved to FireStore!");
                     }
                 }).addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Log.w(TAG,"Oh no!");
+                        Log.w(TAG,"Problem saving to FireStore!");
                     }
                 });
 
