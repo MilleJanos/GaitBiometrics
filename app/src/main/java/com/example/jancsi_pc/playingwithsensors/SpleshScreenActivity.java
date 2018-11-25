@@ -8,6 +8,8 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+    // loading app activity
+
 public class SpleshScreenActivity extends AppCompatActivity {
 
     private ImageView imageView;
@@ -26,7 +28,7 @@ public class SpleshScreenActivity extends AppCompatActivity {
         Thread timer = new Thread(){
             public void run(){
                 try{
-                    sleep(2000);
+                    sleep(1000);
                 }catch(InterruptedException e){
                     e.printStackTrace();
                 }finally{

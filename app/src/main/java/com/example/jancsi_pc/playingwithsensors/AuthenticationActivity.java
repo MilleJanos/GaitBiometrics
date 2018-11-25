@@ -9,6 +9,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.CoordinatorLayout;
@@ -17,6 +18,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -74,6 +77,13 @@ public class AuthenticationActivity extends AppCompatActivity {
     private CoordinatorLayout coordinatorLayoutForSnackbar;
 
     private int requestPasswordResetCount = 0;
+    private boolean doubleBackToExitPressedOnce = false;
+
+    private boolean emailToPass = false;
+    private boolean passToEmail = false;
+    private boolean emailToRegister = false;
+    private boolean registerToEmail = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,7 +94,7 @@ public class AuthenticationActivity extends AppCompatActivity {
 
         if( Util.isFinished ){
             Log.d(TAG," isFinished() = true");
-            //finish();
+            finish();
         }
 
         appNameTextView = findViewById(R.id.appNameTextView);
@@ -148,7 +158,6 @@ public class AuthenticationActivity extends AppCompatActivity {
             }
         }
     }
-
 
     private void Register() {
         Log.d(TAG, ">>>RUN>>>Register()");
@@ -347,6 +356,10 @@ public class AuthenticationActivity extends AppCompatActivity {
                     email = emailEditText.getText().toString();
                     if (!email.equals("")) {
                         Log.d(TAG, "Go To: PASSWORD_MODE");
+                        emailToPass = true;         //
+                        passToEmail = false;        //
+                        emailToRegister = false;    // because of animations
+                        registerToEmail = false;    //
                         Util.screenMode = Util.ScreenModeEnum.PASSWORD_MODE;
                         prepareScreenUIFor_password();
                     } else {
@@ -370,6 +383,10 @@ public class AuthenticationActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Log.d(TAG, ">>>RUN>>>registerORloginTextViewClickListener");
                 Log.d(TAG,"Go To: REGISTER_MODE");
+                emailToPass = false;        //
+                passToEmail = false;         //
+                emailToRegister = true;    // because of animations
+                registerToEmail = false;    //
                 Util.screenMode = Util.ScreenModeEnum.REGISTER_MODE;
                 prepareScreenUIFor_register();
             }
@@ -386,10 +403,49 @@ public class AuthenticationActivity extends AppCompatActivity {
 
         backButton.setVisibility(View.INVISIBLE);
         editEmailImageView.setVisibility(View.INVISIBLE);
+
+        if( passToEmail ) {
+            passwordEditText.setText("");
+            TranslateAnimation translateAnimation = new TranslateAnimation(0, 0, 0, -180);
+            translateAnimation.setDuration(300);
+            TranslateAnimation translateAnimation2 = new TranslateAnimation(0, 0, 150, 0);
+            translateAnimation2.setDuration(300);
+
+            passwordEditText.setAnimation(translateAnimation);
+            deletePasswordImageView.setAnimation(translateAnimation);
+            authButton.setAnimation(translateAnimation2);
+            registerORloginTextView.setAnimation(translateAnimation2);
+            forgetPassTextView.setAnimation(translateAnimation2);
+            //passwordEditText.startAnimation(alphaAnimation);
+            //registerORloginTextView.startAnimation(alphaAnimation);
+            //deletePasswordImageView.startAnimation(alphaAnimation);
+        }
+
+        if( registerToEmail ) {
+            passwordEditText.setText("");
+            TranslateAnimation translateAnimation1 = new TranslateAnimation(0, 0, 0, -180);
+            translateAnimation1.setDuration(300);
+            TranslateAnimation translateAnimation2 = new TranslateAnimation(0, 0, 0, -360);
+            translateAnimation2.setDuration(300);
+            TranslateAnimation translateAnimation3 = new TranslateAnimation(0, 0, 360, 0);
+            translateAnimation3.setDuration(300);
+
+            passwordEditText.setAnimation(translateAnimation1);
+            deletePasswordImageView.setAnimation(translateAnimation1);
+            passwordEditText2.setAnimation(translateAnimation2);
+            deletePasswordImageView2.setAnimation(translateAnimation2);
+            authButton.setAnimation(translateAnimation3);
+            registerORloginTextView.setAnimation(translateAnimation3);
+            forgetPassTextView.setAnimation(translateAnimation3);
+            //passwordEditText.startAnimation(alphaAnimation);
+            //registerORloginTextView.startAnimation(alphaAnimation);
+            //deletePasswordImageView.startAnimation(alphaAnimation);
+        }
     }
 
     private void prepareScreenUIFor_password(){
         Log.d(TAG, ">>>RUN>>>prepareScreenUIFor_password()");
+
         titleTextView.setText("Login");
         titleTextView.setVisibility(View.VISIBLE);
 
@@ -418,6 +474,7 @@ public class AuthenticationActivity extends AppCompatActivity {
 
         params = (ConstraintLayout.LayoutParams) authButton.getLayoutParams();
         params.topToBottom = passwordEditText.getId();
+        //authButton.startAnimation(alphaAnimation);
         authButton.setLayoutParams( params );
         authButton.requestLayout();
 
@@ -444,7 +501,6 @@ public class AuthenticationActivity extends AppCompatActivity {
         //        prepareScreenUIFor_email();
         //    }
         //});
-
         forgetPassTextView.setText("Forget password.");
         forgetPassTextView.setVisibility(View.VISIBLE);
         forgetPassTextView.setOnClickListener(new View.OnClickListener() {
@@ -461,6 +517,10 @@ public class AuthenticationActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Log.d(TAG, ">>>RUN>>>backButtonClickListener");
                 Log.d(TAG,"Go To: EMAIL_MODE");
+                emailToPass = false;        //
+                passToEmail = true;         //
+                emailToRegister = false;    // because of animations
+                registerToEmail = false;    //
                 Util.screenMode = Util.ScreenModeEnum.EMAIL_MODE;
                 prepareScreenUIFor_email();
             }
@@ -471,10 +531,34 @@ public class AuthenticationActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Log.d(TAG, ">>>RUN>>>editEmailImageViewClickListener");
                 Log.d(TAG,"Go To: EMAIL_MODE");
+                emailToPass = false;        //
+                passToEmail = true;         //
+                emailToRegister = false;    // because of animations
+                registerToEmail = false;    //
                 Util.screenMode = Util.ScreenModeEnum.EMAIL_MODE;
                 prepareScreenUIFor_email();
             }
         });
+        //Animation:
+
+        // AlphaAnimation alphaAnimation = new AlphaAnimation(0.2f, 1.0f);
+        // alphaAnimation.setDuration(300);
+        // alphaAnimation.setFillBefore(true);
+        // alphaAnimation.setFillAfter(false);
+
+        if( emailToPass ) {
+            TranslateAnimation translateAnimation = new TranslateAnimation(0, 0, -150, 0);
+            translateAnimation.setDuration(300);
+
+            authButton.setAnimation(translateAnimation);
+            passwordEditText.setAnimation(translateAnimation);
+            deletePasswordImageView.setAnimation(translateAnimation);
+            registerORloginTextView.setAnimation(translateAnimation);
+            forgetPassTextView.setAnimation(translateAnimation);
+            //passwordEditText.startAnimation(alphaAnimation);
+            //registerORloginTextView.startAnimation(alphaAnimation);
+            //deletePasswordImageView.startAnimation(alphaAnimation);
+        }
     }
 
     private void prepareScreenUIFor_register(){
@@ -533,6 +617,10 @@ public class AuthenticationActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Log.d(TAG, ">>>RUN>>>registerORloginTextViewClickListener");
                 Log.d(TAG,"Go To: EMAIL_MODE");
+                emailToPass = false;        //
+                passToEmail = false;         //
+                emailToRegister = false;    // because of animations
+                registerToEmail = true;    //
                 Util.screenMode = Util.ScreenModeEnum.EMAIL_MODE;
                 prepareScreenUIFor_email();
             }
@@ -550,6 +638,26 @@ public class AuthenticationActivity extends AppCompatActivity {
 
         backButton.setVisibility(View.INVISIBLE);
         editEmailImageView.setVisibility(View.INVISIBLE);
+
+        if( emailToRegister ) {
+            passwordEditText.setText("");
+            TranslateAnimation translateAnimation1 = new TranslateAnimation(0, 0, -180, 0);
+            translateAnimation1.setDuration(300);
+            TranslateAnimation translateAnimation2 = new TranslateAnimation(0, 0, -360, 0);
+            translateAnimation2.setDuration(300);
+
+
+            passwordEditText.setAnimation(translateAnimation1);
+            deletePasswordImageView.setAnimation(translateAnimation1);
+            passwordEditText2.setAnimation(translateAnimation2);
+            deletePasswordImageView2.setAnimation(translateAnimation2);
+            authButton.setAnimation(translateAnimation2);
+            registerORloginTextView.setAnimation(translateAnimation2);
+            forgetPassTextView.setAnimation(translateAnimation2);
+            //passwordEditText.startAnimation(alphaAnimation);
+            //registerORloginTextView.startAnimation(alphaAnimation);
+            //deletePasswordImageView.startAnimation(alphaAnimation);
+        }
     }
 
     /*
@@ -737,5 +845,32 @@ public class AuthenticationActivity extends AppCompatActivity {
         forgetPassTextView.setVisibility(View.VISIBLE);
     }
 
+    @Override
+    public void onBackPressed() {
+        if (doubleBackToExitPressedOnce) {
+            super.onBackPressed();
+            Util.isFinished = true;
+            return;
+        }
 
+        this.doubleBackToExitPressedOnce = true;
+        Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
+
+        new Handler().postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+                doubleBackToExitPressedOnce=false;
+            }
+        }, 2000);
+    }
+
+    @Override
+    public void onResume(){
+        if( Util.isFinished ){
+            Log.d(TAG," isFinished() = true");
+            finish();
+        }
+        super.onResume();
+    }
 }

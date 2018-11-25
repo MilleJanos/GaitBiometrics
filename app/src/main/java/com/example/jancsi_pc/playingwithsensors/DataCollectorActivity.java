@@ -140,11 +140,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
         Log.d(TAG, ">>>RUN>>>onCreate()");
 
-        if( Util.isFinished ){
-            Log.d(TAG," isFinished() = true");
-            //finish();
-        }
-
         //FIREBASE INIT:
         mFirestore = FirebaseStorage.getInstance();
         mStorageReference = mFirestore.getReference();
@@ -609,6 +604,10 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     protected void onResume() {
         Log.d(TAG, ">>>RUN>>>onResume()");
         super.onResume();
+        if( Util.isFinished ){
+            Log.d(TAG," isFinished() = true");
+            finish();
+        }
         sensorManager.registerListener(accelerometerEventListener, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
     }
 
