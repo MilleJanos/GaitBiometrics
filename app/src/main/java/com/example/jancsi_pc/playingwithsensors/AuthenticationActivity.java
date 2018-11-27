@@ -16,6 +16,7 @@ import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.TranslateAnimation;
@@ -84,7 +85,6 @@ public class AuthenticationActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_authentication);
-
         Log.d(TAG, ">>>RUN>>>onCreate()");
 
         appNameTextView = findViewById(R.id.appNameTextView);
@@ -346,6 +346,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                     Log.d(TAG, " isNetworkEnabled = true");
                     Log.d(TAG, " isNetworkConnection = true");
                     email = emailEditText.getText().toString();
+                    /*
                     if (!email.equals("")) {
                         mAuth.fetchProvidersForEmail(email).addOnCompleteListener(new OnCompleteListener<ProviderQueryResult>() {
                             @Override
@@ -386,6 +387,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                         emailEditText.setError("Please fill the Email field with a valid email address!");
                         emailEditText.requestFocus();
                     }
+                    */
                 }
             }
         });
@@ -401,11 +403,11 @@ public class AuthenticationActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Log.d(TAG, ">>>RUN>>>registerORloginTextViewClickListener");
                 Log.d(TAG,"Go To: REGISTER_MODE");
-
+                /*
                 userExists=false;
                 email=emailEditText.getText().toString();
                 if(!email.equals("")) {
-                    mAuth.fetchProvidersForEmail(email).addOnCompleteListener(new OnCompleteListener<ProviderQueryResult>() {
+                    /mAuth.fetchProvidersForEmail(email).addOnCompleteListener(new OnCompleteListener<ProviderQueryResult>() {
                         @Override
                         public void onComplete(@NonNull Task<ProviderQueryResult> task) {
                             if (task.isSuccessful()) {
@@ -435,7 +437,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                     Log.d(TAG, "Stopped registration");
                     return;
                 }
-                Log.d(TAG, "onClick: asdasd");
+                */
                 emailToPass = false;        //
                 passToEmail = false;         //
                 emailToRegister = true;    // because of animations
