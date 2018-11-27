@@ -346,7 +346,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                     Log.d(TAG, " isNetworkEnabled = true");
                     Log.d(TAG, " isNetworkConnection = true");
                     email = emailEditText.getText().toString();
-                    /*
+
                     if (!email.equals("")) {
                         mAuth.fetchProvidersForEmail(email).addOnCompleteListener(new OnCompleteListener<ProviderQueryResult>() {
                             @Override
@@ -366,7 +366,9 @@ public class AuthenticationActivity extends AppCompatActivity {
                                         prepareScreenUIFor_password();
                                     } else {
                                         userExists=false;
-                                        Log.d(TAG, "User doesn't exist, creating account");
+                                        emailEditText.setError("Please fill the Email field with a registered email address!");
+                                        emailEditText.requestFocus();
+                                        Log.d(TAG, "Login user doesn't exist");
                                         //TODO Snackbar asking the user to register
                                     }
                                 } else {
@@ -387,7 +389,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                         emailEditText.setError("Please fill the Email field with a valid email address!");
                         emailEditText.requestFocus();
                     }
-                    */
+
                 }
             }
         });
