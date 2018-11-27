@@ -1,11 +1,7 @@
 package com.example.jancsi_pc.playingwithsensors;
 
 import android.Manifest;
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -13,24 +9,17 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
-import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
-import android.provider.ContactsContract;
+import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.Display;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -62,8 +51,6 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.text.DecimalFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -102,7 +89,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     private TextView loggedInUserEmailTextView;
     private TextView goToRegistrationTextView;
     private TextView goToLoginTextView;
-    private ImageView logoutImageVirw;
+    private ImageView logoutImageView;
 
 
     //private final MediaPlayer mp = MediaPlayer.create(DataCollectorActivity.this, R.raw.sound2);
@@ -137,7 +124,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_data_collector);
-        setContentView(R.layout.activity_data_collector);
 
         Log.d(TAG, ">>>RUN>>>onCreate()");
 
@@ -155,7 +141,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         }
 
         textViewStatus = findViewById(R.id.textViewStatus);
-        textViewStatus.setText("Press START to start recording.");
+        textViewStatus.setText(R.string.startRecording);
 
         startButton = findViewById(R.id.buttonStart);
         stopButton  = findViewById(R.id.buttonStop);
@@ -163,7 +149,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         saveToFirebaseButton = findViewById(R.id.saveToFirebaseButton);
         loggedInUserEmailTextView = findViewById(R.id.showLoggedInUserEmailTextView);
 
-        logoutImageVirw = findViewById(R.id.logoutImageView);
+        logoutImageView = findViewById(R.id.logoutImageView);
 
         stopButton.setEnabled(false);
         sendToServerButton.setEnabled(false);
@@ -206,9 +192,9 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                 //queueing
                 //keeping the queue size fixed
 
-                accelerometerX.setText("X: "+x);
-                accelerometerY.setText("Y: "+y);
-                accelerometerZ.setText("Z: "+z);
+                accelerometerX.setText(("X: "+x));
+                accelerometerY.setText(("Y: "+y));
+                accelerometerZ.setText(("Z: "+z));
 
                 if (isRecording) {
                     accArray.add(new Accelerometer(timeStamp, x, y, z, stepNumber));
@@ -216,7 +202,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                     /*(STEPCOUNT)
                     stepArray.add(numSteps);
                     */
-                    textViewStatus.setText("Recording: " + stepNumber + " steps made.");
+                    textViewStatus.setText(("Recording: " + stepNumber + " steps made."));
                 }
             }
 
@@ -269,11 +255,11 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                 saveToFirebaseButton.setEnabled(true);
                 sensorManager.unregisterListener(DataCollectorActivity.this);
                 Log.d("ConnectionActivity", "Stop Rec. - Generating CMD");
-                textViewStatus.setText("Calculating...");
+                textViewStatus.setText(R.string.calculating);
                 CMD = accArrayToString();
                 CMD += ",end";
                 Log.d("ConnectionActivity","CMD Generated.");
-                textViewStatus.setText("Recorded: " + recordCount + " datapoints and " + stepNumber +" step cycles.");
+                textViewStatus.setText(("Recorded: " + recordCount + " datapoints and " + stepNumber +" step cycles."));
             }
         });
 
@@ -453,7 +439,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
          *  Logout user:
          *
          */
-        logoutImageVirw.setOnClickListener(new View.OnClickListener() {
+        logoutImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mAuth.signOut();
@@ -545,7 +531,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
             sb.append(",");
         }
         //If the last group has no exactly N elements then we have to add it on the end
-        if( limitReached == false ){
+        if( !limitReached ){
             sb.append("end");
             accArrayStringGroups.add( sb.toString() );
         }

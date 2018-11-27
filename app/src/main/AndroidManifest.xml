@@ -15,7 +15,8 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        >
 
         <!--
             <activity
@@ -23,7 +24,7 @@
             android:screenOrientation="portrait">
         -->
         <activity
-            android:name=".SpleshScreenActivity"
+            android:name=".SplashScreenActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -31,16 +32,21 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Old.RecorderActivity" />
-        <activity android:name=".Old.ConnectionActivity" />
-        <activity android:name=".StepCounterPackage.StepCounterActivity" />
-        <activity android:name=".DataCollectorActivity"></activity>
-        <activity android:name=".AuthenticationActivity" />
+        <activity android:name=".Old.RecorderActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".Old.ConnectionActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".StepCounterPackage.StepCounterActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".DataCollectorActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".AuthenticationActivity"
+            android:screenOrientation="portrait"/>
 
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
-        <!--<activity android:name=".SpleshScreenActivity"></activity>-->
+        <!--<activity android:name=".SplashScreenActivity"></activity>-->
     </application>
 
 </manifest>

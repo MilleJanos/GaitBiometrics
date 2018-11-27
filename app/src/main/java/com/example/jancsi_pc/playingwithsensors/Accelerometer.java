@@ -1,9 +1,5 @@
 package com.example.jancsi_pc.playingwithsensors;
 
-//import com.google.firebase.firestore.IgnoreExtraProperties;
-
-
-//@IgnoreExtraProperties
 public class Accelerometer {
     /*
     public static final String FIELD_TIMESTAMP = "timestamp";

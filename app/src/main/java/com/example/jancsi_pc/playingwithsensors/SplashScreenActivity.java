@@ -10,7 +10,7 @@ import android.widget.TextView;
 
     // loading app activity
 
-public class SpleshScreenActivity extends AppCompatActivity {
+public class SplashScreenActivity extends AppCompatActivity {
 
     private ImageView imageView;
     private TextView textView;

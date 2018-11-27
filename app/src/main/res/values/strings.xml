@@ -11,17 +11,11 @@
     <string name="wrongPasswordLessThen6char">The password must be at least 6 character!</string>
     <string name="verifyMailbox">Verify your mailbox!</string>
     <string name="errorReportTextView">Report Error</string>
-    <!--
-    <string name="X"></string>
-    <string name="Y"></string>
-    <string name="Z"></string>
-    <string name=""></string>
-    <string name=""></string>
-    <string name=""></string>
-    <string name=""></string>
-    <string name=""></string>
-    <string name=""></string>
-    <string name=""></string>
-    <string name=""></string>
-    -->
+    <string name="calculating">Calculating...</string>
+    <string name="startRecording">Press START to start recording</string>
+    <string name="forgotPassword">Forgot password.</string>
+    <string name="login">Login</string>
+    <string name="createNewAccount">Create new account</string>
+    <string name="register">Register</string>
+    <string name="alreadyHaveAccount">Already have account?</string>
 </resources>
