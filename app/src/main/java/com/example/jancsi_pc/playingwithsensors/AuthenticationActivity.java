@@ -87,11 +87,6 @@ public class AuthenticationActivity extends AppCompatActivity {
 
         Log.d(TAG, ">>>RUN>>>onCreate()");
 
-        if( Util.isFinished ){
-            Log.d(TAG," isFinished() = true");
-            finish();
-        }
-
         appNameTextView = findViewById(R.id.appNameTextView);
         appNameTextView.setTextColor( R.string.app_name );
 
@@ -974,22 +969,46 @@ public class AuthenticationActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if (doubleBackToExitPressedOnce) {
-            super.onBackPressed();
-            Util.isFinished = true;
-            return;
-        }
-
-        this.doubleBackToExitPressedOnce = true;
-        Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
-
-        new Handler().postDelayed(new Runnable() {
-
-            @Override
-            public void run() {
-                doubleBackToExitPressedOnce=false;
+        // back button pressed:
+        //  if EMAIL_MODE ==> exit app
+        //  if PASSWORD_MODE ==> EMAIL_MODE
+        //  if REGISTER_MODE ==> EMAIL_MODE
+        if( Util.screenMode == Util.ScreenModeEnum.EMAIL_MODE ) {
+            if (doubleBackToExitPressedOnce) {
+                super.onBackPressed();
+                Util.isFinished = true;
+                finish();
             }
-        }, 2000);
+
+            this.doubleBackToExitPressedOnce = true;
+            Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
+
+            new Handler().postDelayed(new Runnable() {
+
+                @Override
+                public void run() {
+                    doubleBackToExitPressedOnce = false;
+                }
+            }, 2000);
+        }
+        if( Util.screenMode == Util.ScreenModeEnum.PASSWORD_MODE ) {
+            Log.d(TAG,"Go To: EMAIL_MODE");
+            emailToPass = false;        //
+            passToEmail = true;         //
+            emailToRegister = false;    // because of animations
+            registerToEmail = false;    //
+            Util.screenMode = Util.ScreenModeEnum.EMAIL_MODE;
+            prepareScreenUIFor_email();
+        }
+        if( Util.screenMode == Util.ScreenModeEnum.REGISTER_MODE ) {
+            Log.d(TAG,"Go To: EMAIL_MODE");
+            emailToPass = false;        //
+            passToEmail = false;        //
+            emailToRegister = false;    // because of animations
+            registerToEmail = true;    //
+            Util.screenMode = Util.ScreenModeEnum.EMAIL_MODE;
+            prepareScreenUIFor_email();
+        }
     }
 
     @Override
