@@ -347,12 +347,14 @@ public class AuthenticationActivity extends AppCompatActivity {
                     Log.d(TAG, " isNetworkConnection = true");
                     email = emailEditText.getText().toString();
 
+
+                    Log.d(TAG, "Waiting for fetchProvidersForEmail() ...");
                     if (!email.equals("")) {
                         mAuth.fetchProvidersForEmail(email).addOnCompleteListener(new OnCompleteListener<ProviderQueryResult>() {
                             @Override
                             public void onComplete(@NonNull Task<ProviderQueryResult> task) {
                                 if (task.isSuccessful()) {
-                                    Log.d(TAG, "checking to see if user exists in firebase or not");
+                                    Log.d(TAG, "Checking to see if user exists in firebase or not");
                                     ProviderQueryResult result = task.getResult();
 
                                     if(result != null && result.getProviders()!= null && result.getProviders().size() > 0){
@@ -892,6 +894,7 @@ public class AuthenticationActivity extends AppCompatActivity {
             forgotPassTextView.setVisibility(View.VISIBLE);
             return;
         }else{
+            Log.d(TAG, "Waiting for fetchProvidersForEmail() ...");
             mAuth.fetchProvidersForEmail(email).addOnCompleteListener(new OnCompleteListener<ProviderQueryResult>() {
                 @Override
                 public void onComplete(@NonNull Task<ProviderQueryResult> task) {
@@ -925,27 +928,14 @@ public class AuthenticationActivity extends AppCompatActivity {
             return;
         }
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(AuthenticationActivity.this);
-        if( requestPasswordResetCount > 0 ){
-            // If the user tries to send password reset multiple times in a row
+        Util.userEmail = emailEditText.getText().toString().trim();
+        email = Util.userEmail;
+
+        if( requestPasswordResetCount == 0 ){
+            // First password reset request
             Log.d(TAG,"requestPasswordResetCount(" + requestPasswordResetCount + ") > 0 ==> AlertDialog");
 
-            builder.setTitle("Confirm");
-            builder.setMessage("Are you sure you want to send another request?");
-        }
-        else{
-            Util.userEmail = emailEditText.getText().toString().trim();
-            Log.d(TAG, ">>>RUN>>>forgotPassTextViewClickListener");
-
-            builder.setTitle("Confirm");
-            builder.setMessage("Are you sure you want to send a reset request?");
-        }
-
-        builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                // leave the method to run
-                //Toast.makeText(AuthenticationActivity.this, "SEND REQUEST NUMBER: " + requestPasswordResetCount, Toast.LENGTH_SHORT).show();
-                mAuth.sendPasswordResetEmail(Util.userEmail)
+            mAuth.sendPasswordResetEmail(Util.userEmail)
                     .addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
@@ -957,17 +947,47 @@ public class AuthenticationActivity extends AppCompatActivity {
                             }
                         }
                     });
-                requestPasswordResetCount++;
-            }
-        });
-        builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
-        AlertDialog alert = builder.create();
-        alert.show();
+            requestPasswordResetCount++;
+
+        }else{
+            // If the user tries to send password reset multiple times in a row
+            Log.d(TAG,"requestPasswordResetCount(" + requestPasswordResetCount + ") > 0 ==> AlertDialog");
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(AuthenticationActivity.this);
+            builder.setTitle("Confirm");
+            builder.setMessage("Are you sure you want to send a reset request?");
+            builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    // leave the method to run
+                    //Toast.makeText(AuthenticationActivity.this, "SEND REQUEST NUMBER: " + requestPasswordResetCount, Toast.LENGTH_SHORT).show();
+                    mAuth.sendPasswordResetEmail(Util.userEmail)
+                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    if (task.isSuccessful()) {
+                                        Log.d(TAG, "Reset password request sent.");
+                                        View mainLayoutView = findViewById(R.id.main_layout);
+                                        //Snackbar.make(mainLayoutView, "Reset email is sent!", Snackbar.LENGTH_SHORT).show();
+                                        Toast.makeText(AuthenticationActivity.this, "Reset password request was sent!", Toast.LENGTH_LONG ).show();
+                                    }
+                                }
+                            });
+                    requestPasswordResetCount++;
+                }
+            });
+            builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
+            AlertDialog alert = builder.create();
+            alert.show();
+
+
+        }
+
+
         forgotPassTextView.setVisibility(View.VISIBLE);
     }
 
