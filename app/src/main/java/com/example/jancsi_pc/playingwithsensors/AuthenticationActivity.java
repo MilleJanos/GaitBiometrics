@@ -62,7 +62,7 @@ public class AuthenticationActivity extends AppCompatActivity {
 
     private ConstraintLayout.LayoutParams params;
 
-    private String email = "millejanos31@gmail.com"; //TODO remove before release
+    private String email = "";
     private String password = "";
     private String password2 = "";
 
@@ -125,6 +125,10 @@ public class AuthenticationActivity extends AppCompatActivity {
             }
         });
 
+
+        emailEditText.setText("");
+        passwordEditText.setText("");
+        passwordEditText2.setText("");
 
         /*
         *
