@@ -29,13 +29,23 @@ import android.widget.Toast;
 
 import com.example.jancsi_pc.playingwithsensors.Utils.Util;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.ProviderQueryResult;
+import com.google.firebase.storage.FileDownloadTask;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+
+import java.io.File;
+import java.io.IOException;
 
 public class AuthenticationActivity extends AppCompatActivity {
+
+    private final long ONE_MEGABYTE = 1024 * 1024;
 
     private TextView appNameTextView;
 
@@ -67,10 +77,10 @@ public class AuthenticationActivity extends AppCompatActivity {
     private String password2 = "";
 
     private FirebaseAuth mAuth = FirebaseAuth.getInstance();
+    private StorageReference mRef;
+    private FirebaseStorage mStorage;
 
     private final String TAG = "AuthenticationActivity";
-
-    private CoordinatorLayout coordinatorLayoutForSnackbar;
 
     private int requestPasswordResetCount = 0;
     private boolean doubleBackToExitPressedOnce = false;
@@ -125,7 +135,6 @@ public class AuthenticationActivity extends AppCompatActivity {
             }
         });
 
-
         emailEditText.setText("");
         passwordEditText.setText("");
         passwordEditText2.setText("");
@@ -153,7 +162,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         }
 
         emailEditText.setText(email);//TODO REMOVE BEFORE RELEASE
-    }
+    } // OnCreate
 
     private void Register() {
         Log.d(TAG, ">>>RUN>>>Register()");
@@ -204,14 +213,14 @@ public class AuthenticationActivity extends AppCompatActivity {
                             //updateUI(user);
                             sendVerificationEmail();
                             //Toast.makeText(AuthenticationActivity.this, getString(R.string.verifyMailbox),Toast.LENGTH_LONG).show();
-                            Snackbar.make(findViewById(R.id.main_layout),getString(R.string.verifyMailbox),Snackbar.LENGTH_LONG).show();
+                            Snackbar.make(findViewById(R.id.auth_main_layout),getString(R.string.verifyMailbox),Snackbar.LENGTH_LONG).show();
                             finish();
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "createUserWithEmail:failure", task.getException());
                             //updateUI(null);
                             //Toast.makeText(AuthenticationActivity.this, getString(R.string.registerFailed),Toast.LENGTH_LONG).show();
-                            Snackbar.make(findViewById(R.id.main_layout),getString(R.string.registerFailed),Snackbar.LENGTH_LONG).show();
+                            Snackbar.make(findViewById(R.id.auth_main_layout),getString(R.string.registerFailed),Snackbar.LENGTH_LONG).show();
                         }
                         // ...
                     }
@@ -296,18 +305,20 @@ public class AuthenticationActivity extends AppCompatActivity {
                             Util.userEmail = email;
                             Util.isSignedIn = true;
                             authButton.setEnabled(true);
+                            CheckUserModel();
                             finish();
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithEmail:failure", task.getException());
                             //Toast.makeText(AuthenticationActivity.this, "Login Failed!", Toast.LENGTH_LONG).show();
-                            Snackbar.make(findViewById(R.id.main_layout),"Email or Password is incorrect!",Snackbar.LENGTH_LONG).show();
+                            Snackbar.make(findViewById(R.id.auth_main_layout),"Email or Password is incorrect!",Snackbar.LENGTH_LONG).show();
                             //updateUI(null);
                         }
                         // ...
                     }
                 });
         authButton.setEnabled(true);
+        Log.d(TAG, "<<<FINISHED<<<Login()");
     }
 
     /*
@@ -543,10 +554,14 @@ public class AuthenticationActivity extends AppCompatActivity {
         authButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                // Finishing Login
                 Log.d(TAG, ">>>RUN>>>authButtonClickListener");
                 if( RequireEnabledInternetAndInternetConnection() ) {            // This method gives feedback using Snackbar
                     password = passwordEditText.getText().toString();
+
                     Login();
+
                 }
 
             }
@@ -783,13 +798,13 @@ public class AuthenticationActivity extends AppCompatActivity {
         if (!isNetworkEnabled) {
             //authButton.setError("Please enable internet connection!");
             Log.d("TAG", " isNetworkEnabled = false");
-            View mainLayoutView = findViewById(R.id.main_layout);
+            View mainLayoutView = findViewById(R.id.auth_main_layout);
             Snackbar.make(mainLayoutView, "Please enable internet connection!", Snackbar.LENGTH_SHORT).show();
         } else {
             if (!isNetworkConnection) {
                 //authButton.setError("No internet connection detected!");
                 Log.d("TAG", " isNetworkConnection = false");
-                View view = findViewById(R.id.main_layout);
+                View view = findViewById(R.id.auth_main_layout);
                 Snackbar.make(view, "No internet connection detected!", Snackbar.LENGTH_SHORT).show();
             } else {
                 return true;
@@ -945,7 +960,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                         public void onComplete(@NonNull Task<Void> task) {
                             if (task.isSuccessful()) {
                                 Log.d(TAG, "Reset password request sent.");
-                                View mainLayoutView = findViewById(R.id.main_layout);
+                                View mainLayoutView = findViewById(R.id.auth_main_layout);
                                 //Snackbar.make(mainLayoutView, "Reset email is sent!", Snackbar.LENGTH_SHORT).show();
                                 Toast.makeText(AuthenticationActivity.this, "Reset password request was sent!", Toast.LENGTH_LONG ).show();
                             }
@@ -970,7 +985,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                                 public void onComplete(@NonNull Task<Void> task) {
                                     if (task.isSuccessful()) {
                                         Log.d(TAG, "Reset password request sent.");
-                                        View mainLayoutView = findViewById(R.id.main_layout);
+                                        View mainLayoutView = findViewById(R.id.auth_main_layout);
                                         //Snackbar.make(mainLayoutView, "Reset email is sent!", Snackbar.LENGTH_SHORT).show();
                                         Toast.makeText(AuthenticationActivity.this, "Reset password request was sent!", Toast.LENGTH_LONG ).show();
                                     }
@@ -993,6 +1008,61 @@ public class AuthenticationActivity extends AppCompatActivity {
 
 
         forgotPassTextView.setVisibility(View.VISIBLE);
+    }
+
+    private void CheckUserModel(){
+        // Test user model existence in firebase
+        // AFTER signInWithEmailAndPassword is succed !
+        Log.d(TAG, ">>>RUN>>>CheckUserModel()");
+        mStorage = FirebaseStorage.getInstance();
+        mRef = mStorage.getReference().child("models").child("model_" + mAuth.getUid() + ".mdl" );
+        Log.d(TAG, "mRef = mStorage.getReference().child(models/model_" + mAuth.getUid() + ".mdl)" );
+        Log.d(TAG, "mRef = " + mRef );
+        if( mRef == null ){
+            Log.d(TAG,"Model NOT found!");
+            Util.hasUserModel = false;
+        }else{
+            Util.hasUserModel = true;
+            Log.d(TAG,"Model found, downloading...");
+            mRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                @Override
+                public void onSuccess(byte[] bytes) {
+                    final File localFile;
+                    try {
+
+                        localFile = File.createTempFile("models", "mdl");
+                        mRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                            @Override
+                            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                                // Local temp file has been created
+                                Log.d(TAG,"Local File Path: " + localFile.getAbsolutePath().toString() );
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                // Handle any errors
+                                Log.e(TAG,"ERROR: getFile()");
+                                e.printStackTrace();
+                            }
+                        });
+
+                    }catch(IOException e){
+                        Log.e(TAG,"ERROR: IO EXCEPTION !");
+                        e.printStackTrace();
+                    }catch(Exception e) {
+                        Log.e(TAG, "ERROR: EXCEPTION !");
+                        e.printStackTrace();
+                    }
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    // ...
+                }
+            });
+            Log.d(TAG,"downloading finished");
+        }
+        Log.d(TAG, "<<<FINISHED<<<CheckUserModel()");
     }
 
     @Override

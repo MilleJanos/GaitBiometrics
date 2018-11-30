@@ -50,6 +50,9 @@ public class Util {
     // used to finish all activities
     public static boolean isFinished = false;
 
+    // user model
+    public static boolean hasUserModel = false;
+
 
 
 

@@ -4,7 +4,6 @@ import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -14,14 +13,21 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.format.DateFormat;
 import android.util.Log;
-import android.view.Display;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,7 +38,6 @@ import com.example.jancsi_pc.playingwithsensors.Utils.Util;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -54,12 +59,10 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Random;
 import java.util.UUID;
 
 
-
-public class DataCollectorActivity extends AppCompatActivity implements SensorEventListener, StepListener {
+public class DataCollectorActivity extends AppCompatActivity implements SensorEventListener, StepListener{
     private final String TAG = "DataCollectorActivity";
 
     private SensorManager sensorManager;
@@ -111,12 +114,11 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
 
 
-
     /*
-    *
-    *   OnCreate
-    *
-    */
+     *
+     *   OnCreate
+     *
+     */
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -178,10 +180,10 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
             @Override
             public void onSensorChanged(SensorEvent event) {
                 //if(stepNumber>MAX_STEP_NUMBER){ //only N steps allowed
-                    //stopButton.callOnClick();
+                //stopButton.callOnClick();
                 //}
                 //if(stepNumber>MIN_STEP_NUMBER && !stopButton.isEnabled()){ //at least M steps
-                    //stopButton.setEnabled(true);
+                //stopButton.setEnabled(true);
                 //}
                 //long timeStamp = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
                 long timeStamp = event.timestamp;
@@ -213,10 +215,10 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         };
 
         /*
-        *
-        *   Start recording
-        *
-        */
+         *
+         *   Start recording
+         *
+         */
 
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -239,10 +241,10 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         });
 
         /*
-        *
-        *   Stop recording
-        *
-        */
+         *
+         *   Stop recording
+         *
+         */
 
         stopButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -264,10 +266,10 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         });
 
         /*
-        *
-        *   Sending records to server
-        *
-        */
+         *
+         *   Sending records to server
+         *
+         */
         sendToServerButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -360,9 +362,9 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                     progressDialog.setTitle("Uploading...");
                     progressDialog.show();
                     /*
-                    *
-                    *  Generate
-                    *
+                     *
+                     *  Generate
+                     *
                      */
                     StorageReference ref = mStorageReference.child("files/" + path.getLastPathSegment() );
                     ref.putFile(path)
@@ -403,12 +405,12 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
                 // OLD:
                 // mDocRef = FirebaseFirestore.getInstance().document("user_records/" + randomUserRecordID );
-                                                                // "user_records" / <userID> / <deviceID> / <randomId> / ...fields...
+                // "user_records" / <userID> / <deviceID> / <randomId> / ...fields...
                 mDocRef = FirebaseFirestore.getInstance()
-                                                        .collection("user_records_2/" )
-                                                        .document( mAuth.getUid() + "" )
-                                                        .collection( deviceId )
-                                                        .document( randomId ) ;
+                        .collection("user_records_2/" )
+                        .document( mAuth.getUid() + "" )
+                        .collection( deviceId )
+                        .document( randomId ) ;
 
                 UserAndHisFile info = new UserAndHisFile(date.toString(), fileName );
 
@@ -428,11 +430,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
             }
         });
 
-        /*
-        // Toolbar:
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        */
 
         /*
          *
@@ -455,13 +452,13 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
 
     /*
-    *
-    * ArrayList<Accelerometer> accArray ==> String str
-    *
-    * output format:   "timestamp,x,y,z,currentStepCount,timestamp,x,y,z,currentStepCount,timestamp,x,y,z,timestamp,currentStepCount, ... ,end"
-    *
-    *
-    */
+     *
+     * ArrayList<Accelerometer> accArray ==> String str
+     *
+     * output format:   "timestamp,x,y,z,currentStepCount,timestamp,x,y,z,currentStepCount,timestamp,x,y,z,timestamp,currentStepCount, ... ,end"
+     *
+     *
+     */
 
     public String accArrayToString(){
         Log.d(TAG, ">>>RUN>>>accArrayToString()");
@@ -469,6 +466,17 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         int i;
         for( i=0; i< accArray.size()-1; ++i ){
             sb.append(accArray.get(i).getTimeStamp())
+                    .append(",")
+                    .append(accArray.get(i).getX())
+                    .append(",")
+                    .append(accArray.get(i).getY())
+                    .append(",")
+                    .append(accArray.get(i).getZ())
+                    .append(",")
+                    .append(stepNumber)
+                    .append(",");
+        }
+        sb.append(accArray.get(i).getTimeStamp())
                 .append(",")
                 .append(accArray.get(i).getX())
                 .append(",")
@@ -476,29 +484,18 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                 .append(",")
                 .append(accArray.get(i).getZ())
                 .append(",")
-                .append(stepNumber)
-                .append(",");
-        }
-        sb.append(accArray.get(i).getTimeStamp())
-            .append(",")
-            .append(accArray.get(i).getX())
-            .append(",")
-            .append(accArray.get(i).getY())
-            .append(",")
-            .append(accArray.get(i).getZ())
-            .append(",")
-            .append(stepNumber);
-            //.append(",");
+                .append(stepNumber);
+        //.append(",");
         return sb.toString();
     }
 
     /*
-    *
-    * Same as accArrayToString just grouped in N groups
-    * NO return value, the result is in accArrayStringGroups variable !
-    * adds "end" to the end of the package-chain
-    *
-    */
+     *
+     * Same as accArrayToString just grouped in N groups
+     * NO return value, the result is in accArrayStringGroups variable !
+     * adds "end" to the end of the package-chain
+     *
+     */
 
     public void accArrayGroupArrayToString(){
         Log.d(TAG, ">>>RUN>>>accArrayGroupArrayToString()");
@@ -548,7 +545,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         Log.d("getIPandPort", "Port: " + wifiModulePort);
     }
 
-                                           // <String, String, TCPClient>            // TODO: Modify if needed
+    // <String, String, TCPClient>            // TODO: Modify if needed
     public class Socket_AsyncTask extends AsyncTask<Void,Void,Void>{
         Socket socket;
         @Override
@@ -557,7 +554,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                 InetAddress inetAddress = InetAddress.getByName( DataCollectorActivity.wifiModuleIp );
                 Log.i(TAG,"doInBackground: 1");
                 Log.d(TAG,"doInBackground: 1");
-                socket = new java.net.Socket( inetAddress, DataCollectorActivity.wifiModulePort );
+                socket = new Socket( inetAddress, DataCollectorActivity.wifiModulePort );
                 Log.d(TAG,"doInBackground: 2");
                 DataOutputStream dataOutputStream  = new DataOutputStream(socket.getOutputStream() );
                 Log.d(TAG,"doInBackground: 3");
@@ -609,6 +606,13 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         loggedInUserEmailTextView.setText( Util.userEmail );
 
         sensorManager.registerListener(accelerometerEventListener, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
+
+        // Show on screen model status
+        if( Util.hasUserModel ){
+            Snackbar.make(findViewById(R.id.datacollector_main_layout), "No model found! :(", Snackbar.LENGTH_SHORT).show();
+        }else{
+            Snackbar.make(findViewById(R.id.datacollector_main_layout), "Model found! :)", Snackbar.LENGTH_SHORT).show();
+        }
     }
 
 
