@@ -105,12 +105,30 @@ public class AuthenticationActivity extends AppCompatActivity {
 
         emailEditText = findViewById(R.id.emailEditText);
         deleteEmailImageView = findViewById(R.id.deleteEmailImageView);
+        emailEditText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                emailEditText.setError(null);
+            }
+        });
 
         passwordEditText = findViewById(R.id.passwordEditText);
         deletePasswordImageView = findViewById(R.id.deletePasswordImageView);
+        passwordEditText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                passwordEditText.setError(null);
+            }
+        });
 
         passwordEditText2 = findViewById(R.id.passwordEditText2);
         deletePasswordImageView2 = findViewById(R.id.deletePasswordImageView2);
+        passwordEditText2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                passwordEditText2.setError(null);
+            }
+        });
 
         authButton = findViewById(R.id.button);
         registerORloginTextView = findViewById(R.id.registerORloginTextView);
@@ -166,6 +184,7 @@ public class AuthenticationActivity extends AppCompatActivity {
 
     private void Register() {
         Log.d(TAG, ">>>RUN>>>Register()");
+        Util.hideKeyboard(AuthenticationActivity.this);
 
         if( RequireEnabledInternetAndInternetConnection() ){
             return;
@@ -312,7 +331,6 @@ public class AuthenticationActivity extends AppCompatActivity {
                             Log.w(TAG, "signInWithEmail:failure", task.getException());
                             //Toast.makeText(AuthenticationActivity.this, "Login Failed!", Toast.LENGTH_LONG).show();
                             Snackbar.make(findViewById(R.id.auth_main_layout),"Email or Password is incorrect!",Snackbar.LENGTH_LONG).show();
-                            //updateUI(null);
                         }
                         // ...
                     }
@@ -778,16 +796,7 @@ public class AuthenticationActivity extends AppCompatActivity {
     // A + B and feedback with Snackbar to the user
     private boolean RequireEnabledInternetAndInternetConnection() {          // TODO: altalanositas: RequireEnabledInternetAndInternetConnection(Activity activity) {...}
         Log.d(TAG, ">>>RUN>>>RequireEnabledInternetAndInternetConnection()");
-        // If keyboard is shown then hide:
-        Activity activity = AuthenticationActivity.this;
-        InputMethodManager imm = (InputMethodManager) activity.getSystemService(AuthenticationActivity.INPUT_METHOD_SERVICE);
-        // Find the currently focused view, so we can grab the correct window token from it.
-        View activityOnFocusView = activity.getCurrentFocus();
-        // If no view currently has focus, create a new one, just so we can grab a window token from it
-        if (activityOnFocusView == null) {
-            activityOnFocusView = new View(activity);
-        }
-        imm.hideSoftInputFromWindow(activityOnFocusView.getWindowToken(), 0);
+        Util.hideKeyboard(AuthenticationActivity.this);
 
         //Asking the user to enable WiFi:
         boolean isNetworkEnabled = CheckWiFiNetwork();
@@ -1014,13 +1023,14 @@ public class AuthenticationActivity extends AppCompatActivity {
         // Test user model existence in firebase
         // AFTER signInWithEmailAndPassword is succed !
         Log.d(TAG, ">>>RUN>>>CheckUserModel()");
+
         mStorage = FirebaseStorage.getInstance();
-        mRef = mStorage.getReference().child("models").child("model_" + mAuth.getUid() + ".mdl" );
+        mRef = mStorage.getReference().child("models/model_" + mAuth.getUid() + ".mdl" );
         Log.d(TAG, "mRef = mStorage.getReference().child(models/model_" + mAuth.getUid() + ".mdl)" );
         Log.d(TAG, "mRef = " + mRef );
         if( mRef == null ){
-            Log.d(TAG,"Model NOT found!");
             Util.hasUserModel = false;
+            Log.d(TAG,"Model NOT found!");
         }else{
             Util.hasUserModel = true;
             Log.d(TAG,"Model found, downloading...");
@@ -1029,7 +1039,6 @@ public class AuthenticationActivity extends AppCompatActivity {
                 public void onSuccess(byte[] bytes) {
                     final File localFile;
                     try {
-
                         localFile = File.createTempFile("models", "mdl");
                         mRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
                             @Override
@@ -1062,6 +1071,7 @@ public class AuthenticationActivity extends AppCompatActivity {
             });
             Log.d(TAG,"downloading finished");
         }
+
         Log.d(TAG, "<<<FINISHED<<<CheckUserModel()");
     }
 

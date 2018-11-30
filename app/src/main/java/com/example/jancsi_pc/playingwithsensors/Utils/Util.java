@@ -1,5 +1,6 @@
 package com.example.jancsi_pc.playingwithsensors.Utils;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -7,8 +8,11 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.util.Log;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 
 import com.example.jancsi_pc.playingwithsensors.Accelerometer;
+import com.example.jancsi_pc.playingwithsensors.AuthenticationActivity;
 import com.example.jancsi_pc.playingwithsensors.DataCollectorActivity;
 
 import java.util.ArrayList;
@@ -54,6 +58,17 @@ public class Util {
     public static boolean hasUserModel = false;
 
 
+    public static void hideKeyboard(Activity activity){
+        // If keyboard is shown then hide:
+        InputMethodManager imm = (InputMethodManager) activity.getSystemService(AuthenticationActivity.INPUT_METHOD_SERVICE);
+        // Find the currently focused view, so we can grab the correct window token from it.
+        View activityOnFocusView = activity.getCurrentFocus();
+        // If no view currently has focus, create a new one, just so we can grab a window token from it
+        if (activityOnFocusView == null) {
+            activityOnFocusView = new View(activity);
+        }
+        imm.hideSoftInputFromWindow(activityOnFocusView.getWindowToken(), 0);
+    }
 
 
 
