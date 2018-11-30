@@ -30,6 +30,14 @@ android {
         exclude 'META-INF/ASL2.0'*/
         exclude 'META-INF/proguard/androidx-annotations.pro'
     }
+
+    // Configure only for each module that uses Java 8
+    // language features (either in its source code or
+    // through dependencies).
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 /*
 allprojects {
@@ -79,7 +87,8 @@ dependencies {
     //and adding  android { defaultConfig {  multiDexEnabled true  } } // top of this file
     implementation 'com.android.support:multidex:1.0.3'
 
-
+    implementation files('libs/FeatureExtractorLibrary.jar')
+    implementation files('libs/weka.jar')
 }
 
 apply plugin: 'com.google.gms.google-services'
