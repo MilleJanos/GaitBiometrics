@@ -591,27 +591,32 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         Log.d(TAG, ">>>RUN>>>onResume()");
         super.onResume();
 
-        if( Util.isFinished ){
-            Log.d(TAG," isFinished() = true");
+        if (Util.isFinished) {
+            Log.d(TAG, " isFinished() = true");
             //Util.isFinished = false;    // TODO: VIGYAZZ MERT ITT MEGSZAKITJA A LANCOLT KILEPEST, MIVEL EZ AZ UTOLSO ACTIVITY A STACKBEN, ugy(e nelkul) ujrainditaskor is kikapcsolt
             finish();
         }
 
         // Check if user is signed in (non-null) and update UI accordingly.
-        if( ! Util.isSignedIn ) {
+        if (!Util.isSignedIn) {
             Util.screenMode = Util.ScreenModeEnum.EMAIL_MODE;
             Intent intent = new Intent(DataCollectorActivity.this, AuthenticationActivity.class);
             startActivity(intent);
         }
-        loggedInUserEmailTextView.setText( Util.userEmail );
+        loggedInUserEmailTextView.setText(Util.userEmail);
 
         sensorManager.registerListener(accelerometerEventListener, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
 
         // Show on screen model status
-        if( Util.hasUserModel ){
-            Snackbar.make(findViewById(R.id.datacollector_main_layout), "No model found! :(", Snackbar.LENGTH_SHORT).show();
-        }else{
-            Snackbar.make(findViewById(R.id.datacollector_main_layout), "Model found! :)", Snackbar.LENGTH_SHORT).show();
+
+        if (Util.isUserModelSet) {           // show only when user model is set
+            Util.isUserModelSet = false;
+            Log.d(TAG, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            if (Util.hasUserModel) {
+                Snackbar.make(findViewById(R.id.datacollector_main_layout), "Model found! :)", Snackbar.LENGTH_SHORT).show();
+            } else {
+                Snackbar.make(findViewById(R.id.datacollector_main_layout), "No model found! :(", Snackbar.LENGTH_SHORT).show();
+            }
         }
     }
 

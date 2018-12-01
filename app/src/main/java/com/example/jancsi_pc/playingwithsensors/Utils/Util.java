@@ -60,6 +60,7 @@ public class Util {
 
     // user model
     public static boolean hasUserModel = false;
+    public static boolean isUserModelSet = false;
 
 
     public static void hideKeyboard(Activity activity){
@@ -78,6 +79,4 @@ public class Util {
     public static FirebaseAuth mAuth = FirebaseAuth.getInstance();
     public static StorageReference mRef;
     public static FirebaseStorage mStorage = FirebaseStorage.getInstance();
-
-    public static Boolean wait;
 }

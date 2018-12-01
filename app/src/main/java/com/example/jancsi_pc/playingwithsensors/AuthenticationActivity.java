@@ -2,6 +2,7 @@ package com.example.jancsi_pc.playingwithsensors;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -9,12 +10,14 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
+import android.support.v4.widget.CircularProgressDrawable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -38,6 +41,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.ProviderQueryResult;
 import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 
 import java.io.File;
@@ -320,8 +324,10 @@ public class AuthenticationActivity extends AppCompatActivity {
                             Util.userEmail = email;
                             Util.isSignedIn = true;
                             authButton.setEnabled(true);
-                            CheckUserModel();
-                            finish();
+                            new CheckUserModel().execute("");           // Wait to get the model or create new one, will do the finish() !
+                            // // //
+                            // // // finish();
+                            // // //
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithEmail:failure", task.getException());
@@ -1015,63 +1021,109 @@ public class AuthenticationActivity extends AppCompatActivity {
         forgotPassTextView.setVisibility(View.VISIBLE);
     }
 
-    private void CheckUserModel(){
-        // Test user model existence in firebase
-        // AFTER signInWithEmailAndPassword is succed !
-        Log.d(TAG, ">>>RUN>>>CheckUserModel()");
+    private class CheckUserModel extends AsyncTask<String, Integer, String> {
 
-        Util.mRef = Util.mStorage.getReference().child("models/model_" + Util.mAuth.getUid() + ".mdl" );
+        private ProgressDialog progressDialog;
 
-        Log.d(TAG, "Util.mRef= Util.mStorage.getReference().child(models/model_" + Util.mAuth.getUid() + ".mdl)" );
-        Log.d(TAG, "Util.mRef= " + Util.mRef);
-        Log.d(TAG, "Util.mRef.toString()= "  + Util.mRef.toString() );
+        @Override
+        protected String doInBackground(String... strings) {
 
-        Util.wait = true;
+            // Test user model existence in firebase
+            // AFTER signInWithEmailAndPassword is succed !
+            Log.d(TAG, ">>>RUN>>>CheckUserModel()");
 
-        Util.mRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
-            @Override
-            public void onSuccess(byte[] bytes) {
-                final File localFile;
-                try {
-                    localFile = File.createTempFile("model_", ".mdl");
-                    Util.mRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
-                        @Override
-                        public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                            // Local temp file has been created
-                            Util.hasUserModel = true;
-                            Log.i(TAG,"MODEL FOUND: Local File Path: " + localFile.getAbsolutePath().toString() );
-                            Util.wait = false;
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            // Handle any errors
-                            Util.hasUserModel = false;
-                            Log.e(TAG,"MODEL NOT FOUND: ERROR: getFile()");
-                            e.printStackTrace();
-                            Util.wait = false;
-                        }
-                    });
+            Util.mRef = Util.mStorage.getReference().child("models/model_" + Util.mAuth.getUid() + ".mdl" );
 
-                }catch(IOException e){
-                    Log.e(TAG,"ERROR: IO EXCEPTION !");
-                    e.printStackTrace();
-                }catch(Exception e) {
-                    Log.e(TAG, "ERROR: EXCEPTION !");
+            Log.d(TAG, "Util.mRef= Util.mStorage.getReference().child(models/model_" + Util.mAuth.getUid() + ".mdl)" );
+            Log.d(TAG, "Util.mRef= " + Util.mRef);
+            Log.d(TAG, "Util.mRef.toString()= "  + Util.mRef.toString() );
+
+            // final ProgressDialog progressDialog = new ProgressDialog( AuthenticationActivity.this );
+            // progressDialog.setTitle("Downloading Model...");
+            // progressDialog.show();
+
+            Util.mRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                @Override
+                public void onSuccess(byte[] bytes) {
+                    final File localFile;
+                    try {
+                        localFile = File.createTempFile("model_", ".mdl");
+                        Util.mRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                            @Override
+                            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                                // Local temp file has been created
+                                Util.isUserModelSet= true;
+                                Log.i(TAG, "MODEL FOUND: Local File Path: " + localFile.getAbsolutePath());
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                // Handle any errors
+                                Util.hasUserModel = false;
+                                Log.e(TAG, "MODEL NOT FOUND: ERROR: getFile()");
+                                e.printStackTrace();
+                            }
+                        }).addOnProgressListener(new OnProgressListener<FileDownloadTask.TaskSnapshot>() {
+                            @Override
+                            public void onProgress(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                                double process = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
+                                progressDialog.setMessage("Downloaded: " + (int) process + "%");
+                                publishProgress((int) process);
+                            }
+                        });
+
+                    } catch (IOException e) {
+                        Util.hasUserModel = false;
+                        Log.e(TAG, "MODEL: ERROR: IO EXCEPTION !");
+                        e.printStackTrace();
+                    } catch (Exception e) {
+                        Util.hasUserModel = false;
+                        Log.e(TAG, "MODEL: ERROR: EXCEPTION !");
+                        e.printStackTrace();
+                    }
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Util.hasUserModel = false;
+                    Log.e(TAG, "MODEL NOT FOUND: ERROR: getBytes()");
                     e.printStackTrace();
                 }
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Util.hasUserModel = false;
-                Log.e(TAG,"MODEL NOT FOUND: ERROR: getBytes()");
+            });
+            try {
+                Thread.sleep(5000);     /// TODO, !!!!!!!!!!!!!!!!!!!!!!! Nem ez jelenik meg a felhasznalonak mint amit kap a kod eremenyben
+            }catch(InterruptedException e){
+                Log.e(TAG, "InterruptedException" );
                 e.printStackTrace();
-                Util.wait = false;
             }
-        });
+            Log.d(TAG, "<<<FINISHED<<<CheckUserModel()");
+            return null;
+        }
 
-        Log.d(TAG, "<<<FINISHED<<<CheckUserModel()");
+        @Override
+        protected void onProgressUpdate(Integer... values) {
+            super.onProgressUpdate(values);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            Log.d(TAG,">>RUN>>AsyncTask-onPreExecute()");
+            authButton.setEnabled(false);
+            super.onPreExecute();
+            progressDialog = new ProgressDialog( AuthenticationActivity.this );
+            progressDialog.setTitle("Downloading Model...");
+            progressDialog.show();
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            Log.d(TAG,">>RUN>>AsyncTask-onPostExecute()");
+            authButton.setEnabled(true);
+            super.onPostExecute(s);
+            progressDialog.dismiss();
+            //Util.isUserModelSet= true;
+            finish();       // Closing the Authentication Activity and showing the Data collector activity
+        }
     }
 
     @Override
