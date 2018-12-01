@@ -14,6 +14,9 @@ import android.view.inputmethod.InputMethodManager;
 import com.example.jancsi_pc.playingwithsensors.Accelerometer;
 import com.example.jancsi_pc.playingwithsensors.AuthenticationActivity;
 import com.example.jancsi_pc.playingwithsensors.DataCollectorActivity;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
 
@@ -43,6 +46,7 @@ public class Util {
     // logged in user
     public static String userEmail = "";
     public static Boolean isSignedIn = false;
+    public static String deviceId = "";
 
     // login/register
     public enum ScreenModeEnum { EMAIL_MODE, PASSWORD_MODE, REGISTER_MODE }
@@ -70,6 +74,10 @@ public class Util {
         imm.hideSoftInputFromWindow(activityOnFocusView.getWindowToken(), 0);
     }
 
+    // Cloud
+    public static FirebaseAuth mAuth = FirebaseAuth.getInstance();
+    public static StorageReference mRef;
+    public static FirebaseStorage mStorage = FirebaseStorage.getInstance();
 
-
+    public static Boolean wait;
 }

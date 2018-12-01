@@ -1,5 +1,17 @@
 package com.example.jancsi_pc.playingwithsensors.ModelBuilder;
 
+import android.support.annotation.NonNull;
+import android.util.Log;
+
+import com.example.jancsi_pc.playingwithsensors.Utils.Util;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import FeatureExtractorLibrary.FeatureExtractor;
 import FeatureExtractorLibrary.Settings;
 //import sun.security.jca.GetInstance;
@@ -20,7 +32,10 @@ import java.util.logging.Logger;
 
 
 public class ModelBuilderMain {
-    /*public static void main(String[] args) throws Exception {
+
+    public static void main(String[] args) throws Exception {
+
+        String TAG = "ModelBuilderMain";
 
         /*Settings.usingFrames(512);
         Settings.setOutputHasHeader(true); // full arff, no header
@@ -28,12 +43,43 @@ public class ModelBuilderMain {
         FeatureExtractor.extractFeaturesFromCsvFileToCsvFile(RAWDATADummy,FEATURESDummy);
         FeatureExtractor.extractFeaturesFromCsvFileToCsvFile(RAWDATAUser,FEATURESUser);
         */
-        /*
-        String RAWDATADummy = "D://GaitBiom//ModelBuilder//rawdata_rRHyStiEKkN4Cq5rVSxlpvrCwA72_20181129_152100.csv";
+
+        /*String RAWDATADummy = "D://GaitBiom//ModelBuilder//rawdata_rRHyStiEKkN4Cq5rVSxlpvrCwA72_20181129_152100.csv";   // DWN-FB
         String RAWDATAUser = "D://GaitBiom//ModelBuilder//rawdata_LnntbFQGpBeHx3RwMu42e2yOks32_20181121_213611.csv";
         String FEATURESDummy = "D://GaitBiom//ModelBuilder//features_Dummy.arff";
         String FEATURESUser = "D://GaitBiom//ModelBuilder//features_User.arff";
         String MODELPATHUser = "D://GaitBiom//ModelBuilder//model_LnntbFQGpBeHx3RwMu42e2yOks32.mdl";
+        */
+
+        String RAWDATADummy = ""; //download dummy rawdata from firestore
+        String RAWDATAUser = "";  // same as dummy but for user
+        String FEATURESDummy = "";
+        String FEATURESUser = "";
+        String MODELPATHUser = "";
+
+        FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
+        FirebaseFirestore.getInstance();
+        DocumentReference mDocRef = FirebaseFirestore.getInstance()
+                .collection("user_records_2/" )
+                .document( Util.mAuth.getUid() + "" );
+        mDocRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if(task.isSuccessful()){
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        Log.d(TAG, "DocumentSnapshot data: " + document.getData());
+                    } else {
+                        Log.d(TAG, "No such document");
+                    }
+                }else{
+
+                }
+            }
+        });
+
+
+
 
         getFeatures(RAWDATADummy,FEATURESDummy);
         getFeatures(RAWDATAUser,FEATURESUser);
@@ -52,7 +98,7 @@ public class ModelBuilderMain {
 
         //TODO save model to firestore...
 
-    }*/
+    }
 
     private static void getFeatures(String rawDataFile, String featureFile){
         Settings.usingFrames(512);

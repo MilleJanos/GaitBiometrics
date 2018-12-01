@@ -396,7 +396,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                 // Updating JSON in the FireStore (Collection->Documents->Collection->Documents->...)
                 //
 
-                String deviceId = Settings.Secure.getString(DataCollectorActivity.this.getContentResolver(), Settings.Secure.ANDROID_ID);
+                Util.deviceId = Settings.Secure.getString(DataCollectorActivity.this.getContentResolver(), Settings.Secure.ANDROID_ID);
                 String randomId = UUID.randomUUID().toString();
 
                 // Just to test Different device situations:
@@ -409,7 +409,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                 mDocRef = FirebaseFirestore.getInstance()
                         .collection("user_records_2/" )
                         .document( mAuth.getUid() + "" )
-                        .collection( deviceId )
+                        .collection( Util.deviceId )
                         .document( randomId ) ;
 
                 UserAndHisFile info = new UserAndHisFile(date.toString(), fileName );

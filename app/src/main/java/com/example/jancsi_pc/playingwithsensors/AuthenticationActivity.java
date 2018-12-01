@@ -76,10 +76,6 @@ public class AuthenticationActivity extends AppCompatActivity {
     private String password = "";
     private String password2 = "";
 
-    private FirebaseAuth mAuth = FirebaseAuth.getInstance();
-    private StorageReference mRef;
-    private FirebaseStorage mStorage;
-
     private final String TAG = "AuthenticationActivity";
 
     private int requestPasswordResetCount = 0;
@@ -221,14 +217,14 @@ public class AuthenticationActivity extends AppCompatActivity {
         }
 
         //if there are no errors so far => create user with credentials
-        mAuth.createUserWithEmailAndPassword(email, password)
+        Util.mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "createUserWithEmail:success");
-                            FirebaseUser user = mAuth.getCurrentUser();
+                            FirebaseUser user = Util.mAuth.getCurrentUser();
                             //updateUI(user);
                             sendVerificationEmail();
                             //Toast.makeText(AuthenticationActivity.this, getString(R.string.verifyMailbox),Toast.LENGTH_LONG).show();
@@ -312,14 +308,14 @@ public class AuthenticationActivity extends AppCompatActivity {
             return;
         }
 
-        mAuth.signInWithEmailAndPassword(email, password)
+        Util.mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithEmail:success");
-                            //FirebaseUser user = mAuth.getCurrentUser();
+                            //FirebaseUser user = Util.mAuth.getCurrentUser();
                             //updateUI(user);
                             Util.userEmail = email;
                             Util.isSignedIn = true;
@@ -383,7 +379,7 @@ public class AuthenticationActivity extends AppCompatActivity {
 
                     Log.d(TAG, "Waiting for fetchProvidersForEmail() ...");
                     if (!email.equals("")) {
-                        mAuth.fetchProvidersForEmail(email).addOnCompleteListener(new OnCompleteListener<ProviderQueryResult>() {
+                        Util.mAuth.fetchProvidersForEmail(email).addOnCompleteListener(new OnCompleteListener<ProviderQueryResult>() {
                             @Override
                             public void onComplete(@NonNull Task<ProviderQueryResult> task) {
                                 if (task.isSuccessful()) {
@@ -444,7 +440,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                 userExists=false;
                 email=emailEditText.getText().toString();
                 if(!email.equals("")) {
-                    /mAuth.fetchProvidersForEmail(email).addOnCompleteListener(new OnCompleteListener<ProviderQueryResult>() {
+                    /Util.mAuth.fetchProvidersForEmail(email).addOnCompleteListener(new OnCompleteListener<ProviderQueryResult>() {
                         @Override
                         public void onComplete(@NonNull Task<ProviderQueryResult> task) {
                             if (task.isSuccessful()) {
@@ -703,7 +699,7 @@ public class AuthenticationActivity extends AppCompatActivity {
             public void onClick(View v) {
                 email=emailEditText.getText().toString();
                 if(!email.equals("")) {
-                    mAuth.fetchProvidersForEmail(email).addOnCompleteListener(new OnCompleteListener<ProviderQueryResult>() {
+                    Util.mAuth.fetchProvidersForEmail(email).addOnCompleteListener(new OnCompleteListener<ProviderQueryResult>() {
                         @Override
                         public void onComplete(@NonNull Task<ProviderQueryResult> task) {
                             if (task.isSuccessful()) {
@@ -923,7 +919,7 @@ public class AuthenticationActivity extends AppCompatActivity {
             return;
         }else{
             Log.d(TAG, "Waiting for fetchProvidersForEmail() ...");
-            mAuth.fetchProvidersForEmail(email).addOnCompleteListener(new OnCompleteListener<ProviderQueryResult>() {
+            Util.mAuth.fetchProvidersForEmail(email).addOnCompleteListener(new OnCompleteListener<ProviderQueryResult>() {
                 @Override
                 public void onComplete(@NonNull Task<ProviderQueryResult> task) {
                     if (task.isSuccessful()) {
@@ -963,7 +959,7 @@ public class AuthenticationActivity extends AppCompatActivity {
             // First password reset request
             Log.d(TAG,"requestPasswordResetCount(" + requestPasswordResetCount + ") > 0 ==> AlertDialog");
 
-            mAuth.sendPasswordResetEmail(Util.userEmail)
+            Util.mAuth.sendPasswordResetEmail(Util.userEmail)
                     .addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
@@ -988,7 +984,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                 public void onClick(DialogInterface dialog, int which) {
                     // leave the method to run
                     //Toast.makeText(AuthenticationActivity.this, "SEND REQUEST NUMBER: " + requestPasswordResetCount, Toast.LENGTH_SHORT).show();
-                    mAuth.sendPasswordResetEmail(Util.userEmail)
+                    Util.mAuth.sendPasswordResetEmail(Util.userEmail)
                             .addOnCompleteListener(new OnCompleteListener<Void>() {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
@@ -1024,53 +1020,56 @@ public class AuthenticationActivity extends AppCompatActivity {
         // AFTER signInWithEmailAndPassword is succed !
         Log.d(TAG, ">>>RUN>>>CheckUserModel()");
 
-        mStorage = FirebaseStorage.getInstance();
-        mRef = mStorage.getReference().child("models/model_" + mAuth.getUid() + ".mdl" );
-        Log.d(TAG, "mRef = mStorage.getReference().child(models/model_" + mAuth.getUid() + ".mdl)" );
-        Log.d(TAG, "mRef = " + mRef );
-        if( mRef == null ){
-            Util.hasUserModel = false;
-            Log.d(TAG,"Model NOT found!");
-        }else{
-            Util.hasUserModel = true;
-            Log.d(TAG,"Model found, downloading...");
-            mRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
-                @Override
-                public void onSuccess(byte[] bytes) {
-                    final File localFile;
-                    try {
-                        localFile = File.createTempFile("models", "mdl");
-                        mRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
-                            @Override
-                            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                                // Local temp file has been created
-                                Log.d(TAG,"Local File Path: " + localFile.getAbsolutePath().toString() );
-                            }
-                        }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                // Handle any errors
-                                Log.e(TAG,"ERROR: getFile()");
-                                e.printStackTrace();
-                            }
-                        });
+        Util.mRef = Util.mStorage.getReference().child("models/model_" + Util.mAuth.getUid() + ".mdl" );
 
-                    }catch(IOException e){
-                        Log.e(TAG,"ERROR: IO EXCEPTION !");
-                        e.printStackTrace();
-                    }catch(Exception e) {
-                        Log.e(TAG, "ERROR: EXCEPTION !");
-                        e.printStackTrace();
-                    }
+        Log.d(TAG, "Util.mRef= Util.mStorage.getReference().child(models/model_" + Util.mAuth.getUid() + ".mdl)" );
+        Log.d(TAG, "Util.mRef= " + Util.mRef);
+        Log.d(TAG, "Util.mRef.toString()= "  + Util.mRef.toString() );
+
+        Util.wait = true;
+
+        Util.mRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+            @Override
+            public void onSuccess(byte[] bytes) {
+                final File localFile;
+                try {
+                    localFile = File.createTempFile("model_", ".mdl");
+                    Util.mRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                            // Local temp file has been created
+                            Util.hasUserModel = true;
+                            Log.i(TAG,"MODEL FOUND: Local File Path: " + localFile.getAbsolutePath().toString() );
+                            Util.wait = false;
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            // Handle any errors
+                            Util.hasUserModel = false;
+                            Log.e(TAG,"MODEL NOT FOUND: ERROR: getFile()");
+                            e.printStackTrace();
+                            Util.wait = false;
+                        }
+                    });
+
+                }catch(IOException e){
+                    Log.e(TAG,"ERROR: IO EXCEPTION !");
+                    e.printStackTrace();
+                }catch(Exception e) {
+                    Log.e(TAG, "ERROR: EXCEPTION !");
+                    e.printStackTrace();
                 }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    // ...
-                }
-            });
-            Log.d(TAG,"downloading finished");
-        }
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Util.hasUserModel = false;
+                Log.e(TAG,"MODEL NOT FOUND: ERROR: getBytes()");
+                e.printStackTrace();
+                Util.wait = false;
+            }
+        });
 
         Log.d(TAG, "<<<FINISHED<<<CheckUserModel()");
     }
