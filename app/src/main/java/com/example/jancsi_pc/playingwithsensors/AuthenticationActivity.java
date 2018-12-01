@@ -27,6 +27,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -90,6 +91,12 @@ public class AuthenticationActivity extends AppCompatActivity {
     private boolean emailToRegister = false;
     private boolean registerToEmail = false;
     private boolean userExists = false;
+
+    // Progress Bar
+    private ProgressBar progressBar;
+    private TextView loadingTextView;
+    private int mProgressStatus = 0;
+    private Handler mHandler = new Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -156,6 +163,11 @@ public class AuthenticationActivity extends AppCompatActivity {
         emailEditText.setText("");
         passwordEditText.setText("");
         passwordEditText2.setText("");
+
+        progressBar = findViewById(R.id.progressBar);
+        loadingTextView = findViewById(R.id.loadingCompleteTextView);
+        loadingTextView.setVisibility(View.INVISIBLE);
+        progressBar.setVisibility(View.INVISIBLE);
 
         /*
         *
@@ -324,10 +336,9 @@ public class AuthenticationActivity extends AppCompatActivity {
                             Util.userEmail = email;
                             Util.isSignedIn = true;
                             authButton.setEnabled(true);
-                            new CheckUserModel().execute("");           // Wait to get the model or create new one, will do the finish() !
-                            // // //
-                            // // // finish();
-                            // // //
+
+                            CheckUserModel();// Wait to get the model or create new one, will do the finish() !
+
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithEmail:failure", task.getException());
@@ -909,7 +920,7 @@ public class AuthenticationActivity extends AppCompatActivity {
 
     /*
      *
-     *  Common used methods
+     *  Common used methods:
      *
      */
 
@@ -1021,109 +1032,72 @@ public class AuthenticationActivity extends AppCompatActivity {
         forgotPassTextView.setVisibility(View.VISIBLE);
     }
 
-    private class CheckUserModel extends AsyncTask<String, Integer, String> {
+    private void CheckUserModel() {
+        // Test user model existence in firebase
+        // AFTER signInWithEmailAndPassword is succed !
+        Log.d(TAG, ">>>RUN>>>CheckUserModel()");
 
-        private ProgressDialog progressDialog;
+        Util.mRef = Util.mStorage.getReference().child("models/model_" + Util.mAuth.getUid() + ".mdl" );
 
-        @Override
-        protected String doInBackground(String... strings) {
+        Log.d(TAG, "Util.mRef= Util.mStorage.getReference().child(models/model_" + Util.mAuth.getUid() + ".mdl)" );
+        Log.d(TAG, "Util.mRef= " + Util.mRef);
+        Log.d(TAG, "Util.mRef.toString()= "  + Util.mRef.toString() );
 
-            // Test user model existence in firebase
-            // AFTER signInWithEmailAndPassword is succed !
-            Log.d(TAG, ">>>RUN>>>CheckUserModel()");
+        loadingTextView.setVisibility(View.INVISIBLE);
+        progressBar.setVisibility(View.VISIBLE);
 
-            Util.mRef = Util.mStorage.getReference().child("models/model_" + Util.mAuth.getUid() + ".mdl" );
-
-            Log.d(TAG, "Util.mRef= Util.mStorage.getReference().child(models/model_" + Util.mAuth.getUid() + ".mdl)" );
-            Log.d(TAG, "Util.mRef= " + Util.mRef);
-            Log.d(TAG, "Util.mRef.toString()= "  + Util.mRef.toString() );
-
-            // final ProgressDialog progressDialog = new ProgressDialog( AuthenticationActivity.this );
-            // progressDialog.setTitle("Downloading Model...");
-            // progressDialog.show();
-
-            Util.mRef.getBytes(ONE_MEGABYTE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+        final File localFile;
+        try {
+            //localFile = new File("/storage/emulated/0/logmein","model.mdl");
+            localFile = File.createTempFile("model_", ".mdl");
+            Util.mRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
                 @Override
-                public void onSuccess(byte[] bytes) {
-                    final File localFile;
-                    try {
-                        localFile = File.createTempFile("model_", ".mdl");
-                        Util.mRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
-                            @Override
-                            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                                // Local temp file has been created
-                                Util.isUserModelSet= true;
-                                Log.i(TAG, "MODEL FOUND: Local File Path: " + localFile.getAbsolutePath());
-                            }
-                        }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                // Handle any errors
-                                Util.hasUserModel = false;
-                                Log.e(TAG, "MODEL NOT FOUND: ERROR: getFile()");
-                                e.printStackTrace();
-                            }
-                        }).addOnProgressListener(new OnProgressListener<FileDownloadTask.TaskSnapshot>() {
-                            @Override
-                            public void onProgress(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                                double process = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
-                                progressDialog.setMessage("Downloaded: " + (int) process + "%");
-                                publishProgress((int) process);
-                            }
-                        });
-
-                    } catch (IOException e) {
-                        Util.hasUserModel = false;
-                        Log.e(TAG, "MODEL: ERROR: IO EXCEPTION !");
-                        e.printStackTrace();
-                    } catch (Exception e) {
-                        Util.hasUserModel = false;
-                        Log.e(TAG, "MODEL: ERROR: EXCEPTION !");
-                        e.printStackTrace();
-                    }
+                public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                    // Local temp file has been created
+                    Util.hasUserModel = true;
+                    Log.i(TAG,"### Util.hasUserModel = true;");
+                    Log.i(TAG, "MODEL FOUND: Local File Path: " + localFile.getAbsolutePath());
+                    finish();
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
+                    // Handle any errors
                     Util.hasUserModel = false;
-                    Log.e(TAG, "MODEL NOT FOUND: ERROR: getBytes()");
+                    Log.i(TAG,"### Util.hasUserModel = false;");
+                    Log.e(TAG, "MODEL NOT FOUND: ERROR: getFile()");
                     e.printStackTrace();
+                    finish();
+                }
+            }).addOnProgressListener(new OnProgressListener<FileDownloadTask.TaskSnapshot>() {
+                @Override
+                public void onProgress(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                    final double process = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
+                    //progressDialog.setMessage("Downloaded: " + (int) process + "%");
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            progressBar.setProgress((int)process);
+                        }
+                    });
                 }
             });
-            try {
-                Thread.sleep(5000);     /// TODO, !!!!!!!!!!!!!!!!!!!!!!! Nem ez jelenik meg a felhasznalonak mint amit kap a kod eremenyben
-            }catch(InterruptedException e){
-                Log.e(TAG, "InterruptedException" );
-                e.printStackTrace();
-            }
-            Log.d(TAG, "<<<FINISHED<<<CheckUserModel()");
-            return null;
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    Log.i(TAG,"mHandler.post() --> Finish()");
+                    loadingTextView.setVisibility(View.VISIBLE);
+                }
+            });
+        } catch (Exception e) {
+            Util.hasUserModel = false;
+            Log.i(TAG,"### Util.hasUserModel = false;");
+            Log.e(TAG, "ERROR: MODEL: EXCEPTION !");
+            e.printStackTrace();
+            finish();
         }
 
-        @Override
-        protected void onProgressUpdate(Integer... values) {
-            super.onProgressUpdate(values);
-        }
-
-        @Override
-        protected void onPreExecute() {
-            Log.d(TAG,">>RUN>>AsyncTask-onPreExecute()");
-            authButton.setEnabled(false);
-            super.onPreExecute();
-            progressDialog = new ProgressDialog( AuthenticationActivity.this );
-            progressDialog.setTitle("Downloading Model...");
-            progressDialog.show();
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            Log.d(TAG,">>RUN>>AsyncTask-onPostExecute()");
-            authButton.setEnabled(true);
-            super.onPostExecute(s);
-            progressDialog.dismiss();
-            //Util.isUserModelSet= true;
-            finish();       // Closing the Authentication Activity and showing the Data collector activity
-        }
+        Log.d(TAG, "<<<FINISHED<<<CheckUserModel()");
     }
 
     @Override
