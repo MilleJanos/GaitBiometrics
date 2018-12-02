@@ -301,7 +301,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         email = emailEditText.getText().toString();
         password = passwordEditText.getText().toString(); //TODO ENCODE PASSWORD
 
-        Log.d(TAG, "\nemail=\""+email+"\"" + "\npassword=\""+password+"\"\n");
+        Log.d(TAG, "email=\""+email+"\"");
 
         if( email.equals("") ){
             emailEditText.setError("Wrong email");
@@ -1055,18 +1055,23 @@ public class AuthenticationActivity extends AppCompatActivity {
                 public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
                     // Local temp file has been created
                     Util.hasUserModel = true;
+                    Util.isSetUserModel = true;
                     Log.i(TAG,"### Util.hasUserModel = true;");
                     Log.i(TAG, "MODEL FOUND: Local File Path: " + localFile.getAbsolutePath());
+                    Log.i(TAG,"<<<finish()<<<");
+                    loadingTextView.setVisibility(View.VISIBLE);
                     finish();
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
-                    // Handle any errors
                     Util.hasUserModel = false;
+                    Util.isSetUserModel = true;
                     Log.i(TAG,"### Util.hasUserModel = false;");
                     Log.e(TAG, "MODEL NOT FOUND: ERROR: getFile()");
-                    e.printStackTrace();
+                    Log.i(TAG,"<<<finish()<<<");
+                    //e.printStackTrace();
+                    loadingTextView.setVisibility(View.VISIBLE);
                     finish();
                 }
             }).addOnProgressListener(new OnProgressListener<FileDownloadTask.TaskSnapshot>() {
@@ -1082,15 +1087,16 @@ public class AuthenticationActivity extends AppCompatActivity {
                     });
                 }
             });
-            mHandler.post(new Runnable() {
+            /*mHandler.post(new Runnable() {
                 @Override
                 public void run() {
                     Log.i(TAG,"mHandler.post() --> Finish()");
                     loadingTextView.setVisibility(View.VISIBLE);
                 }
-            });
+            });*/
         } catch (Exception e) {
             Util.hasUserModel = false;
+            Util.isSetUserModel = true;
             Log.i(TAG,"### Util.hasUserModel = false;");
             Log.e(TAG, "ERROR: MODEL: EXCEPTION !");
             e.printStackTrace();
@@ -1146,6 +1152,9 @@ public class AuthenticationActivity extends AppCompatActivity {
 
     @Override
     public void onResume(){
+
+        Util.isSetUserModel = false;
+
         if( Util.isFinished ){
             Log.d(TAG," isFinished() = true");
             finish();

@@ -60,6 +60,7 @@ public class Util {
 
     // user model
     public static boolean hasUserModel = false;
+    public static boolean isSetUserModel = false;
 
     public static void hideKeyboard(Activity activity){
         // If keyboard is shown then hide:

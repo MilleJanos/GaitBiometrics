@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/model_modeluploader_main_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fontFamily="@font/aldrich"
+    android:fitsSystemWindows="true"
+    android:background="@drawable/green_background_lighter_50"
+    android:gravity="center"
+    tools:context=".DataCollectorActivity"
+    tools:openDrawer="start">
+
+    <TextView
+        android:id="@+id/model_textView6"
+        android:layout_width="wrap_content"
+        android:layout_height="22dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:text="User:"
+        android:fontFamily="@font/aldrich"
+        android:textColor="@color/colorBlack"
+        app:layout_constraintEnd_toStartOf="@+id/model_showLoggedInUserEmailTextView"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/model_showLoggedInUserEmailTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="22dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="12dp"
+        android:fontFamily="@font/aldrich"
+        android:text="-user email-"
+        android:textColor="@color/colorBlue5"
+        app:layout_constraintEnd_toStartOf="@+id/model_logoutImageView"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/model_logoutImageView"
+        android:layout_width="37dp"
+        android:layout_height="37dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_power" />
+
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="100dp"
+        android:layout_marginBottom="100dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp">
+
+        <TextView
+            android:id="@+id/model_textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:fontFamily="@font/alef"
+            android:text="You have no model yet!"
+            android:textColor="@color/colorRed"
+            android:textStyle="bold|italic"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/model_titleTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="8dp"
+            android:fontFamily="@font/aldrich"
+            android:text="Upload new Model"
+            android:textColor="@color/colorBlack"
+            android:textSize="20dp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/model_textView2" />
+
+        <TextView
+            android:id="@+id/model_textViewStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:layout_marginEnd="8dp"
+            android:fontFamily="@font/aldrich"
+            android:gravity="center"
+            android:text="-current status-"
+            android:textColor="@color/colorBlue5"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.517"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/model_titleTextView" />
+
+        <Button
+            android:id="@+id/model_buttonStart"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/button_selector"
+            android:fontFamily="@font/aldrich"
+            android:paddingLeft="50dp"
+            android:paddingRight="50dp"
+            android:shadowRadius="@android:integer/config_longAnimTime"
+            android:text="@string/Start"
+            android:textAlignment="center"
+            android:textAllCaps="false"
+            android:textColor="@color/colorBlack"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/model_textViewStatus" />
+
+        <Button
+            android:id="@+id/model_buttonStop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/button_selector"
+            android:fontFamily="@font/aldrich"
+            android:paddingLeft="50dp"
+            android:paddingRight="50dp"
+            android:shadowRadius="@android:integer/config_longAnimTime"
+            android:text="@string/Stop"
+            android:textAlignment="center"
+            android:textAllCaps="false"
+            android:textColor="@color/colorBlack"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/model_buttonStart" />
+
+        <ImageView
+            android:id="@+id/model_firebaseImageView"
+            android:layout_width="37dp"
+            android:layout_height="37dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            app:layout_constraintEnd_toStartOf="@+id/model_saveToFirebaseButton"
+            app:layout_constraintTop_toBottomOf="@+id/model_buttonStop"
+            app:srcCompat="@drawable/firebase_icon" />
+
+        <Button
+            android:id="@+id/model_saveToFirebaseButton"
+            android:layout_width="wrap_content"
+            android:layout_height="37dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/button_selector"
+            android:fontFamily="@font/aldrich"
+            android:shadowRadius="@android:integer/config_longAnimTime"
+            android:text="Save Model to Firebase"
+            android:textAlignment="viewEnd"
+            android:textAllCaps="false"
+            android:textColor="@color/colorBlack"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/model_buttonStop" />
+
+    </android.support.constraint.ConstraintLayout>
+
+    <TextView
+        android:id="@+id/errorReportTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginBottom="8dp"
+        android:padding="3dp"
+        android:fontFamily="@font/alef"
+        android:text="@string/errorReportTextView"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</android.support.constraint.ConstraintLayout>

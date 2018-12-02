@@ -51,10 +51,7 @@
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
         <!-- <activity android:name=".SplashScreenActivity"></activity> -->
-        <activity
-            android:name=".DrawerTestActivity"
-            android:label="@string/title_activity_drawer_test"
-            android:theme="@style/AppTheme"></activity>
+        <activity android:name=".ModelUploaderActivity"></activity>
     </application>
 
 </manifest>
