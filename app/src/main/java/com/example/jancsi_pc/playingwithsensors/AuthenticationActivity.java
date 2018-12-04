@@ -1,8 +1,6 @@
 package com.example.jancsi_pc.playingwithsensors;
 
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -10,20 +8,15 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
-import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
-import android.support.v4.widget.CircularProgressDrawable;
 import android.support.v7.app.AppCompatActivity;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.TranslateAnimation;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -41,12 +34,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.ProviderQueryResult;
 import com.google.firebase.storage.FileDownloadTask;
-import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
-import com.google.firebase.storage.StorageReference;
 
 import java.io.File;
-import java.io.IOException;
 
 public class AuthenticationActivity extends AppCompatActivity {
 
@@ -77,8 +67,8 @@ public class AuthenticationActivity extends AppCompatActivity {
 
     private ConstraintLayout.LayoutParams params;
 
-    private String email = "";
-    private String password = "";
+    private String mEmail = "";
+    private String mPassword = "";
     private String password2 = "";
 
     private final String TAG = "AuthenticationActivity";
@@ -156,7 +146,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                 emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Problem with authentication.");
                 emailIntent.putExtra(Intent.EXTRA_TEXT, "");
                 emailIntent.putExtra(Intent.EXTRA_EMAIL, "");
-                startActivity(Intent.createChooser(emailIntent, "Send email..."));
+                startActivity(Intent.createChooser(emailIntent, "Send mEmail..."));
             }
         });
 
@@ -191,56 +181,56 @@ public class AuthenticationActivity extends AppCompatActivity {
             }
         }
 
-        emailEditText.setText(email);//TODO REMOVE BEFORE RELEASE
+        emailEditText.setText(mEmail);//TODO REMOVE BEFORE RELEASE
     } // OnCreate
 
     private void Register() {
         Log.d(TAG, ">>>RUN>>>Register()");
         Util.hideKeyboard(AuthenticationActivity.this);
 
-        if( RequireEnabledInternetAndInternetConnection() ){
+        if( ! RequireEnabledInternetAndInternetConnection() ){
             return;
         }
 
-        email = emailEditText.getText().toString();
-        password = passwordEditText.getText().toString().trim(); //TODO ENCODE PASSWORD
+        mEmail = emailEditText.getText().toString();
+        mPassword = passwordEditText.getText().toString().trim(); //TODO ENCODE PASSWORD
         password2 = passwordEditText2.getText().toString().trim();
 
-        Log.d(TAG, "\nemail=\""+email+"\"" + "\npassword=\""+password+"\"\n" + "\npassword2=\""+password2+"\"\n" ); //TODO remove when app is finished in order to keep personal info safe...
+        Log.d(TAG, "\nmEmail=\""+ mEmail +"\"" );
 
-        if( email.equals("") ){
-            emailEditText.setError("Wrong email");
+        if( mEmail.equals("") ){
+            emailEditText.setError("Wrong mEmail");
             emailEditText.requestFocus();
             return;
         }
 
-        if( password.length() <= 6 ){
+        if( mPassword.length() <= 6 ){
             passwordEditText.setError("At least 6 character!");
             passwordEditText.requestFocus();
             return;
         }
 
-        if(  password.equals("") ){
+        if(  mPassword.equals("") ){
             passwordEditText.setError("Must be filled!");
             passwordEditText.requestFocus();
             return;
         }
 
-        if( ! password.equals(password2) ){
+        if( ! mPassword.equals(password2) ){
             passwordEditText2.setError("Passwords has to be the same!");
             passwordEditText2.requestFocus();
             return;
         }
 
         //if there are no errors so far => create user with credentials
-        Util.mAuth.createUserWithEmailAndPassword(email, password)
+        Util.mAuth.createUserWithEmailAndPassword(mEmail, mPassword)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "createUserWithEmail:success");
-                            FirebaseUser user = Util.mAuth.getCurrentUser();
+                            //FirebaseUser user = Util.mAuth.getCurrentUser();
                             //updateUI(user);
                             sendVerificationEmail();
                             //Toast.makeText(AuthenticationActivity.this, getString(R.string.verifyMailbox),Toast.LENGTH_LONG).show();
@@ -264,16 +254,16 @@ public class AuthenticationActivity extends AppCompatActivity {
                                     @Override
                                     public void onComplete(@NonNull Task<Void> task) {
                                         if (task.isSuccessful()) {
-                                            // email sent
+                                            // mEmail sent
 
-                                            // after email is sent just logout the user and finish this activity
+                                            // after mEmail is sent just logout the user and finish this activity
                                             FirebaseAuth.getInstance().signOut();
                                             //startActivity(new Intent(AuthenticationActivity.this, DataCollectorActivity.class));
                                             finish();
                                         }
                                         else
                                         {
-                                            // email not sent, so display message and restart the activity or do whatever you wish to do
+                                            // mEmail not sent, so display message and restart the activity or do whatever you wish to do
 
                                             //restart this activity
                                             overridePendingTransition(0, 0);
@@ -287,6 +277,7 @@ public class AuthenticationActivity extends AppCompatActivity {
 
                     }
                 });
+        Log.d(TAG, "<<<FINISH<<<Register()");
     }
 
     private void Login(){
@@ -298,33 +289,33 @@ public class AuthenticationActivity extends AppCompatActivity {
             return;
         }
 
-        email = emailEditText.getText().toString();
-        password = passwordEditText.getText().toString(); //TODO ENCODE PASSWORD
+        mEmail = emailEditText.getText().toString();
+        mPassword = passwordEditText.getText().toString(); //TODO ENCODE PASSWORD
 
-        Log.d(TAG, "email=\""+email+"\"");
+        Log.d(TAG, "mEmail=\""+ mEmail +"\"");
 
-        if( email.equals("") ){
-            emailEditText.setError("Wrong email");
+        if( mEmail.equals("") ){
+            emailEditText.setError("Wrong mEmail");
             emailEditText.requestFocus();
             authButton.setEnabled(true);
             return;
         }
 
-        if( password.length() < 6 ){
+        if( mPassword.length() < 6 ){
             passwordEditText.setError("At least 6 character!");
             passwordEditText.requestFocus();
             authButton.setEnabled(true);
             return;
         }
 
-        if(  password.equals("") ){
+        if(  mPassword.equals("") ){
             passwordEditText2.setError("Wrong Password!");
             passwordEditText2.requestFocus();
             authButton.setEnabled(true);
             return;
         }
 
-        Util.mAuth.signInWithEmailAndPassword(email, password)
+        Util.mAuth.signInWithEmailAndPassword(mEmail, mPassword)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
@@ -333,7 +324,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                             Log.d(TAG, "signInWithEmail:success");
                             //FirebaseUser user = Util.mAuth.getCurrentUser();
                             //updateUI(user);
-                            Util.userEmail = email;
+                            Util.userEmail = mEmail;
                             Util.isSignedIn = true;
                             authButton.setEnabled(true);
 
@@ -391,12 +382,13 @@ public class AuthenticationActivity extends AppCompatActivity {
                 if (RequireEnabledInternetAndInternetConnection()) {            // This method gives feedback using Snackbar
                     Log.d(TAG, " isNetworkEnabled = true");
                     Log.d(TAG, " isNetworkConnection = true");
-                    email = emailEditText.getText().toString();
+                    mEmail = emailEditText.getText().toString();
 
 
                     Log.d(TAG, "Waiting for fetchProvidersForEmail() ...");
-                    if (!email.equals("")) {
-                        Util.mAuth.fetchProvidersForEmail(email).addOnCompleteListener(new OnCompleteListener<ProviderQueryResult>() {
+                    if (!mEmail.equals("")) {
+                        // TODO: kicserelni a fetchProviderForEmail-t lecserelni: https://firebase.google.com/docs/auth/admin/manage-users#list_all_users
+                        Util.mAuth.fetchProvidersForEmail(mEmail).addOnCompleteListener(new OnCompleteListener<ProviderQueryResult>() {
                             @Override
                             public void onComplete(@NonNull Task<ProviderQueryResult> task) {
                                 if (task.isSuccessful()) {
@@ -434,7 +426,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                         });
                     }else{
                         //Toast.makeText(AuthenticationActivity.this, "Please fill the Email field!", Toast.LENGTH_LONG).show();
-                        emailEditText.setError("Please fill the Email field with a valid email address!");
+                        emailEditText.setError("Please fill the Email field with a valid mEmail address!");
                         emailEditText.requestFocus();
                     }
 
@@ -455,9 +447,9 @@ public class AuthenticationActivity extends AppCompatActivity {
                 Log.d(TAG,"Go To: REGISTER_MODE");
                 /*
                 userExists=false;
-                email=emailEditText.getText().toString();
-                if(!email.equals("")) {
-                    /Util.mAuth.fetchProvidersForEmail(email).addOnCompleteListener(new OnCompleteListener<ProviderQueryResult>() {
+                mEmail=emailEditText.getText().toString();
+                if(!mEmail.equals("")) {
+                    /Util.mAuth.fetchProvidersForEmail(mEmail).addOnCompleteListener(new OnCompleteListener<ProviderQueryResult>() {
                         @Override
                         public void onComplete(@NonNull Task<ProviderQueryResult> task) {
                             if (task.isSuccessful()) {
@@ -553,7 +545,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         titleTextView.setText(R.string.login);
         titleTextView.setVisibility(View.VISIBLE);
 
-        selectedEmailTextView.setText( email );
+        selectedEmailTextView.setText(mEmail);
         selectedEmailTextView.setVisibility(View.VISIBLE);
 
         emailEditText.setVisibility(View.INVISIBLE);
@@ -571,8 +563,8 @@ public class AuthenticationActivity extends AppCompatActivity {
         passwordEditText2.setVisibility(View.INVISIBLE);
         deletePasswordImageView2.setVisibility(View.INVISIBLE);
 
-        if(email.trim().equals("millejanos31@gmail.com") || email.trim().equals("wolterwill31@gmail.com") ){  //TODO : DELETE THIS !
-            password = "01234567";
+        if(mEmail.trim().equals("millejanos31@gmail.com") || mEmail.trim().equals("wolterwill31@gmail.com") ){  //TODO : DELETE THIS !
+            mPassword = "01234567";
             passwordEditText.setText("01234567");
         }
 
@@ -589,7 +581,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                 // Finishing Login
                 Log.d(TAG, ">>>RUN>>>authButtonClickListener");
                 if( RequireEnabledInternetAndInternetConnection() ) {            // This method gives feedback using Snackbar
-                    password = passwordEditText.getText().toString();
+                    mPassword = passwordEditText.getText().toString();
 
                     Login();
 
@@ -687,6 +679,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         });
 
 
+        passwordEditText.setText("");
         passwordEditText.setVisibility(View.VISIBLE);
         deletePasswordImageView.setVisibility(View.VISIBLE);
         deletePasswordImageView.setOnClickListener(new View.OnClickListener() {
@@ -696,6 +689,7 @@ public class AuthenticationActivity extends AppCompatActivity {
             }
         });
 
+        passwordEditText2.setText("");
         passwordEditText2.setVisibility(View.VISIBLE);
         deletePasswordImageView2.setVisibility(View.VISIBLE);
         deletePasswordImageView2.setOnClickListener(new View.OnClickListener() {
@@ -714,9 +708,30 @@ public class AuthenticationActivity extends AppCompatActivity {
         authButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                email=emailEditText.getText().toString();
-                if(!email.equals("")) {
-                    Util.mAuth.fetchProvidersForEmail(email).addOnCompleteListener(new OnCompleteListener<ProviderQueryResult>() {
+                if( emailEditText.getText().toString().trim().equals("") ){
+                    emailEditText.setError("This field must be filled!");
+                    return;
+                }
+                if( passwordEditText.getText().toString().trim().equals("") ){
+                    passwordEditText.setError("This field must be filled!");
+                    return;
+                }
+                if( passwordEditText.getText().toString().trim().length() < 6 ){
+                    passwordEditText.setError("Passwords has to be at least 6 characters!");
+                    return;
+                }
+                if( passwordEditText2.getText().toString().trim().equals("") ){
+                    passwordEditText2.setError("This field must be filled!");
+                    return;
+                }
+                if( ! passwordEditText.getText().toString().trim().equals( passwordEditText2.getText().toString().trim() ) ){
+                    passwordEditText2.setError("The passwords must be the same!");
+                    return;
+                }
+                mEmail =emailEditText.getText().toString();
+                if(!mEmail.equals("")) {
+                    // TODO: kicserelni a fetchProviderForEmail-t lecserelni: https://firebase.google.com/docs/auth/admin/manage-users#list_all_users
+                    Util.mAuth.fetchProvidersForEmail(mEmail).addOnCompleteListener(new OnCompleteListener<ProviderQueryResult>() {
                         @Override
                         public void onComplete(@NonNull Task<ProviderQueryResult> task) {
                             if (task.isSuccessful()) {
@@ -726,10 +741,13 @@ public class AuthenticationActivity extends AppCompatActivity {
                                 if (result != null && result.getProviders() != null && result.getProviders().size() > 0) {
                                     Log.d(TAG, "User exists, stopping");
                                     userExists = true;
+                                    Toast.makeText(AuthenticationActivity.this, "Email already registered!", Toast.LENGTH_LONG).show();
                                 } else {
-                                    Log.d(TAG, "User doesn't exist");
+                                    Log.d(TAG, "User doesn't exist ==> Register");
                                     //Toast.makeText(AuthenticationActivity.this, "Please fill the Email field!", Toast.LENGTH_LONG).show();
                                     userExists=false;
+                                    mPassword = passwordEditText.getText().toString().trim();
+                                    Register();
                                 }
                             } else {
                                 Log.w(TAG, "User check failed", task.getException());
@@ -737,15 +755,19 @@ public class AuthenticationActivity extends AppCompatActivity {
                                         "There is a problem, please try again later.",
                                         Toast.LENGTH_SHORT).show();
                                 userExists=false;
+                                mPassword = passwordEditText.getText().toString().trim();
+                                Register();
                             }
                         }
                     });
                 }
-                if(userExists){
+                /*if(userExists){
                     Toast.makeText(AuthenticationActivity.this, "Email already registered!", Toast.LENGTH_LONG).show();
                     return;
                 }
+                mPassword = passwordEditText.getText().toString().trim();
                 Register();
+                */
             }
         });
 
@@ -805,7 +827,6 @@ public class AuthenticationActivity extends AppCompatActivity {
      *
      */
 
-
     // A + B and feedback with Snackbar to the user
     private boolean RequireEnabledInternetAndInternetConnection() {          // TODO: altalanositas: RequireEnabledInternetAndInternetConnection(Activity activity) {...}
         Log.d(TAG, ">>>RUN>>>RequireEnabledInternetAndInternetConnection()");
@@ -825,13 +846,15 @@ public class AuthenticationActivity extends AppCompatActivity {
         } else {
             if (!isNetworkConnection) {
                 //authButton.setError("No internet connection detected!");
-                Log.d("TAG", " isNetworkConnection = false");
+                Log.d(TAG, " isNetworkConnection = false");
                 View view = findViewById(R.id.auth_main_layout);
                 Snackbar.make(view, "No internet connection detected!", Snackbar.LENGTH_SHORT).show();
             } else {
+                Log.d(TAG,"RequireEnabledInternetAndInternetConnection() --> true");
                 return true;
             }
         }
+        Log.d(TAG,"RequireEnabledInternetAndInternetConnection() --> false");
         return false;
     }
     // B
@@ -867,11 +890,13 @@ public class AuthenticationActivity extends AppCompatActivity {
 
             return false;
         }*/
-        if(!isConnected){
-            return false;
+        if(isConnected){
+            Log.d(TAG,"RequireInternetConnection() --> true");
+            return true;
         }
         // else:
-        return true;
+        Log.d(TAG,"RequireInternetConnection() --> false");
+        return false;
     }
     // A
     private boolean CheckWiFiNetwork() {
@@ -912,9 +937,11 @@ public class AuthenticationActivity extends AppCompatActivity {
             // show it
             alertDialog.show();
             */
+            Log.d(TAG,"CheckWiFiNetwork() --> false");
             return false;
         }
         // else:
+        Log.d(TAG,"CheckWiFiNetwork() --> true");
         return true;
     }
 
@@ -927,16 +954,17 @@ public class AuthenticationActivity extends AppCompatActivity {
     private void resetPassword() {
         Log.d(TAG,">>>RUN>>>resetPassword()");
         forgotPassTextView.setVisibility(View.INVISIBLE);
-        email=emailEditText.getText().toString().trim();
-        if (email.equals("")) {
+        mEmail =emailEditText.getText().toString().trim();
+        if (mEmail.equals("")) {
             Log.d(TAG,">>>RUN>>>Email field is empty ==> \"please fill it\"");
-            emailEditText.setError("Type your email before password request.");
+            emailEditText.setError("Type your mEmail before mPassword request.");
             //emailEditText.requestFocus();
             forgotPassTextView.setVisibility(View.VISIBLE);
             return;
         }else{
             Log.d(TAG, "Waiting for fetchProvidersForEmail() ...");
-            Util.mAuth.fetchProvidersForEmail(email).addOnCompleteListener(new OnCompleteListener<ProviderQueryResult>() {
+            // TODO: kicserelni a fetchProviderForEmail-t lecserelni: https://firebase.google.com/docs/auth/admin/manage-users#list_all_users
+            Util.mAuth.fetchProvidersForEmail(mEmail).addOnCompleteListener(new OnCompleteListener<ProviderQueryResult>() {
                 @Override
                 public void onComplete(@NonNull Task<ProviderQueryResult> task) {
                     if (task.isSuccessful()) {
@@ -970,10 +998,10 @@ public class AuthenticationActivity extends AppCompatActivity {
         }
 
         Util.userEmail = emailEditText.getText().toString().trim();
-        email = Util.userEmail;
+        mEmail = Util.userEmail;
 
         if( requestPasswordResetCount == 0 ){
-            // First password reset request
+            // First mPassword reset request
             Log.d(TAG,"requestPasswordResetCount(" + requestPasswordResetCount + ") > 0 ==> AlertDialog");
 
             Util.mAuth.sendPasswordResetEmail(Util.userEmail)
@@ -981,17 +1009,17 @@ public class AuthenticationActivity extends AppCompatActivity {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
                             if (task.isSuccessful()) {
-                                Log.d(TAG, "Reset password request sent.");
+                                Log.d(TAG, "Reset mPassword request sent.");
                                 View mainLayoutView = findViewById(R.id.auth_main_layout);
-                                //Snackbar.make(mainLayoutView, "Reset email is sent!", Snackbar.LENGTH_SHORT).show();
-                                Toast.makeText(AuthenticationActivity.this, "Reset password request was sent!", Toast.LENGTH_LONG ).show();
+                                //Snackbar.make(mainLayoutView, "Reset mEmail is sent!", Snackbar.LENGTH_SHORT).show();
+                                Toast.makeText(AuthenticationActivity.this, "Reset mPassword request was sent!", Toast.LENGTH_LONG ).show();
                             }
                         }
                     });
             requestPasswordResetCount++;
 
         }else{
-            // If the user tries to send password reset multiple times in a row
+            // If the user tries to send mPassword reset multiple times in a row
             Log.d(TAG,"requestPasswordResetCount(" + requestPasswordResetCount + ") > 0 ==> AlertDialog");
 
             AlertDialog.Builder builder = new AlertDialog.Builder(AuthenticationActivity.this);
@@ -1006,10 +1034,10 @@ public class AuthenticationActivity extends AppCompatActivity {
                                 @Override
                                 public void onComplete(@NonNull Task<Void> task) {
                                     if (task.isSuccessful()) {
-                                        Log.d(TAG, "Reset password request sent.");
+                                        Log.d(TAG, "Reset mPassword request sent.");
                                         View mainLayoutView = findViewById(R.id.auth_main_layout);
-                                        //Snackbar.make(mainLayoutView, "Reset email is sent!", Snackbar.LENGTH_SHORT).show();
-                                        Toast.makeText(AuthenticationActivity.this, "Reset password request was sent!", Toast.LENGTH_LONG ).show();
+                                        //Snackbar.make(mainLayoutView, "Reset mEmail is sent!", Snackbar.LENGTH_SHORT).show();
+                                        Toast.makeText(AuthenticationActivity.this, "Reset mPassword request was sent!", Toast.LENGTH_LONG ).show();
                                     }
                                 }
                             });

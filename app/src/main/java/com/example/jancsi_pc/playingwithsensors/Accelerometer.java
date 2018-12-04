@@ -1,5 +1,6 @@
 package com.example.jancsi_pc.playingwithsensors;
 
+
 public class Accelerometer {
     /*
     public static final String FIELD_TIMESTAMP = "timestamp";

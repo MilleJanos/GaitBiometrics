@@ -268,7 +268,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
                     ActivityCompat.requestPermissions(ModelUploaderActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
                 }
                 //
-                // Saving into .CSV file
+                // Saving into .CSV file (Local)
                 //
                 Log.d(TAG,"Saving to .CSV");
 
@@ -302,9 +302,9 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
                 }
 
 
-                Log.d(TAG,"Saving CSV to FireStore...");
+                Log.d(TAG,"Saving CSV to FireBase Storage...");
                 //
-                // Saving CSV to firestore
+                // Saving CSV to FireBase Storage
                 //
                 if (checkCallingOrSelfPermission("android.permission.INTERNET") != PackageManager.PERMISSION_GRANTED) {
                     ActivityCompat.requestPermissions(ModelUploaderActivity.this, new String[]{Manifest.permission.INTERNET}, REQUEST_CODE);

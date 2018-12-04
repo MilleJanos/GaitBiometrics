@@ -344,6 +344,10 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                 try {
                     FileOutputStream f = new FileOutputStream(file);
                     PrintWriter pw = new PrintWriter(f);
+
+                    // Header:
+                    pw.println("timestamp,accx,accy,accz,stepnum");
+
                     for( Accelerometer a : accArray){
                         pw.println( a.toString() );
                     }
