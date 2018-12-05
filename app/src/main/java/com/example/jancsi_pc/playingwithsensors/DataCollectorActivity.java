@@ -659,9 +659,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        Log.d("TEST","*");
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-            Log.d("TEST","#");
             simpleStepDetector.updateAccel(
                     event.timestamp, event.values[0], event.values[1], event.values[2]);
         }
@@ -671,7 +669,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     public void step(long timeNs) {
         Log.d(TAG, ">>>RUN>>>step()");
         //mp.start();
-        Log.d("TEST"," + ");
         DataCollectorActivity.stepNumber++;
     }
 

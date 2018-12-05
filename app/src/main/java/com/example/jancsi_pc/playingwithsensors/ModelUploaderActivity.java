@@ -9,29 +9,20 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.text.format.DateFormat;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.jancsi_pc.playingwithsensors.ModelBuilder.ModelBuilderMain;
 import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepDetector;
 import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepListener;
 import com.example.jancsi_pc.playingwithsensors.Utils.Util;
@@ -41,23 +32,19 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.net.UnknownHostException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
 
@@ -106,6 +93,15 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
     private FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
     private DocumentReference mDocRef; // = FirebaseFirestore.getInstance().document("usersFiles/information");
 
+    private Date mDate;
+    private String mFileName;
+
+    private File localDummyFile;
+    private File rawUserFile;
+    private String FEATURESDummy = "";
+    private String RAWDATAUser = "";
+    private String FEATURESUser = "";
+    private String MODELPATHUser = "";
 
 
     /*
@@ -263,146 +259,41 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
         saveToFirebaseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Runtime allow external storage permission:
                 Log.d(TAG, ">>>RUN>>>saveToFirebaseButtonClickListener");
+                if (checkCallingOrSelfPermission("android.permission.READ_EXTERNAL_STORAGE") != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(ModelUploaderActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE);
+                }
                 if (checkCallingOrSelfPermission("android.permission.WRITE_EXTERNAL_STORAGE") != PackageManager.PERMISSION_GRANTED) {
                     ActivityCompat.requestPermissions(ModelUploaderActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
                 }
-                //
-                // Saving into .CSV file (Local)
-                //
-                Log.d(TAG,"Saving to .CSV");
-
-                File root = android.os.Environment.getExternalStorageDirectory();
-                File dir = new File (root.getAbsolutePath() /*+ "/accelerometer"*/);
-                if(!dir.exists()) {
-                    dir.mkdirs();
-                }
-
-                Date date = new Date();
-                CharSequence s  = DateFormat.format("yyyyMMdd_HHmmss", date.getTime());
-
-                String fileName = "rawdata_" + mAuth.getUid() + "_" + s  ;
-
-                File file = new File(dir, fileName+ ".csv");
-
-                try {
-                    FileOutputStream f = new FileOutputStream(file);
-                    PrintWriter pw = new PrintWriter(f);
-                    for( Accelerometer a : accArray){
-                        pw.println( a.toString() );
-                    }
-                    pw.flush();
-                    pw.close();
-                    f.close();
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                    Log.d(TAG, "******* File not found.");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
 
 
-                Log.d(TAG,"Saving CSV to FireBase Storage...");
-                //
-                // Saving CSV to FireBase Storage
-                //
-                if (checkCallingOrSelfPermission("android.permission.INTERNET") != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(ModelUploaderActivity.this, new String[]{Manifest.permission.INTERNET}, REQUEST_CODE);
-                }
+                // Saving array into .CSV file (Local):
+                savingAccArrayIntoCSV();
 
-                Log.d(TAG ,"FILE PATH:" + file.getAbsolutePath());
+                // Saving CSV to FireBase Storage:
+                savingCSVtoFireBaseStorage();
 
-                Uri path = Uri.fromFile( new File(file.getAbsolutePath()) );
+                // Updating JSON in the FireStore: (Collection->Documents->Collection->Documents->...)
+                uploadJSONintoFireBaseFireStore();
 
-                if( path != null){
-                    final ProgressDialog progressDialog = new ProgressDialog(ModelUploaderActivity.this);
-                    progressDialog.setTitle("Uploading...");
-                    progressDialog.show();
-                    /*
-                     *
-                     *  Generate
-                     *
-                     */
-                    StorageReference ref = mStorageReference.child("files/" + path.getLastPathSegment() );
-                    ref.putFile(path)
-                            .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                                @Override
-                                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                    progressDialog.dismiss();
-                                    Toast.makeText(ModelUploaderActivity.this, "Uploaded", Toast.LENGTH_LONG).show();
-                                }
-                            })
-                            .addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                    Toast.makeText(ModelUploaderActivity.this, "Upload Failed", Toast.LENGTH_LONG).show();
-                                }
-                            })
-                            .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                                @Override
-                                public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                                    double progress = (100.0*taskSnapshot.getBytesTransferred()/taskSnapshot.getTotalByteCount());
-                                    progressDialog.setMessage("Uploaded " + (int)progress + "%" );
-                                }
-                            });
-                }
+                // Downloading dummy data & Creating the Model:
+                downloadDummyDataFromFireBaseStorage_and_GenerateModel();
 
-                file.delete();
-
-                //
-                // Updating JSON in the FireStore (Collection->Documents->Collection->Documents->...)
-                //
-
-                Util.deviceId = Settings.Secure.getString(ModelUploaderActivity.this.getContentResolver(), Settings.Secure.ANDROID_ID);
-                String randomId = UUID.randomUUID().toString();
-
-                // Just to test Different device situations:
-                //Random r = new Random();
-                //deviceId += "_" + r.nextInt(100);
-
-                // OLD:
-                // mDocRef = FirebaseFirestore.getInstance().document("user_records/" + randomUserRecordID );
-                // "user_records" / <userID> / <deviceID> / <randomId> / ...fields...
-                mDocRef = FirebaseFirestore.getInstance()
-                        .collection("user_records_2/" )
-                        .document( mAuth.getUid() + "" )
-                        .collection( Util.deviceId )
-                        .document( randomId ) ;
-
-                UserAndHisFile info = new UserAndHisFile(date.toString(), fileName );
-
-                mDocRef.set(info).addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Log.d(TAG,"Document has been saved to FireStore!");
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.w(TAG,"Problem saving to FireStore!");
-                    }
-                });
-
-                //
-                // Creating the Model
-                //
-
-                // TODO
-                // TODO
-                // TODO
-
-                //
                 // Uploading the Model to FireBase Storage / models
-                //
+                //uploadModeltoFireBaseStorage();
 
-                // TODO
-                // TODO
-                // TODO
 
-                Log.i(TAG,"### Util.hasUserModel = true");
-                Util.hasUserModel = true;
-                finish();
+                // TODO: if( az utolso 4 fuggveny hibatlanul lefutott ) ==> ROLLBACK
 
+                // Delete temp files:
+                //file.delete();                // TODO: Delete temp files
+                //localDummyFile.delete();
+
+                //Log.i(TAG,"### Util.hasUserModel = true");
+                //Util.hasUserModel = true;
+                //finish();
             }
         });
 
@@ -425,18 +316,255 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
 
     }// OnCreate
 
-
-
-
+    // 1
+    //region HELP
     /*
-     *
-     * ArrayList<Accelerometer> accArray ==> String str
-     *
-     * output format:   "timestamp,x,y,z,currentStepCount,timestamp,x,y,z,currentStepCount,timestamp,x,y,z,timestamp,currentStepCount, ... ,end"
-     *
-     *
-     */
+        savingAccArrayIntoCSV()
+        | This method saves the accArray<Accelerometer> list
+        | into .CSV file including header.
+    */
+    //endregion
+    private void savingAccArrayIntoCSV(){
+        Log.d(TAG,">>>RUN>>>savingAccArrayIntoCSV()");
 
+        File root = android.os.Environment.getExternalStorageDirectory();
+        File dir = new File (root.getAbsolutePath() /*+ "/accelerometer"*/);
+        if(!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        mDate = new Date();
+        CharSequence s  = DateFormat.format("yyyyMMdd_HHmmss", mDate.getTime());
+
+        mFileName = "rawdata_" + mAuth.getUid() + "_" + s  ;
+
+        rawUserFile = new File(dir, mFileName + ".csv");
+
+        try {
+            FileOutputStream f = new FileOutputStream(rawUserFile);
+            PrintWriter pw = new PrintWriter(f);
+            for( Accelerometer a : accArray){
+                pw.println( a.toString() );
+            }
+            pw.flush();
+            pw.close();
+            f.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            Log.d(TAG, "******* File not found.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        Log.d(TAG,"Saving CSV to FireBase Storage...");
+    }
+
+    // 2
+    //region HELP
+    /*
+        savingCSVtoFireBaseStorage()
+            | This method uploads the .CSV file
+            | to FireBase Storage.
+    */
+    //endregion
+    private void savingCSVtoFireBaseStorage(){
+        Log.d(TAG,">>>RUN>>>savingCSVtoFireBaseStorage()");
+        if (checkCallingOrSelfPermission("android.permission.INTERNET") != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(ModelUploaderActivity.this, new String[]{Manifest.permission.INTERNET}, REQUEST_CODE);
+        }
+
+        Log.d(TAG ,"FILE PATH:" + rawUserFile.getAbsolutePath());
+
+        Uri path = Uri.fromFile( new File(rawUserFile.getAbsolutePath()) );
+
+        if( path != null){
+            //final ProgressDialog progressDialog = new ProgressDialog(ModelUploaderActivity.this);
+            //progressDialog.setTitle("Uploading...");
+            //progressDialog.show();
+            /*
+             *
+             *  Generate
+             *
+             */
+            StorageReference ref = mStorageReference.child("files/" + path.getLastPathSegment() );
+            ref.putFile(path)
+                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            //progressDialog.dismiss();
+                            Log.i(TAG,"CSV Uploaded");
+                            Toast.makeText(ModelUploaderActivity.this, "CSV file has been saved to FireBase Storage!", Toast.LENGTH_LONG).show();
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.i(TAG,"CSV upload Failed");
+                            Toast.makeText(ModelUploaderActivity.this, "CSV upload Failed", Toast.LENGTH_LONG).show();
+                        }
+                    })
+                    .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                            double progress = (100.0*taskSnapshot.getBytesTransferred()/taskSnapshot.getTotalByteCount());
+                            //progressDialog.setMessage("Uploaded " + (int)progress + "%" );
+                        }
+                    });
+        }
+
+        // file.delete(); --> LATER
+    }
+
+    // 3
+    //region HELP
+    /*
+        uploadJSONintoFireBaseFireStore()
+            | This method uploads the UserAndHisFile
+            | object(JSON) into FireBase FireStore.
+     */
+    //endregion
+    private void uploadJSONintoFireBaseFireStore(){
+        Log.d(TAG,">>>RUN>>>uploadJSONintoFireBaseFireStore()");
+        Util.deviceId = Settings.Secure.getString(ModelUploaderActivity.this.getContentResolver(), Settings.Secure.ANDROID_ID);
+        String randomId = UUID.randomUUID().toString();
+
+        // Just to test Different device situations:
+        //Random r = new Random();
+        //deviceId += "_" + r.nextInt(100);
+
+        // OLD:
+        // mDocRef = FirebaseFirestore.getInstance().document("user_records/" + randomUserRecordID );
+        // "user_records" / <userID> / <deviceID> / <randomId> / ...fields...
+        mDocRef = FirebaseFirestore.getInstance()
+                .collection("user_records_2/" )
+                .document( mAuth.getUid() + "" )
+                .collection( Util.deviceId )
+                .document( randomId ) ;
+
+        UserAndHisFile info = new UserAndHisFile(mDate.toString(), mFileName);
+
+        mDocRef.set(info).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Log.d(TAG,"JSON Document has been saved to FireBase FireStore!");
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.w(TAG,"Problem saving JSON to FireBase FireStore!");
+            }
+        });
+    }
+
+    // 4
+    //region HELP
+    /*
+        createModelForCurrentUser()
+            | This method downloads the
+            | dummy data (.arff) from Firebase
+            | Storage and generates the model
+            | for the current signed in user.
+    */
+    //endregion
+    private void downloadDummyDataFromFireBaseStorage_and_GenerateModel(){
+        Log.d(TAG,">>>RUN>>>downloadDummyDataFromFireBaseStorage_and_GenerateModel()");
+        // Dowloading Dummy Feature from FireBase Storage:
+        String dummyFileName = "features_rRHyStiEKkN4Cq5rVSxlpvrCwA72.arff";
+        Util.mRef = Util.mStorage.getReference().child("features/" + dummyFileName );    // TODO: HARDCODED FIREBASE DUMMY
+        Log.i(TAG,"mRef = "  + Util.mRef.toString() );
+        localDummyFile = new File(getFilesDir() + dummyFileName );
+        Log.d(TAG, "localDummyFile.getAbsolutePath()= "+localDummyFile.getAbsolutePath() );
+
+        try {
+            Util.mRef.getFile(localDummyFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                    Log.i(TAG, "Dummy feature found and downloaded: Local PATH: " + localDummyFile.getAbsolutePath());
+                    try {
+                        continueModelGenerating();
+                    }catch (Exception e){
+                    }
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Log.i(TAG,"Dummy feature not found or internet problems; -> return;");
+                    e.printStackTrace();
+                    return;
+                }
+            });
+        } catch (Exception e) {
+            Log.e(TAG, "Error downloading dummy file!");
+            e.printStackTrace();
+            return;
+        }
+    }
+    private void continueModelGenerating(){
+        Log.d(TAG,">>>RUN>>>continueModelGenerating()");
+        FEATURESDummy = localDummyFile.getAbsolutePath();
+        RAWDATAUser = rawUserFile.getAbsolutePath();
+        FEATURESUser = getFilesDir() + "/feature_user.arff";    // Ez a file meg nem letezik, a getFeatures() fogja letrehozni
+        MODELPATHUser = getFilesDir() + "/model_user.mdl";      // szinten
+
+        Log.i(TAG," ||| String RAWDATAUser [size:"+ new File(RAWDATAUser).length() +"]= "   + RAWDATAUser );
+        Log.i(TAG," ||| String FEATURESUser [size:"+ new File(FEATURESUser).length() +"]= " + FEATURESUser);
+
+        Log.i(TAG,">>>RUN>>>ModelBuilderMain.getFeatures(RAWDATAUser,FEATURESUser); ");
+        ModelBuilderMain.getFeatures(RAWDATAUser,FEATURESUser);
+
+        Log.i(TAG," ||| String RAWDATAUser [size:"+ new File(RAWDATAUser).length() +"]= "   + RAWDATAUser );
+        Log.i(TAG," ||| String FEATURESUser [size:"+ new File(FEATURESUser).length() +"]= "  + FEATURESUser);
+        Log.i(TAG," ||| String MODELPATHUser [size:"+ new File(MODELPATHUser).length() +"]= " + MODELPATHUser );
+
+        Log.i(TAG,">>>RUN>>>ModelBuilderMain.mergeArffFiles(FEATURESDummy, FEATURESUser); ");
+        ModelBuilderMain.mergeArffFiles(FEATURESDummy, FEATURESUser);
+
+        Log.i(TAG," ||| String FEATURESDummy [size:"+ new File(FEATURESDummy).length() +"]= " + FEATURESDummy);
+        Log.i(TAG," ||| String RAWDATAUser [size:"+ new File(RAWDATAUser).length() +"]= "   + RAWDATAUser );
+        Log.i(TAG," ||| String FEATURESUser [size:"+ new File(FEATURESUser).length() +"]= "  + FEATURESUser );
+
+        try{
+
+            Log.i(TAG,">>>RUN>>>ModelBuilderMain.CreateAndSaveModel(FEATURESUser, MODELPATHUser); ");
+            ModelBuilderMain.CreateAndSaveModel(FEATURESUser, MODELPATHUser);
+
+            Log.i(TAG," ||| String FEATURESDummy [size:"+ new File(FEATURESDummy).length() +"]= " + FEATURESDummy);
+            Log.i(TAG," ||| String RAWDATAUser = [size:"+ new File(RAWDATAUser).length() +"]"   + RAWDATAUser );
+            Log.i(TAG," ||| String FEATURESUser = [size:"+ new File(FEATURESUser).length() +"]"  + FEATURESUser );
+            Log.i(TAG," ||| String MODELPATHUser = [size:"+ new File(MODELPATHUser).length() +"]" + MODELPATHUser);
+
+        }
+        catch (Exception e){
+            Log.e(TAG,"ERROR: ModelBuilderMain.CreateAndSaveModel(FEATURESUser, MODELPATHUser)");
+            e.printStackTrace();
+        }
+        uploadModeltoFireBaseStorage();
+    }
+    //region HELP
+    /*
+
+     */
+    //endregion
+    private void uploadModeltoFireBaseStorage(){
+        Log.d(TAG,">>>RUN>>>uploadModeltoFireBaseStorage()");
+        //
+        // TODO Upload: MODELPATHUser filePath; to FireBase Storage /features
+        //
+        Log.i(TAG,"### Util.hasUserModel = true");
+        Util.hasUserModel = true;
+        finish();
+    }
+
+
+    //region HELP
+    /*
+        accArrayToString()
+            | ArrayList<Accelerometer> accArray ==> String str
+            |
+            | output format:   "timestamp,x,y,z,currentStepCount,timestamp,x,y,z,currentStepCount,timestamp,x,y,z,timestamp,currentStepCount, ... ,end"
+     */
+    //endregion
     public String accArrayToString(){
         Log.d(TAG, ">>>RUN>>>accArrayToString()");
         StringBuilder sb = new StringBuilder();
@@ -513,9 +641,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        Log.d("TEST","*");
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-            Log.d("TEST","#");
             simpleStepDetector.updateAccel(
                     event.timestamp, event.values[0], event.values[1], event.values[2]);
         }
@@ -525,8 +651,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
     public void step(long timeNs) {
         Log.d(TAG, ">>>RUN>>>step()");
         //mp.start();
-        Log.d("TEST"," + ");
-        DataCollectorActivity.stepNumber++;
+        ModelUploaderActivity.stepNumber++;
     }
 
 

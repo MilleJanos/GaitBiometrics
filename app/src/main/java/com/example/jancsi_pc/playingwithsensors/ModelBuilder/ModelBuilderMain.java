@@ -51,7 +51,6 @@ public class ModelBuilderMain {
         String MODELPATHUser = "D://GaitBiom//ModelBuilder//model_LnntbFQGpBeHx3RwMu42e2yOks32.mdl";
         */
 
-        String RAWDATADummy = ""; //download dummy rawdata from firestore
         String RAWDATAUser = "";  // same as dummy but for user
         String FEATURESDummy = "";
         String FEATURESUser = "";
@@ -81,7 +80,7 @@ public class ModelBuilderMain {
 
 
 
-        getFeatures(RAWDATADummy,FEATURESDummy);
+        //getFeatures(RAWDATADummy,FEATURESDummy);
         getFeatures(RAWDATAUser,FEATURESUser);
 
         //TODO save features to firestore...
@@ -100,7 +99,7 @@ public class ModelBuilderMain {
 
     }
 
-    private static void getFeatures(String rawDataFile, String featureFile){
+    public static void getFeatures(String rawDataFile, String featureFile){
         Settings.usingFrames(512);
         Settings.setOutputHasHeader(true); // full arff, no header
 
@@ -112,7 +111,7 @@ public class ModelBuilderMain {
         }
     }
 
-    private static void CreateAndSaveModel(String userFeatureFilePath, String userModelFilePath){
+    public static void CreateAndSaveModel(String userFeatureFilePath, String userModelFilePath){
         ModelGenerator mg = new ModelGenerator();
 
         //the create muxed feature function save the mixed data in the first file to use less space
