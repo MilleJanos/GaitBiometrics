@@ -18,6 +18,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.io.File;
 import java.util.ArrayList;
 
 public class Util {
@@ -51,6 +52,17 @@ public class Util {
     // login/register
     public enum ScreenModeEnum { EMAIL_MODE, PASSWORD_MODE, REGISTER_MODE }
     public static ScreenModeEnum screenMode;
+
+    // stored internal files location
+    public static File internalFilesRoot;
+
+    // internal stored Paths:
+    public static String feature_dummy_path = "";
+    public static String rawdata_user_path = "";
+    public static String feature_user_path = "";
+    public static String model_user_path = "";
+
+    public static String firebaseDumyFileName = "features_rRHyStiEKkN4Cq5rVSxlpvrCwA72.arff";   // TODO: hardcoded dummy (name) from firebase
 
     // show errors for user
     public static String intoTextViewString = "";

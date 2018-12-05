@@ -1,7 +1,6 @@
 package com.example.jancsi_pc.playingwithsensors;
 
 import android.Manifest;
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
@@ -96,12 +95,11 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
     private Date mDate;
     private String mFileName;
 
-    private File localDummyFile;
-    private File rawUserFile;
-    private String FEATURESDummy = "";
-    private String RAWDATAUser = "";
-    private String FEATURESUser = "";
-    private String MODELPATHUser = "";
+    // local stored files:
+    private File featureDummyFile;  // local stored dummy file from firebase
+    private File rawdataUserFile;
+    private File featureUserFile;   // only the path exists !
+    private File modelUserFile;     // only the path exists !
 
 
     /*
@@ -119,11 +117,91 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
 
         Log.d(TAG, ">>>RUN>>>onCreate()");
 
-        //FIREBASE INIT:
+        // Preparing file paths and names:
+
+        mDate = new Date();
+        CharSequence dateCharSequence  = DateFormat.format("yyyyMMdd_HHmmss", mDate.getTime());
+
+        //
+        // Internal files Path:
+        //
+
+        String customDIR = "/" + dateCharSequence;    // TODO: Delete this and from below, and resolv to undate files instead of creating new ones
+
+        // Create folder if not exists:
+        File myInternalFilesRoot;
+        /*
+        myInternalFilesRoot = new File( Util.internalFilesRoot.getAbsolutePath() );
+        if(!myInternalFilesRoot.exists()) {
+            myInternalFilesRoot.mkdirs();
+            Log.i(TAG,"");
+        }else{
+
+        }
+        */
+        myInternalFilesRoot = new File( Util.internalFilesRoot.getAbsolutePath() + customDIR );
+        if(!myInternalFilesRoot.exists()) {
+            myInternalFilesRoot.mkdirs();
+            Log.i(TAG,"Path not exists (" + myInternalFilesRoot.getAbsolutePath() + ") --> .mkdirs()");
+        }
+
+
+        Util.feature_dummy_path = Util.internalFilesRoot.getAbsolutePath() + customDIR + "/feature_dummy.arff" ;
+        Util.rawdata_user_path  = Util.internalFilesRoot.getAbsolutePath() + customDIR + "/rawdata_" + mAuth.getUid() + "_" + dateCharSequence + ".csv";
+        Util.feature_user_path  = Util.internalFilesRoot.getAbsolutePath() + customDIR + "/feature_" + mAuth.getUid() + "_" + dateCharSequence + ".arff";
+        Util.model_user_path    = Util.internalFilesRoot.getAbsolutePath() + customDIR + "/model_"   + mAuth.getUid() + "_" + dateCharSequence + ".mdl";
+        //region Print this 4 paths
+        Log.i(TAG,"PATH: Util.feature_dummy_path = " + Util.feature_dummy_path );
+        Log.i(TAG,"PATH: Util.rawdata_user_path  = " + Util.rawdata_user_path  );
+        Log.i(TAG,"PATH: Util.feature_user_path  = " + Util.feature_user_path  );
+        Log.i(TAG,"PATH: Util.model_user_path    = " + Util.model_user_path    );
+        //endregion
+
+        // internal files as File type:
+        featureDummyFile = new File( Util.feature_dummy_path );
+        rawdataUserFile  = new File( Util.rawdata_user_path );
+        featureUserFile  = new File( Util.feature_user_path );
+        modelUserFile    = new File( Util.model_user_path );
+
+
+        if(!featureDummyFile.exists()){
+            try {
+                featureDummyFile.createNewFile();
+            }catch (Exception e){
+                e.printStackTrace();
+                Log.e(TAG,"File can't be created: " + Util.feature_dummy_path);
+            }
+        }
+        if(!rawdataUserFile.exists()){
+            try {
+                rawdataUserFile.createNewFile();
+            }catch (Exception e){
+                e.printStackTrace();
+                Log.e(TAG,"File can't be created: " + Util.rawdata_user_path);
+            }
+        }
+        if(!featureUserFile.exists()){
+            try {
+                featureUserFile.createNewFile();
+            }catch (Exception e){
+                e.printStackTrace();
+                Log.e(TAG,"File can't be created: " + Util.feature_user_path);
+            }
+        }
+        if(!modelUserFile.exists()){
+            try {
+                modelUserFile.createNewFile();
+            }catch (Exception e){
+                e.printStackTrace();
+                Log.e(TAG,"File can't be created: " + Util.model_user_path);
+            }
+        }
+
+        // FIREBASE INIT:
         mFirestore = FirebaseStorage.getInstance();
         mStorageReference = mFirestore.getReference();
 
-        //SENSOR:
+        // SENSOR:
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
@@ -259,16 +337,16 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
         saveToFirebaseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Runtime allow external storage permission:
                 Log.d(TAG, ">>>RUN>>>saveToFirebaseButtonClickListener");
-                if (checkCallingOrSelfPermission("android.permission.READ_EXTERNAL_STORAGE") != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(ModelUploaderActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE);
-                }
-                if (checkCallingOrSelfPermission("android.permission.WRITE_EXTERNAL_STORAGE") != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(ModelUploaderActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
-                }
 
-
+                // Runtime allow external storage permission:
+                // f (checkCallingOrSelfPermission("android.permission.WRITE_INTERNAL_STORAGE") != PackageManager.PERMISSION_GRANTED) {
+                //    ActivityCompat.requestPermissions(ModelUploaderActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
+                //
+                // f (checkCallingOrSelfPermission("android.permission.WRITE_EXTERNAL_STORAGE") != PackageManager.PERMISSION_GRANTED) {
+                //    ActivityCompat.requestPermissions(ModelUploaderActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
+                //
+                
                 // Saving array into .CSV file (Local):
                 savingAccArrayIntoCSV();
 
@@ -278,22 +356,10 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
                 // Updating JSON in the FireStore: (Collection->Documents->Collection->Documents->...)
                 uploadJSONintoFireBaseFireStore();
 
-                // Downloading dummy data & Creating the Model:
+                // Downloading dummy data & Creating the Model & Upload Model to FireBase Storage:
                 downloadDummyDataFromFireBaseStorage_and_GenerateModel();
-
-                // Uploading the Model to FireBase Storage / models
-                //uploadModeltoFireBaseStorage();
-
-
+                
                 // TODO: if( az utolso 4 fuggveny hibatlanul lefutott ) ==> ROLLBACK
-
-                // Delete temp files:
-                //file.delete();                // TODO: Delete temp files
-                //localDummyFile.delete();
-
-                //Log.i(TAG,"### Util.hasUserModel = true");
-                //Util.hasUserModel = true;
-                //finish();
             }
         });
 
@@ -327,22 +393,13 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
     private void savingAccArrayIntoCSV(){
         Log.d(TAG,">>>RUN>>>savingAccArrayIntoCSV()");
 
-        File root = android.os.Environment.getExternalStorageDirectory();
-        File dir = new File (root.getAbsolutePath() /*+ "/accelerometer"*/);
-        if(!dir.exists()) {
-            dir.mkdirs();
-        }
-
-        mDate = new Date();
-        CharSequence s  = DateFormat.format("yyyyMMdd_HHmmss", mDate.getTime());
-
-        mFileName = "rawdata_" + mAuth.getUid() + "_" + s  ;
-
-        rawUserFile = new File(dir, mFileName + ".csv");
-
         try {
-            FileOutputStream f = new FileOutputStream(rawUserFile);
+            FileOutputStream f = new FileOutputStream(rawdataUserFile);
             PrintWriter pw = new PrintWriter(f);
+
+            // Header:
+            pw.println("timestamp,accx,accy,accz,stepnum");
+
             for( Accelerometer a : accArray){
                 pw.println( a.toString() );
             }
@@ -374,9 +431,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
             ActivityCompat.requestPermissions(ModelUploaderActivity.this, new String[]{Manifest.permission.INTERNET}, REQUEST_CODE);
         }
 
-        Log.d(TAG ,"FILE PATH:" + rawUserFile.getAbsolutePath());
-
-        Uri path = Uri.fromFile( new File(rawUserFile.getAbsolutePath()) );
+        Uri path = Uri.fromFile( rawdataUserFile );
 
         if( path != null){
             //final ProgressDialog progressDialog = new ProgressDialog(ModelUploaderActivity.this);
@@ -470,20 +525,20 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
     private void downloadDummyDataFromFireBaseStorage_and_GenerateModel(){
         Log.d(TAG,">>>RUN>>>downloadDummyDataFromFireBaseStorage_and_GenerateModel()");
         // Dowloading Dummy Feature from FireBase Storage:
-        String dummyFileName = "features_rRHyStiEKkN4Cq5rVSxlpvrCwA72.arff";
-        Util.mRef = Util.mStorage.getReference().child("features/" + dummyFileName );    // TODO: HARDCODED FIREBASE DUMMY
-        Log.i(TAG,"mRef = "  + Util.mRef.toString() );
-        localDummyFile = new File(getFilesDir() + dummyFileName );
-        Log.d(TAG, "localDummyFile.getAbsolutePath()= "+localDummyFile.getAbsolutePath() );
 
+        Util.mRef = Util.mStorage.getReference().child("features/" + Util.firebaseDumyFileName );
+        Log.i(TAG,"mRef = "  + Util.mRef.toString() );
+
+        Log.d(TAG,"Downloading local dummy from FireBase Storage...");
         try {
-            Util.mRef.getFile(localDummyFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+            Util.mRef.getFile(featureDummyFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                    Log.i(TAG, "Dummy feature found and downloaded: Local PATH: " + localDummyFile.getAbsolutePath());
+                    Log.i(TAG, "Dummy feature found and downloaded: Local PATH: " + featureDummyFile.getAbsolutePath());
                     try {
                         continueModelGenerating();
                     }catch (Exception e){
+                        // do nothing
                     }
                 }
             }).addOnFailureListener(new OnFailureListener() {
@@ -501,42 +556,41 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
         }
     }
     private void continueModelGenerating(){
-        Log.d(TAG,">>>RUN>>>continueModelGenerating()");
-        FEATURESDummy = localDummyFile.getAbsolutePath();
-        RAWDATAUser = rawUserFile.getAbsolutePath();
-        FEATURESUser = getFilesDir() + "/feature_user.arff";    // Ez a file meg nem letezik, a getFeatures() fogja letrehozni
-        MODELPATHUser = getFilesDir() + "/model_user.mdl";      // szinten
+        Log.d(TAG,">>RUN>>>continueModelGenerating()");
 
-        Log.i(TAG," ||| String RAWDATAUser [size:"+ new File(RAWDATAUser).length() +"]= "   + RAWDATAUser );
-        Log.i(TAG," ||| String FEATURESUser [size:"+ new File(FEATURESUser).length() +"]= " + FEATURESUser);
+        //region *
+        Log.i(TAG," |IN| String Util.rawdata_user_path [size:"+ new File(Util.rawdata_user_path).length() +"]= "   + Util.rawdata_user_path );
+        Log.i(TAG," |IN| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= " + Util.feature_user_path);
+        //endregion
+        ModelBuilderMain.getFeatures(Util.rawdata_user_path, Util.feature_user_path);
+        //region *
+        Log.i(TAG," |OUT| String Util.rawdata_user_path [size:"+ new File(Util.rawdata_user_path).length() +"]= "   + Util.rawdata_user_path );
+        Log.i(TAG," |OUT| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= " + Util.feature_user_path);
+        //endregion
 
-        Log.i(TAG,">>>RUN>>>ModelBuilderMain.getFeatures(RAWDATAUser,FEATURESUser); ");
-        ModelBuilderMain.getFeatures(RAWDATAUser,FEATURESUser);
-
-        Log.i(TAG," ||| String RAWDATAUser [size:"+ new File(RAWDATAUser).length() +"]= "   + RAWDATAUser );
-        Log.i(TAG," ||| String FEATURESUser [size:"+ new File(FEATURESUser).length() +"]= "  + FEATURESUser);
-        Log.i(TAG," ||| String MODELPATHUser [size:"+ new File(MODELPATHUser).length() +"]= " + MODELPATHUser );
-
-        Log.i(TAG,">>>RUN>>>ModelBuilderMain.mergeArffFiles(FEATURESDummy, FEATURESUser); ");
-        ModelBuilderMain.mergeArffFiles(FEATURESDummy, FEATURESUser);
-
-        Log.i(TAG," ||| String FEATURESDummy [size:"+ new File(FEATURESDummy).length() +"]= " + FEATURESDummy);
-        Log.i(TAG," ||| String RAWDATAUser [size:"+ new File(RAWDATAUser).length() +"]= "   + RAWDATAUser );
-        Log.i(TAG," ||| String FEATURESUser [size:"+ new File(FEATURESUser).length() +"]= "  + FEATURESUser );
+        //region *
+        Log.i(TAG," |IN| String Util.feature_dummy_path [size:"+ new File(Util.feature_dummy_path).length() +"]= " + Util.feature_dummy_path);
+        Log.i(TAG," |IN| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= "  + Util.feature_user_path);
+        //endregion
+        ModelBuilderMain.mergeArffFiles(Util.feature_dummy_path, Util.feature_user_path);
+        //region *
+        Log.i(TAG," |OUT| String Util.feature_dummy_path [size:"+ new File(Util.feature_dummy_path).length() +"]= " + Util.feature_dummy_path);
+        Log.i(TAG," |OUT| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= "  + Util.feature_user_path);
+        //endregion
 
         try{
-
-            Log.i(TAG,">>>RUN>>>ModelBuilderMain.CreateAndSaveModel(FEATURESUser, MODELPATHUser); ");
-            ModelBuilderMain.CreateAndSaveModel(FEATURESUser, MODELPATHUser);
-
-            Log.i(TAG," ||| String FEATURESDummy [size:"+ new File(FEATURESDummy).length() +"]= " + FEATURESDummy);
-            Log.i(TAG," ||| String RAWDATAUser = [size:"+ new File(RAWDATAUser).length() +"]"   + RAWDATAUser );
-            Log.i(TAG," ||| String FEATURESUser = [size:"+ new File(FEATURESUser).length() +"]"  + FEATURESUser );
-            Log.i(TAG," ||| String MODELPATHUser = [size:"+ new File(MODELPATHUser).length() +"]" + MODELPATHUser);
-
+            //region *
+            Log.i(TAG," |IN| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= "  + Util.feature_user_path );
+            Log.i(TAG," |IN| String Util.model_user_path = [size:"+ new File(Util.model_user_path).length() +"]" + Util.model_user_path);
+            //endregion
+            ModelBuilderMain.CreateAndSaveModel(Util.feature_user_path, Util.model_user_path);
+            //region *
+            Log.i(TAG," |OUT| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= "  + Util.feature_user_path );
+            Log.i(TAG," |OUT| String Util.model_user_path = [size:"+ new File(Util.model_user_path).length() +"]" + Util.model_user_path);
+            //endregion
         }
         catch (Exception e){
-            Log.e(TAG,"ERROR: ModelBuilderMain.CreateAndSaveModel(FEATURESUser, MODELPATHUser)");
+            Log.e(TAG,"ERROR: ModelBuilderMain.CreateAndSaveModel(Util.feature_user_path, Util.model_user_path)");
             e.printStackTrace();
         }
         uploadModeltoFireBaseStorage();
@@ -549,7 +603,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
     private void uploadModeltoFireBaseStorage(){
         Log.d(TAG,">>>RUN>>>uploadModeltoFireBaseStorage()");
         //
-        // TODO Upload: MODELPATHUser filePath; to FireBase Storage /features
+        // TODO Upload: Util.model_user_path filePath; to FireBase Storage /features
         //
         Log.i(TAG,"### Util.hasUserModel = true");
         Util.hasUserModel = true;

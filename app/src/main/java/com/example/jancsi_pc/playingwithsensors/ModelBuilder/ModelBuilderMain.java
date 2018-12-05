@@ -100,6 +100,9 @@ public class ModelBuilderMain {
     }
 
     public static void getFeatures(String rawDataFile, String featureFile){
+        String TAG = "ModelBuilderMain";
+        Log.d(TAG,">>RUN>>getFeatures(RAWDATAUser,FEATURESUser); ");
+
         Settings.usingFrames(512);
         Settings.setOutputHasHeader(true); // full arff, no header
 
@@ -109,9 +112,13 @@ public class ModelBuilderMain {
             //e.printStackTrace();
             Logger.getLogger(FeatureExtractor.class.getName()).log(Level.SEVERE, null, e);
         }
+        Log.d(TAG,"<<FINISHED<<getFeatures(); ");
     }
 
     public static void CreateAndSaveModel(String userFeatureFilePath, String userModelFilePath){
+        String TAG = "ModelBuilderMain";
+        Log.d(TAG,">>RUN>>CreateAndSaveModel(FEATURESUser, MODELPATHUser); ");
+
         ModelGenerator mg = new ModelGenerator();
 
         //the create muxed feature function save the mixed data in the first file to use less space
@@ -152,10 +159,14 @@ public class ModelBuilderMain {
         //Save model
         mg.saveModel(ann, userModelFilePath);
 
+        Log.d(TAG,"<<FINISHED<<CreateAndSaveModel(); ");
     }
 
     //the create muxed feature function save the mixed data in the first file to use less space
     public static void mergeArffFiles(String input, String output){
+        String TAG = "ModelBuilderMain";
+        Log.d(TAG,">>RUN>>mergeArffFiles(FEATURESDummy, FEATURESUser); ");
+
         Scanner scanner = null;
         try {
             scanner = new Scanner(new File(input));
@@ -243,6 +254,7 @@ public class ModelBuilderMain {
         } catch (IOException ex) {
             Logger.getLogger(ModelBuilderMain.class.getName()).log(Level.SEVERE, null, ex);
         }
+        Log.d(TAG,"<<FINISHED<<mergeArffFiles(); ");
     }
 
 }

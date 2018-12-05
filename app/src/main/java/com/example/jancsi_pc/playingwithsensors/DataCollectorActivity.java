@@ -129,6 +129,12 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
         Log.d(TAG, ">>>RUN>>>onCreate()");
 
+        // Internal Saving Location for ALL hidden files:
+        Util.internalFilesRoot = new File( getFilesDir().toString() );
+        Log.i(TAG, "Util.internalFilesRoot.getAbsolutePath() = " + Util.internalFilesRoot.getAbsolutePath() );
+
+
+
         //FIREBASE INIT:
         mFirestore = FirebaseStorage.getInstance();
         mStorageReference = mFirestore.getReference();
@@ -328,18 +334,26 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                 //
                 Log.d(TAG,"Saving to .CSV");
 
-                File root = android.os.Environment.getExternalStorageDirectory();
-                File dir = new File (root.getAbsolutePath() /*+ "/accelerometer"*/);
-                if(!dir.exists()) {
-                    dir.mkdirs();
+
+
+                File internalDir = new File ( Util.internalFilesRoot.getAbsolutePath() + "/raw_datacoll/raw.csv" );
+                if(!internalDir.exists()) {
+                    internalDir.mkdirs();
                 }
+
+                Log.i(TAG,"DataCollector: internalDir = " + internalDir.getAbsolutePath() );
 
                 Date date = new Date();
                 CharSequence s  = DateFormat.format("yyyyMMdd_HHmmss", date.getTime());
 
                 String fileName = "rawdata_" + mAuth.getUid() + "_" + s  ;
 
-                File file = new File(dir, fileName+ ".csv");
+                File file = new File(internalDir, fileName+ ".csv");
+                if(!file.exists()) {
+                    file.mkdirs();
+                }
+
+                Log.i(TAG,"file internalDir = " + file.getAbsolutePath() );
 
                 try {
                     FileOutputStream f = new FileOutputStream(file);

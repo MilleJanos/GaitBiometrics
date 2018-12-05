@@ -378,6 +378,7 @@ public class AuthenticationActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Log.d(TAG, ">>>RUN>>>authButtonClickListener");
+                authButton.setEnabled(false);
 
                 if (RequireEnabledInternetAndInternetConnection()) {            // This method gives feedback using Snackbar
                     Log.d(TAG, " isNetworkEnabled = true");
@@ -404,10 +405,12 @@ public class AuthenticationActivity extends AppCompatActivity {
                                         registerToEmail = false;    //
                                         Util.screenMode = Util.ScreenModeEnum.PASSWORD_MODE;
                                         prepareScreenUIFor_password();
+                                        authButton.setEnabled(true);
                                     } else {
                                         userExists=false;
                                         emailEditText.setError("Please fill the Email field with a registered email address!");
                                         emailEditText.requestFocus();
+                                        authButton.setEnabled(true);
                                         Log.d(TAG, "Login user doesn't exist");
                                         //TODO Snackbar asking the user to register
                                     }
@@ -417,6 +420,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                                             "There is a problem, please try again later.",
                                             Toast.LENGTH_SHORT).show();
                                     userExists=false;
+                                    authButton.setEnabled(true);
                                 }
                                 //hide progress dialog
                                 //hideProgressDialog();
@@ -428,6 +432,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                         //Toast.makeText(AuthenticationActivity.this, "Please fill the Email field!", Toast.LENGTH_LONG).show();
                         emailEditText.setError("Please fill the Email field with a valid mEmail address!");
                         emailEditText.requestFocus();
+                        authButton.setEnabled(true);
                     }
 
                 }
@@ -728,6 +733,8 @@ public class AuthenticationActivity extends AppCompatActivity {
                     passwordEditText2.setError("The passwords must be the same!");
                     return;
                 }
+                authButton.setEnabled(false);
+
                 mEmail =emailEditText.getText().toString();
                 if(!mEmail.equals("")) {
                     // TODO: kicserelni a fetchProviderForEmail-t lecserelni: https://firebase.google.com/docs/auth/admin/manage-users#list_all_users
@@ -758,6 +765,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                                 mPassword = passwordEditText.getText().toString().trim();
                                 Register();
                             }
+                            authButton.setEnabled(true);
                         }
                     });
                 }
