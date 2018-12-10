@@ -103,11 +103,11 @@ public class ModelBuilderMain {
         String TAG = "ModelBuilderMain";
         Log.d(TAG,">>RUN>>getFeatures(RAWDATAUser,FEATURESUser); ");
 
-        Settings.usingFrames(512);
+        Settings.usingFrames(128);
         Settings.setOutputHasHeader(true); // full arff, no header
 
         try {
-            FeatureExtractor.extractFeaturesFromCsvFileToCsvFile(rawDataFile, featureFile);
+            FeatureExtractor.extractFeaturesFromCsvFileToFile(rawDataFile, featureFile);
         } catch (Exception e) {
             //e.printStackTrace();
             Logger.getLogger(FeatureExtractor.class.getName()).log(Level.SEVERE, null, e);

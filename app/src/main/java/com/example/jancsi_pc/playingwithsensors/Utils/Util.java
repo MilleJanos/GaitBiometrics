@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
@@ -21,7 +22,17 @@ import com.google.firebase.storage.StorageReference;
 import java.io.File;
 import java.util.ArrayList;
 
+import static android.content.Context.MODE_PRIVATE;
+
 public class Util {
+
+    //public static Util Util = new Util();
+
+    // Singleton
+    private Util(){
+
+    }
+
     private static final String TAG = "Util";
 
     public static double samplingFrequency(ArrayList<Accelerometer> data){
@@ -56,18 +67,23 @@ public class Util {
     // stored internal files location
     public static File internalFilesRoot;
 
-    // internal stored Paths:
+    // internal stored Paths
     public static String feature_dummy_path = "";
     public static String rawdata_user_path = "";
     public static String feature_user_path = "";
     public static String model_user_path = "";
 
-    public static String firebaseDumyFileName = "features_rRHyStiEKkN4Cq5rVSxlpvrCwA72.arff";   // TODO: hardcoded dummy (name) from firebase
+    // util for internal paths: date & dirName
+    public static CharSequence recordDateAndTimeFormatted;
+    public static String customDIR = "";
+
+    // download this dummy for generating
+    public static String firebaseDumyFileName = "features_rRHyStiEKkN4Cq5rVSxlpvrCwA72.arff";   // TODO: hardcoded dummy (name) from firebase (!?)
 
     // show errors for user
     public static String intoTextViewString = "";
 
-    // used to finish all activities
+    // used to finish all activities:
     public static boolean isFinished = false;
 
     // user model
@@ -90,4 +106,17 @@ public class Util {
     public static FirebaseAuth mAuth = FirebaseAuth.getInstance();
     public static StorageReference mRef;
     public static FirebaseStorage mStorage = FirebaseStorage.getInstance();
+
+    // Shared Preferences
+
+    public static String sharedPrefFile = "sharedPref";  // "com.example/jancsi_pc.playingwithsensors";
+    public static SharedPreferences mPreferences ;// DataCollectorAct. onStart: getSharedPreferences(sharedPrefFile,MODE_PRIVATE);
+    public static SharedPreferences.Editor preferencesEditor;
+    public static final String LAST_LOGGED_IN_EMAIL_KEY = "lastloggedinemail";
+    public static final String LAST_LOGGED_IN_ID_KEY = "lastloggedinid";
+    public static final String LAST_LOGGED_IN_DATE_KEY = "lastloggedindate";
+    public static final String LAST_MODEL_EMAIL_KEY = "lastmodelemailkey";
+    public static final String LAST_MODEL_ID_KEY = "lastmodelidkey";
+    public static final String LAST_MODEL_DATE_KEY = "lastmodeldatekey";
+
 }

@@ -47,12 +47,15 @@
             android:name=".AuthenticationActivity"
             android:screenOrientation="portrait" />
         <!-- <activity android:name=".SplashScreenActivity"></activity> -->
-        <activity android:name=".ModelUploaderActivity"
+        <activity
+            android:name=".ModelUploaderActivity"
             android:screenOrientation="portrait" />
 
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
+
+        <activity android:name=".GaitValidationActivity"></activity>
     </application>
 
 </manifest>

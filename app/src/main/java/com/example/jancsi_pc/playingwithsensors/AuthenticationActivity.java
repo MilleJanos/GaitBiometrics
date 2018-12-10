@@ -14,6 +14,7 @@ import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.TranslateAnimation;
@@ -37,6 +38,7 @@ import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.OnProgressListener;
 
 import java.io.File;
+import java.util.Date;
 
 public class AuthenticationActivity extends AppCompatActivity {
 
@@ -64,6 +66,8 @@ public class AuthenticationActivity extends AppCompatActivity {
     private ImageView editEmailImageView;
     private TextView reportErrorTextView;
     private TextView infoTextView;
+
+    private TextView auth_offlineValidationTextView;
 
     private ConstraintLayout.LayoutParams params;
 
@@ -94,14 +98,14 @@ public class AuthenticationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_authentication);
         Log.d(TAG, ">>>RUN>>>onCreate()");
 
-        appNameTextView = findViewById(R.id.appNameTextView);
+        appNameTextView = findViewById(R.id.auth_appNameTextView);
         appNameTextView.setTextColor( R.string.app_name );
 
-        titleTextView = findViewById(R.id.titleTextView);
-        selectedEmailTextView= findViewById(R.id.selectedEmailTextView);
+        titleTextView = findViewById(R.id.auth_titleTextView);
+        selectedEmailTextView= findViewById(R.id.auth_selectedEmailTextView);
 
-        emailEditText = findViewById(R.id.emailEditText);
-        deleteEmailImageView = findViewById(R.id.deleteEmailImageView);
+        emailEditText = findViewById(R.id.auth_emailEditText);
+        deleteEmailImageView = findViewById(R.id.auth_deleteEmailImageView);
         emailEditText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -109,8 +113,8 @@ public class AuthenticationActivity extends AppCompatActivity {
             }
         });
 
-        passwordEditText = findViewById(R.id.passwordEditText);
-        deletePasswordImageView = findViewById(R.id.deletePasswordImageView);
+        passwordEditText = findViewById(R.id.auth_passwordEditText);
+        deletePasswordImageView = findViewById(R.id.auth_deletePasswordImageView);
         passwordEditText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -118,8 +122,8 @@ public class AuthenticationActivity extends AppCompatActivity {
             }
         });
 
-        passwordEditText2 = findViewById(R.id.passwordEditText2);
-        deletePasswordImageView2 = findViewById(R.id.deletePasswordImageView2);
+        passwordEditText2 = findViewById(R.id.auth_passwordEditText2);
+        deletePasswordImageView2 = findViewById(R.id.auth_deletePasswordImageView2);
         passwordEditText2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -127,17 +131,17 @@ public class AuthenticationActivity extends AppCompatActivity {
             }
         });
 
-        authButton = findViewById(R.id.button);
-        registerORloginTextView = findViewById(R.id.registerORloginTextView);
-        forgotPassTextView = findViewById(R.id.forgotPassTextView);
-        infoTextView = findViewById(R.id.infoTextView);
+        authButton = findViewById(R.id.auth_button);
+        registerORloginTextView = findViewById(R.id.auth_registerORloginTextView);
+        forgotPassTextView = findViewById(R.id.auth_forgotPassTextView);
+        infoTextView = findViewById(R.id.auth_infoTextView);
 
-        backButton = findViewById(R.id.backButton);
-        editEmailImageView = findViewById(R.id.editEmailImageView); // ugyan azt csinalja mint a backButton csak felhasználóbarátabb
+        backButton = findViewById(R.id.auth_backButton);
+        editEmailImageView = findViewById(R.id.auth_editEmailImageView); // ugyan azt csinalja mint a backButton csak felhasználóbarátabb
 
         forgotPassTextView.setText(R.string.forgotPassword);
 
-        reportErrorTextView = findViewById(R.id.errorReportTextView);
+        reportErrorTextView = findViewById(R.id.auth_errorReportTextView);
         reportErrorTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -154,10 +158,18 @@ public class AuthenticationActivity extends AppCompatActivity {
         passwordEditText.setText("");
         passwordEditText2.setText("");
 
-        progressBar = findViewById(R.id.progressBar);
-        loadingTextView = findViewById(R.id.loadingCompleteTextView);
+        progressBar = findViewById(R.id.auth_progressBar);
+        loadingTextView = findViewById(R.id.auth_loadingCompleteTextView);
         loadingTextView.setVisibility(View.INVISIBLE);
         progressBar.setVisibility(View.INVISIBLE);
+
+        auth_offlineValidationTextView = findViewById(R.id.auth_offlineValidationTextView);
+        auth_offlineValidationTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity( new Intent(AuthenticationActivity.this, GaitValidationActivity.class) );
+            }
+        });
 
         /*
         *
@@ -406,6 +418,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                                         Util.screenMode = Util.ScreenModeEnum.PASSWORD_MODE;
                                         prepareScreenUIFor_password();
                                         authButton.setEnabled(true);
+                                        authButton.setEnabled(true);
                                     } else {
                                         userExists=false;
                                         emailEditText.setError("Please fill the Email field with a registered email address!");
@@ -413,6 +426,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                                         authButton.setEnabled(true);
                                         Log.d(TAG, "Login user doesn't exist");
                                         //TODO Snackbar asking the user to register
+                                        authButton.setEnabled(true);
                                     }
                                 } else {
                                     Log.w(TAG, "User check failed", task.getException());
@@ -432,9 +446,10 @@ public class AuthenticationActivity extends AppCompatActivity {
                         //Toast.makeText(AuthenticationActivity.this, "Please fill the Email field!", Toast.LENGTH_LONG).show();
                         emailEditText.setError("Please fill the Email field with a valid mEmail address!");
                         emailEditText.requestFocus();
-                        authButton.setEnabled(true);
                     }
 
+                }else{
+                    authButton.setEnabled(true);
                 }
             }
         });
@@ -590,8 +605,9 @@ public class AuthenticationActivity extends AppCompatActivity {
 
                     Login();
 
+                }else{
+                    authButton.setEnabled(true);
                 }
-
             }
         });
 
@@ -1104,7 +1120,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                     Util.hasUserModel = false;
                     Util.isSetUserModel = true;
                     Log.i(TAG,"### Util.hasUserModel = false;");
-                    Log.e(TAG, "MODEL NOT FOUND: ERROR: getFile()");
+                    Log.i(TAG, "MODEL NOT FOUND: ERROR: getFile()");
                     Log.i(TAG,"<<<finish()<<<");
                     //e.printStackTrace();
                     loadingTextView.setVisibility(View.VISIBLE);
@@ -1195,6 +1211,13 @@ public class AuthenticationActivity extends AppCompatActivity {
             Log.d(TAG," isFinished() = true");
             finish();
         }
+
+        Date date = new Date();
+        CharSequence s  = DateFormat.format("yyyyMMdd_HHmmss", date.getTime());
+        Util.preferencesEditor.putString(Util.LAST_LOGGED_IN_DATE_KEY, s.toString() );
+        Util.preferencesEditor.apply();
+
+
         super.onResume();
     }
 }

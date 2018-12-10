@@ -1,6 +1,7 @@
 package com.example.jancsi_pc.playingwithsensors;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
@@ -12,6 +13,7 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.widget.CircularProgressDrawable;
 import android.support.v7.app.AppCompatActivity;
 import android.text.format.DateFormat;
 import android.util.Log;
@@ -101,6 +103,11 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
     private File featureUserFile;   // only the path exists !
     private File modelUserFile;     // only the path exists !
 
+    // for shared pres
+    CharSequence lastModelDate;
+
+    private ProgressDialog progressDialog;
+
 
     /*
      *
@@ -110,46 +117,42 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, ">>>RUN>>>onCreate()");
         setTheme(R.style.AppTheme);
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_model_uploader);
 
-        Log.d(TAG, ">>>RUN>>>onCreate()");
-
-        // Preparing file paths and names:
-
-        mDate = new Date();
-        CharSequence dateCharSequence  = DateFormat.format("yyyyMMdd_HHmmss", mDate.getTime());
+        progressDialog = new ProgressDialog(ModelUploaderActivity.this);
 
         //
         // Internal files Path:
         //
-
-        String customDIR = "/" + dateCharSequence;    // TODO: Delete this and from below, and resolv to undate files instead of creating new ones
+        mDate = new Date();
 
         // Create folder if not exists:
         File myInternalFilesRoot;
-        /*
-        myInternalFilesRoot = new File( Util.internalFilesRoot.getAbsolutePath() );
-        if(!myInternalFilesRoot.exists()) {
-            myInternalFilesRoot.mkdirs();
-            Log.i(TAG,"");
-        }else{
 
-        }
-        */
-        myInternalFilesRoot = new File( Util.internalFilesRoot.getAbsolutePath() + customDIR );
+        myInternalFilesRoot = new File( Util.internalFilesRoot.getAbsolutePath() /*+ customDIR*/ );
         if(!myInternalFilesRoot.exists()) {
             myInternalFilesRoot.mkdirs();
             Log.i(TAG,"Path not exists (" + myInternalFilesRoot.getAbsolutePath() + ") --> .mkdirs()");
         }
 
-
-        Util.feature_dummy_path = Util.internalFilesRoot.getAbsolutePath() + customDIR + "/feature_dummy.arff" ;
-        Util.rawdata_user_path  = Util.internalFilesRoot.getAbsolutePath() + customDIR + "/rawdata_" + mAuth.getUid() + "_" + dateCharSequence + ".csv";
-        Util.feature_user_path  = Util.internalFilesRoot.getAbsolutePath() + customDIR + "/feature_" + mAuth.getUid() + "_" + dateCharSequence + ".arff";
-        Util.model_user_path    = Util.internalFilesRoot.getAbsolutePath() + customDIR + "/model_"   + mAuth.getUid() + "_" + dateCharSequence + ".mdl";
+        //region
+        /*
+            storing:
+                INTERNAL STORAGE            FIREBASE STORAGE
+                feature_dummy.arff          -
+                deature_<userId>.arff       deature_<userId>_<date>_<time>.arff
+                model_<userId>.mdl          model_<userId>_<date>_<time>.mdl
+                rawdata_<userId>.csv        rawdata_<userId>_<date>_<time>.csv
+        */
+        //endregion
+        Util.feature_dummy_path = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/feature_dummy.arff" ;
+        Util.rawdata_user_path  = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/rawdata_" + mAuth.getUid() + ".csv";
+        Util.feature_user_path  = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/feature_" + mAuth.getUid() + ".arff";  // The date and time will be added before uploading the files
+        Util.model_user_path    = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/model_"   + mAuth.getUid() + ".mdl";
         //region Print this 4 paths
         Log.i(TAG,"PATH: Util.feature_dummy_path = " + Util.feature_dummy_path );
         Log.i(TAG,"PATH: Util.rawdata_user_path  = " + Util.rawdata_user_path  );
@@ -206,7 +209,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
         accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
         if( accelerometerSensor == null ){
-            Toast.makeText(this, "The device has no com.example.jancsi_pc.playingwithsensors.Accelerometer !", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "The device has no Accelerometer !", Toast.LENGTH_SHORT).show();
             finish();
         }
 
@@ -313,6 +316,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
             @Override
             public void onClick(View v) {
                 Log.d(TAG, ">>>RUN>>>stopButtonClickListener");
+                Util.recordDateAndTimeFormatted  = DateFormat.format("yyyyMMdd_HHmmss", mDate.getTime());
                 isRecording = false;
                 startButton.setEnabled(true);
                 stopButton.setEnabled(false);
@@ -339,25 +343,42 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
             public void onClick(View v) {
                 Log.d(TAG, ">>>RUN>>>saveToFirebaseButtonClickListener");
 
-                // Runtime allow external storage permission:
-                // f (checkCallingOrSelfPermission("android.permission.WRITE_INTERNAL_STORAGE") != PackageManager.PERMISSION_GRANTED) {
-                //    ActivityCompat.requestPermissions(ModelUploaderActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
-                //
-                // f (checkCallingOrSelfPermission("android.permission.WRITE_EXTERNAL_STORAGE") != PackageManager.PERMISSION_GRANTED) {
-                //    ActivityCompat.requestPermissions(ModelUploaderActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
-                //
-                
-                // Saving array into .CSV file (Local):
-                savingAccArrayIntoCSV();
+                progressDialog.setTitle("Progress Dialog");
+                progressDialog.setMessage("Uploading");
+                progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                progressDialog.show();
 
-                // Saving CSV to FireBase Storage:
-                savingCSVtoFireBaseStorage();
+                try {
 
-                // Updating JSON in the FireStore: (Collection->Documents->Collection->Documents->...)
-                uploadJSONintoFireBaseFireStore();
+                    if( ! renameIternalFiles_to_withoutDate() ){ //return false if an error occured
+                        throw new Exception("Error renaming file to \"..._<date>_<time>...\"");
+                    }
 
-                // Downloading dummy data & Creating the Model & Upload Model to FireBase Storage:
-                downloadDummyDataFromFireBaseStorage_and_GenerateModel();
+                    // Saving array into .CSV file (Local):
+                    savingAccArrayIntoCSV();
+
+                    // Saving CSV to FireBase Storage:
+                    savingCSVtoFireBaseStorage();
+
+                    // Updating JSON in the FireStore: (Collection->Documents->Collection->Documents->...)
+                    uploadJSONintoFireBaseFireStore();
+
+                    // Downloading dummy data & Creating the Model & Upload Model to FireBase Storage:
+                    downloadDummyDataFromFireBaseStorage_and_GenerateModel();
+
+                    if( ! renameIternalFiles_to_withoutDate() ){ //return false if an error occured
+                        throw new Exception("Error renaming file to without <date> and <time> ");
+                    }
+
+                }catch( CustomException e ){
+                    Log.e(TAG,"ERROR (CustomError): File cannot be renamed !");
+                    e.printStackTrace();
+                }catch( Exception e ){
+                    e.printStackTrace();
+                }
+
+                Date date = new Date();
+                lastModelDate  = DateFormat.format("yyyyMMdd_HHmmss", date.getTime());
                 
                 // TODO: if( az utolso 4 fuggveny hibatlanul lefutott ) ==> ROLLBACK
             }
@@ -594,6 +615,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
             e.printStackTrace();
         }
         uploadModeltoFireBaseStorage();
+        progressDialog.show();
     }
     //region HELP
     /*
@@ -610,6 +632,71 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
         finish();
     }
 
+    //region HELP
+    /*
+        renameIternalFiles_withDate()
+                | Before upload add "_<date>_<time>" to the end of the file (and path)
+                | ( After reload rename it back! )
+                | return:
+                |   true - No errors
+                |   false - Error
+    */
+    //endregion
+    private boolean renameIternalFiles_to_withDate(){
+        File f = null;
+        Util.rawdata_user_path  = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/rawdata_" + mAuth.getUid() + "_" + Util.recordDateAndTimeFormatted + ".csv";
+        Util.feature_user_path  = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/feature_" + mAuth.getUid() + "_" + Util.recordDateAndTimeFormatted + ".arff";
+        Util.model_user_path    = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/model_"   + mAuth.getUid() + "_" + Util.recordDateAndTimeFormatted + ".mdl";
+
+        try {
+            f= new File( Util.rawdata_user_path );
+            rawdataUserFile.renameTo(f);
+
+            f= new File( Util.feature_user_path );
+            featureUserFile.renameTo(f);
+
+            f= new File( Util.model_user_path );
+            modelUserFile.renameTo(f);
+        }catch( Exception e ){
+            Log.e(TAG,"renameIternalFiles_withDate() - CANNOT RENAME FILE TO: " + f.getAbsolutePath() );
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    //region HELP
+    /*
+        renameIternalFiles_withDate()
+                | ( Before upload add "_<date>_<time>" to the end of the file (and path) )
+                | After reload rename it back!
+                | return:
+                |   true - No errors
+                |   false - Error
+    */
+    //endregion
+    private boolean renameIternalFiles_to_withoutDate(){
+        File f = null;
+        Util.rawdata_user_path  = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/rawdata_" + mAuth.getUid() + "_0_0" + ".csv";
+        Util.feature_user_path  = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/feature_" + mAuth.getUid() + "_0_0" + ".arff";
+        Util.model_user_path    = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/model_"   + mAuth.getUid() + "_0_0" + ".mdl";
+
+        try {
+            f= new File( Util.rawdata_user_path );
+            rawdataUserFile.renameTo(f);
+
+            f= new File( Util.feature_user_path );
+            featureUserFile.renameTo(f);
+
+            f= new File( Util.model_user_path );
+            modelUserFile.renameTo(f);
+        }catch( Exception e ){
+            Log.e(TAG,"renameIternalFiles_withoutDate() - CANNOT RENAME FILE TO: " + f.getAbsolutePath() );
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
 
     //region HELP
     /*
@@ -652,7 +739,6 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
     public void onStart() {
         Log.d(TAG, ">>>RUN>>>onStart()");
         super.onStart();
-        //updateUI(currentUser);
     }
 
     @Override
@@ -684,6 +770,14 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
     protected void onPause() {
         Log.d(TAG, ">>>RUN>>>onPause()");
         super.onPause();
+        Log.d(TAG, "SAVE to Shared Pref" + lastModelDate.toString() );
+        Log.d(TAG, "SAVE to Shared Pref" + Util.userEmail );
+        Log.d(TAG, "SAVE to Shared Pref" + mAuth.getUid() );
+        Util.preferencesEditor.putString(Util.LAST_MODEL_DATE_KEY, lastModelDate.toString() );
+        Util.preferencesEditor.putString(Util.LAST_MODEL_EMAIL_KEY, Util.userEmail );
+        Util.preferencesEditor.putString(Util.LAST_MODEL_ID_KEY, mAuth.getUid() );
+        Util.preferencesEditor.apply();
+
         sensorManager.unregisterListener(accelerometerEventListener);
     }
 

@@ -3,6 +3,7 @@ package com.example.jancsi_pc.playingwithsensors;
 import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -104,14 +105,13 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     private StepDetector simpleStepDetector;
     private static final int REQUEST_CODE = 212;
 
-    //Firebase:
+    // Firebase:
     private FirebaseStorage mFirestore;            // used to upload files
     private StorageReference mStorageReference;  // to storage
     private FirebaseAuth mAuth = FirebaseAuth.getInstance();
     private FirebaseFirestore mFirebaseFirestore = FirebaseFirestore.getInstance();
     private FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
     private DocumentReference mDocRef; // = FirebaseFirestore.getInstance().document("usersFiles/information");
-
 
 
     /*
@@ -375,7 +375,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                     e.printStackTrace();
                 }
 
-
                 Log.d(TAG,"Saving CSV to FireStore...");
                 //
                 // Saving CSV to firestore
@@ -615,7 +614,9 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     public void onStart() {
         Log.d(TAG, ">>>RUN>>>onStart()");
         super.onStart();
-        //updateUI(currentUser);
+
+        Util.mPreferences = getSharedPreferences(Util.sharedPrefFile,MODE_PRIVATE);
+
     }
 
     @Override
@@ -662,6 +663,12 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     protected void onPause() {
         Log.d(TAG, ">>>RUN>>>onPause()");
         super.onPause();
+
+        Util.preferencesEditor = Util.mPreferences.edit();
+        Util.preferencesEditor.putString(Util.LAST_LOGGED_IN_EMAIL_KEY, Util.userEmail );
+        Util.preferencesEditor.putString(Util.LAST_LOGGED_IN_ID_KEY, mAuth.getUid() );
+        Util.preferencesEditor.apply();
+
         sensorManager.unregisterListener(accelerometerEventListener);
     }
 
