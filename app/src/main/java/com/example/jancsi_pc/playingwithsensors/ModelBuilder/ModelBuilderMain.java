@@ -105,6 +105,7 @@ public class ModelBuilderMain {
 
         Settings.usingFrames(128);
         Settings.setOutputHasHeader(true); // full arff, no header
+        Settings.setInputHasHeader(true);
 
         try {
             FeatureExtractor.extractFeaturesFromCsvFileToFile(rawDataFile, featureFile);

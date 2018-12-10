@@ -583,7 +583,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
         Log.i(TAG," |IN| String Util.rawdata_user_path [size:"+ new File(Util.rawdata_user_path).length() +"]= "   + Util.rawdata_user_path );
         Log.i(TAG," |IN| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= " + Util.feature_user_path);
         //endregion
-        ModelBuilderMain.getFeatures(Util.rawdata_user_path, Util.feature_user_path);
+        ModelBuilderMain.getFeatures(Util.rawdata_user_path, Util.feature_user_path.substring(0,Util.feature_user_path.length()-(".arff").length()) );  // getFeatures will add the ".arff" to the end of the file (and saves it)
         //region *
         Log.i(TAG," |OUT| String Util.rawdata_user_path [size:"+ new File(Util.rawdata_user_path).length() +"]= "   + Util.rawdata_user_path );
         Log.i(TAG," |OUT| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= " + Util.feature_user_path);
@@ -615,7 +615,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
             e.printStackTrace();
         }
         uploadModeltoFireBaseStorage();
-        progressDialog.show();
+        progressDialog.dismiss();
     }
     //region HELP
     /*
@@ -643,6 +643,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
     */
     //endregion
     private boolean renameIternalFiles_to_withDate(){
+        Log.d(TAG,">>RUN>>renameIternalFiles_to_withDate()");
         File f = null;
         Util.rawdata_user_path  = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/rawdata_" + mAuth.getUid() + "_" + Util.recordDateAndTimeFormatted + ".csv";
         Util.feature_user_path  = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/feature_" + mAuth.getUid() + "_" + Util.recordDateAndTimeFormatted + ".arff";
@@ -660,8 +661,10 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
         }catch( Exception e ){
             Log.e(TAG,"renameIternalFiles_withDate() - CANNOT RENAME FILE TO: " + f.getAbsolutePath() );
             e.printStackTrace();
+            Log.d(TAG,"<<FINISHED<<renameIternalFiles_to_withDate() - ERROR");
             return false;
         }
+        Log.d(TAG,"<<FINISHED<<renameIternalFiles_to_withDate() - OK");
         return true;
     }
 
@@ -676,6 +679,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
     */
     //endregion
     private boolean renameIternalFiles_to_withoutDate(){
+        Log.d(TAG,">>RUN>>renameIternalFiles_to_withoutDate()");
         File f = null;
         Util.rawdata_user_path  = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/rawdata_" + mAuth.getUid() + "_0_0" + ".csv";
         Util.feature_user_path  = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/feature_" + mAuth.getUid() + "_0_0" + ".arff";
@@ -693,8 +697,10 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
         }catch( Exception e ){
             Log.e(TAG,"renameIternalFiles_withoutDate() - CANNOT RENAME FILE TO: " + f.getAbsolutePath() );
             e.printStackTrace();
+            Log.d(TAG,"<<FINISHED<<renameIternalFiles_to_withoutDate() - ERROR");
             return false;
         }
+        Log.d(TAG,"<<FINISHED<<renameIternalFiles_to_withoutDate() - OK");
         return true;
     }
 
