@@ -63,6 +63,9 @@ public class Util {
     public static String feature_user_path = "";
     public static String model_user_path = "";
 
+    public static boolean rawDataHasHeader = false;
+    public static String rawDataHeaderStr = "timestamp,accx,accy,accz,stepnum";
+
     // util for internal paths: date & dirName
     public static CharSequence recordDateAndTimeFormatted;
     public static String customDIR = "";

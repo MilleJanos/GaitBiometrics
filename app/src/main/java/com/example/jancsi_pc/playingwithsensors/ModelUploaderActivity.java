@@ -402,12 +402,12 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
 
     }// OnCreate
 
-    // 1
+    // step: 1
     //region HELP
     /*
         savingAccArrayIntoCSV()
-        | This method saves the accArray<Accelerometer> list
-        | into .CSV file including header.
+            | This method saves the accArray<Accelerometer> list
+            | into .CSV file including header.
     */
     //endregion
     private void savingAccArrayIntoCSV(){
@@ -418,7 +418,9 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
             PrintWriter pw = new PrintWriter(f);
 
             // Header:
-            pw.println("timestamp,accx,accy,accz,stepnum");
+            if(Util.rawDataHasHeader) {
+                pw.println(Util.rawDataHeaderStr);
+            }
 
             for( Accelerometer a : accArray){
                 pw.println( a.toString() );
@@ -432,12 +434,10 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
-        Log.d(TAG,"Saving CSV to FireBase Storage...");
+        Log.d(TAG,"<<<FINISH<<<savingAccArrayIntoCSV()");
     }
 
-    // 2
+    // step: 2
     //region HELP
     /*
         savingCSVtoFireBaseStorage()
@@ -445,7 +445,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
             | to FireBase Storage.
     */
     //endregion
-    private void    savingCSVtoFireBaseStorage(){
+    private void savingCSVtoFireBaseStorage(){
         Log.d(TAG,">>>RUN>>>savingCSVtoFireBaseStorage()");
         if (checkCallingOrSelfPermission("android.permission.INTERNET") != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(ModelUploaderActivity.this, new String[]{Manifest.permission.INTERNET}, REQUEST_CODE);
@@ -470,6 +470,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
                             //progressDialog.dismiss();
                             Log.i(TAG,"CSV Uploaded");
                             Toast.makeText(ModelUploaderActivity.this, "CSV file has been saved to FireBase Storage!", Toast.LENGTH_LONG).show();
+                            Log.d(TAG,"<<<FINISH<<<savingCSVtoFireBaseStorage() - onSuccess");
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
@@ -477,12 +478,13 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
                         public void onFailure(@NonNull Exception e) {
                             Log.i(TAG,"CSV upload Failed");
                             Toast.makeText(ModelUploaderActivity.this, "CSV upload Failed", Toast.LENGTH_LONG).show();
+                            Log.d(TAG,"<<<FINISH<<<savingCSVtoFireBaseStorage() - onFailure");
                         }
                     })
                     .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
                         @Override
                         public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                            double progress = (100.0*taskSnapshot.getBytesTransferred()/taskSnapshot.getTotalByteCount());
+                            //double progress = (100.0*taskSnapshot.getBytesTransferred()/taskSnapshot.getTotalByteCount());
                             //progressDialog.setMessage("Uploaded " + (int)progress + "%" );
                         }
                     });
@@ -491,7 +493,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
         // file.delete(); --> LATER
     }
 
-    // 3
+    // step: 3
     //region HELP
     /*
         uploadJSONintoFireBaseFireStore()
@@ -517,22 +519,25 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
                 .collection( Util.deviceId )
                 .document( randomId ) ;
 
-        UserAndHisFile info = new UserAndHisFile(mDate.toString(), mFileName);
+        UserAndHisFile info = new UserAndHisFile(mDate.toString(), randomId );
+        Log.d(TAG,"File: randomId" + randomId);
 
         mDocRef.set(info).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
                 Log.d(TAG,"JSON Document has been saved to FireBase FireStore!");
+                Log.d(TAG,"<<<FINISH<<< uploadJSONintoFireBaseFireStore() - onSucess");
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
                 Log.w(TAG,"Problem saving JSON to FireBase FireStore!");
+                Log.d(TAG,"<<<FINISH<<< uploadJSONintoFireBaseFireStore() - onFailure");
             }
         });
     }
 
-    // 4
+    // step: 4
     //region HELP
     /*
         createModelForCurrentUser()
