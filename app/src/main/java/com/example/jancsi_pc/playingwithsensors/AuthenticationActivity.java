@@ -1,6 +1,7 @@
 package com.example.jancsi_pc.playingwithsensors;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -89,14 +90,19 @@ public class AuthenticationActivity extends AppCompatActivity {
     // Progress Bar
     private ProgressBar progressBar;
     private TextView loadingTextView;
-    private int mProgressStatus = 0;
+    private int mProgressStatus = 0;;
     private Handler mHandler = new Handler();
+
+    // Progress Dialog
+    ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_authentication);
         Log.d(TAG, ">>>RUN>>>onCreate()");
+
+        progressDialog = new ProgressDialog(AuthenticationActivity.this);
 
         appNameTextView = findViewById(R.id.auth_appNameTextView);
         appNameTextView.setTextColor( R.string.app_name );
@@ -339,6 +345,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                             Util.userEmail = mEmail;
                             Util.isSignedIn = true;
                             authButton.setEnabled(true);
+                            // progressDialog.dismiss();
 
                             CheckUserModel();// Wait to get the model or create new one, will do the finish() !
 
@@ -351,7 +358,6 @@ public class AuthenticationActivity extends AppCompatActivity {
                         // ...
                     }
                 });
-        authButton.setEnabled(true);
         Log.d(TAG, "<<<FINISHED<<<Login()");
     }
 
@@ -603,7 +609,13 @@ public class AuthenticationActivity extends AppCompatActivity {
                 if( RequireEnabledInternetAndInternetConnection() ) {            // This method gives feedback using Snackbar
                     mPassword = passwordEditText.getText().toString();
 
-                    Login();
+                    // progressDialog.setTitle("Progress Dialog");
+                    // progressDialog.setMessage("Logging in");
+                    // progressDialog.setCancelable(false);
+                    // progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                    // progressDialog.show();
+
+                    Login();        // will dismiss the progressDialog
 
                 }else{
                     authButton.setEnabled(true);

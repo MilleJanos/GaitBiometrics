@@ -1,28 +1,18 @@
 package com.example.jancsi_pc.playingwithsensors.Utils;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.net.wifi.WifiManager;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
-import com.example.jancsi_pc.playingwithsensors.Accelerometer;
 import com.example.jancsi_pc.playingwithsensors.AuthenticationActivity;
-import com.example.jancsi_pc.playingwithsensors.DataCollectorActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.io.File;
 import java.util.ArrayList;
-
-import static android.content.Context.MODE_PRIVATE;
 
 public class Util {
 

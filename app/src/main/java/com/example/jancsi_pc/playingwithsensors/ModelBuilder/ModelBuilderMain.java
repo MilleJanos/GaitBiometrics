@@ -175,6 +175,7 @@ public class ModelBuilderMain {
             System.out.println("Unable to open file " + input);
         }
 
+        Log.d(TAG,"1");
         StringBuilder sb=new StringBuilder();
         Scanner scanner2 = null;
 
@@ -183,7 +184,7 @@ public class ModelBuilderMain {
         } catch (Exception ex) {
             System.out.println("File not found: "+output);
         }
-
+        Log.d(TAG,"2");
         FileWriter writer = null;
 
         String line2=null;
@@ -194,6 +195,7 @@ public class ModelBuilderMain {
             }
             sb.append(line2+"\n");
         }
+        Log.d(TAG,"3");
         String line=null;
         while(scanner.hasNextLine()){
             line = scanner.nextLine().trim();
@@ -201,7 +203,7 @@ public class ModelBuilderMain {
                 break;
             }
         }
-
+        Log.d(TAG,"4");
         String item1=line.split(" ")[2];
         String item2=line2.split(" ")[2];
         sb.append("@attribute userID{"+ item1.substring(1,item1.length()-1) +","+ item2.substring(1,item2.length()-1) +"}\n\n");
@@ -211,6 +213,7 @@ public class ModelBuilderMain {
                 break;
             }
         }
+        Log.d(TAG,"5");
 
         while (scanner2.hasNextLine()) {
 
@@ -221,6 +224,7 @@ public class ModelBuilderMain {
             }
             sb.append(line+"\n");
         }
+        Log.d(TAG,"6");
         try {
             writer = new FileWriter(output, false);
         } catch (Exception ex) {
@@ -231,7 +235,7 @@ public class ModelBuilderMain {
         } catch (IOException ex) {
             Logger.getLogger(ModelBuilderMain.class.getName()).log(Level.SEVERE, null, ex);
         }
-
+        Log.d(TAG,"7");
         while (scanner.hasNextLine()) {
 
             line = scanner.nextLine().trim();
@@ -247,7 +251,7 @@ public class ModelBuilderMain {
                 Logger.getLogger(ModelBuilderMain.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-
+        Log.d(TAG,"8");
         scanner.close();
         scanner2.close();
         try {

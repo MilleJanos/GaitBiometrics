@@ -13,7 +13,6 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.widget.CircularProgressDrawable;
 import android.support.v7.app.AppCompatActivity;
 import android.text.format.DateFormat;
 import android.util.Log;
@@ -26,6 +25,9 @@ import android.widget.Toast;
 import com.example.jancsi_pc.playingwithsensors.ModelBuilder.ModelBuilderMain;
 import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepDetector;
 import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepListener;
+import com.example.jancsi_pc.playingwithsensors.Utils.Accelerometer;
+import com.example.jancsi_pc.playingwithsensors.Utils.MyFileRenameException;
+import com.example.jancsi_pc.playingwithsensors.Utils.UserAndHisFile;
 import com.example.jancsi_pc.playingwithsensors.Utils.Util;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -350,8 +352,8 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
 
                 try {
 
-                    if( ! renameIternalFiles_to_withoutDate() ){ //return false if an error occured
-                        throw new Exception("Error renaming file to \"..._<date>_<time>...\"");
+                    if( ! renameIternalFiles_to_withoutDate() ){ //return false if an error occured     // will be renamed back after uploads
+                        throw new MyFileRenameException("Error renaming file to \"..._<date>_<time>...\"");
                     }
 
                     // Saving array into .CSV file (Local):
@@ -366,12 +368,9 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
                     // Downloading dummy data & Creating the Model & Upload Model to FireBase Storage:
                     downloadDummyDataFromFireBaseStorage_and_GenerateModel();
 
-                    if( ! renameIternalFiles_to_withoutDate() ){ //return false if an error occured
-                        throw new Exception("Error renaming file to without <date> and <time> ");
-                    }
 
-                }catch( CustomException e ){
-                    Log.e(TAG,"ERROR (CustomError): File cannot be renamed !");
+                }catch( MyFileRenameException e ){
+                    Log.e(TAG,"ERROR (MyFileRenameError): File cannot be renamed !");
                     e.printStackTrace();
                 }catch( Exception e ){
                     e.printStackTrace();
@@ -446,7 +445,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
             | to FireBase Storage.
     */
     //endregion
-    private void savingCSVtoFireBaseStorage(){
+    private void    savingCSVtoFireBaseStorage(){
         Log.d(TAG,">>>RUN>>>savingCSVtoFireBaseStorage()");
         if (checkCallingOrSelfPermission("android.permission.INTERNET") != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(ModelUploaderActivity.this, new String[]{Manifest.permission.INTERNET}, REQUEST_CODE);
@@ -543,7 +542,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
             | for the current signed in user.
     */
     //endregion
-    private void downloadDummyDataFromFireBaseStorage_and_GenerateModel(){
+    private void downloadDummyDataFromFireBaseStorage_and_GenerateModel() throws MyFileRenameException{
         Log.d(TAG,">>>RUN>>>downloadDummyDataFromFireBaseStorage_and_GenerateModel()");
         // Dowloading Dummy Feature from FireBase Storage:
 
@@ -576,7 +575,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
             return;
         }
     }
-    private void continueModelGenerating(){
+    private void continueModelGenerating() throws MyFileRenameException {
         Log.d(TAG,">>RUN>>>continueModelGenerating()");
 
         //region *
@@ -588,7 +587,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
         Log.i(TAG," |OUT| String Util.rawdata_user_path [size:"+ new File(Util.rawdata_user_path).length() +"]= "   + Util.rawdata_user_path );
         Log.i(TAG," |OUT| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= " + Util.feature_user_path);
         //endregion
-
+        // TODO: find mergeArffFiles() stuck problem
         //region *
         Log.i(TAG," |IN| String Util.feature_dummy_path [size:"+ new File(Util.feature_dummy_path).length() +"]= " + Util.feature_dummy_path);
         Log.i(TAG," |IN| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= "  + Util.feature_user_path);
@@ -619,14 +618,51 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
     }
     //region HELP
     /*
-
+            uploadModeltoFireBaseStorage()
+                | Uploads the generated model
+                | to FireBase Storage.
      */
     //endregion
-    private void uploadModeltoFireBaseStorage(){
+    private void uploadModeltoFireBaseStorage() throws MyFileRenameException {
         Log.d(TAG,">>>RUN>>>uploadModeltoFireBaseStorage()");
-        //
-        // TODO Upload: Util.model_user_path filePath; to FireBase Storage /features
-        //
+
+        Uri path = Uri.fromFile( modelUserFile );
+
+        if( path != null){
+            Log.i(TAG,"Uploading Model...");
+            //final ProgressDialog progressDialog = new ProgressDialog(ModelUploaderActivity.this);
+            //progressDialog.setTitle("Uploading...");
+            //progressDialog.show();
+            StorageReference ref = mStorageReference.child("files/" + path.getLastPathSegment() );
+            ref.putFile(path)
+                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>(){
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            //progressDialog.dismiss();
+                            Log.i(TAG,"Model Uploaded");
+                            Toast.makeText(ModelUploaderActivity.this, "CSV file has been saved to FireBase Storage!", Toast.LENGTH_LONG).show();
+                            // TODO: THROW SOMEHOW THIS EXCEPTION !!!
+                            // if( ! renameIternalFiles_to_withoutDate() ){ //return false if an error occured
+                            //     throw new MyFileRenameException("Error renaming file to without <date> and <time> ");
+                            // }
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.e(TAG,"CSV upload Failed");
+                            Toast.makeText(ModelUploaderActivity.this, "CSV upload Failed", Toast.LENGTH_LONG).show();
+                        }
+                    })
+                    .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                            double progress = (100.0*taskSnapshot.getBytesTransferred()/taskSnapshot.getTotalByteCount());
+                            //progressDialog.setMessage("Uploaded " + (int)progress + "%" );
+                        }
+                    });
+        }
+
         Log.i(TAG,"### Util.hasUserModel = true");
         Util.hasUserModel = true;
         finish();

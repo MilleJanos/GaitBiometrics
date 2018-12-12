@@ -16,7 +16,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.jancsi_pc.playingwithsensors.Accelerometer;
+import com.example.jancsi_pc.playingwithsensors.Utils.Accelerometer;
 import com.example.jancsi_pc.playingwithsensors.R;
 
 import java.io.File;
@@ -70,7 +70,7 @@ public class RecorderActivity extends AppCompatActivity {
         gyroscopemeterSensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
 
         if( accelerometerSensor == null ){
-            Toast.makeText(this, "The device has no com.example.jancsi_pc.playingwithsensors.Accelerometer !", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "The device has no com.example.jancsi_pc.playingwithsensors.Utils.Accelerometer !", Toast.LENGTH_SHORT).show();
             finish();
         }
 
