@@ -206,7 +206,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         Log.d(TAG, ">>>RUN>>>Register()");
         Util.hideKeyboard(AuthenticationActivity.this);
 
-        if( ! RequireEnabledInternetAndInternetConnection() ){
+        if( ! RequireInternetConnection() /*RequireEnabledInternetAndInternetConnection()*/ ){
             return;
         }
 
@@ -303,7 +303,7 @@ public class AuthenticationActivity extends AppCompatActivity {
 
         authButton.setEnabled(false);
 
-        if( ! RequireEnabledInternetAndInternetConnection() ){
+        if( ! RequireInternetConnection() /*RequireEnabledInternetAndInternetConnection()*/ ){
             return;
         }
 
@@ -398,8 +398,8 @@ public class AuthenticationActivity extends AppCompatActivity {
                 Log.d(TAG, ">>>RUN>>>authButtonClickListener");
                 authButton.setEnabled(false);
 
-                if (RequireEnabledInternetAndInternetConnection()) {            // This method gives feedback using Snackbar
-                    Log.d(TAG, " isNetworkEnabled = true");
+                if ( RequireInternetConnection() /*RequireEnabledInternetAndInternetConnection()*/) {            // This method gives feedback using Snackbar
+                    //Log.d(TAG, " isNetworkEnabled = true");
                     Log.d(TAG, " isNetworkConnection = true");
                     mEmail = emailEditText.getText().toString();
 
@@ -606,7 +606,7 @@ public class AuthenticationActivity extends AppCompatActivity {
 
                 // Finishing Login
                 Log.d(TAG, ">>>RUN>>>authButtonClickListener");
-                if( RequireEnabledInternetAndInternetConnection() ) {            // This method gives feedback using Snackbar
+                if( RequireInternetConnection() /*RequireEnabledInternetAndInternetConnection()*/ ) {            // This method gives feedback using Snackbar
                     mPassword = passwordEditText.getText().toString();
 
                     // progressDialog.setTitle("Progress Dialog");

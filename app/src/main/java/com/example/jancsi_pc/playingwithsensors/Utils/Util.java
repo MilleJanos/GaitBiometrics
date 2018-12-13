@@ -1,18 +1,37 @@
 package com.example.jancsi_pc.playingwithsensors.Utils;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.provider.Settings;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.Toast;
 
 import com.example.jancsi_pc.playingwithsensors.AuthenticationActivity;
+import com.example.jancsi_pc.playingwithsensors.DataCollectorActivity;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class Util {
 
@@ -111,5 +130,60 @@ public class Util {
     public static final String LAST_MODEL_EMAIL_KEY = "lastmodelemailkey";
     public static final String LAST_MODEL_ID_KEY = "lastmodelidkey";
     public static final String LAST_MODEL_DATE_KEY = "lastmodeldatekey";
+
+
+    public static final int REQUEST_CODE = 212;
+
+
+    //region HELP
+    /*
+            | This method saves the accArray<Accelerometer> list
+            | into file including header.
+            | Return value:
+            |   0 - No error
+            |   1 - error
+    */
+    //endregion
+    public static short SaveAccArrayIntoCsvFile(ArrayList<Accelerometer> accArray, File file){
+        String TAG = "Util";
+        Log.d(TAG,">>>RUN>>>savingAccArrayIntoCSV()");
+
+        if( ! file.exists() ){
+            try {
+                file.createNewFile();
+            }catch (IOException e){
+                Log.e(TAG, "IOException: file.createNewFile()");
+                e.printStackTrace();
+                return 1;
+            }
+        }
+
+        try {
+            FileOutputStream fos = new FileOutputStream(file);
+            PrintWriter pw = new PrintWriter(fos);
+
+            // Header:
+            if(Util.rawDataHasHeader) {
+                pw.println(Util.rawDataHeaderStr);
+            }
+
+            for( Accelerometer a : accArray){
+                pw.println( a.toString() );
+            }
+            pw.flush();
+            pw.close();
+            fos.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            Log.d(TAG, "******* File not found.");
+            return 1;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return 1;
+        }
+        Log.d(TAG,"<<<FINISH<<<savingAccArrayIntoCSV()");
+        return 0;
+    }
+
 
 }

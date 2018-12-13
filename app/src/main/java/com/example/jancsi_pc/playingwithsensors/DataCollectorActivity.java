@@ -27,6 +27,7 @@ import android.widget.Toast;
 import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepDetector;
 import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepListener;
 import com.example.jancsi_pc.playingwithsensors.Utils.Accelerometer;
+import com.example.jancsi_pc.playingwithsensors.Utils.FirebaseUtil;
 import com.example.jancsi_pc.playingwithsensors.Utils.UserAndHisFile;
 import com.example.jancsi_pc.playingwithsensors.Utils.Util;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -101,7 +102,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
     // For Step Detecting:
     private StepDetector simpleStepDetector;
-    private static final int REQUEST_CODE = 212;
+
 
     // Firebase:
     private FirebaseStorage mFirestore;            // used to upload files
@@ -362,30 +363,28 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
             public void onClick(View v) {
                 Log.d(TAG, ">>>RUN>>>saveToFirebaseButtonClickListener");
                 if (checkCallingOrSelfPermission("android.permission.WRITE_EXTERNAL_STORAGE") != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(DataCollectorActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
+                    ActivityCompat.requestPermissions(DataCollectorActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, Util.REQUEST_CODE);
                 }
+                if (checkCallingOrSelfPermission("android.permission.INTERNET") != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(DataCollectorActivity.this, new String[]{Manifest.permission.INTERNET}, Util.REQUEST_CODE);
+                }
+
                 // Saving array into .CSV file (Local):
-                savingAccArrayIntoCSV();
+                Util.SaveAccArrayIntoCsvFile(accArray, rawdataUserFile);
 
-                // Saving CSV to FireBase Storage:
-                savingCSVtoFireBaseStorage();
+                // Saving CSV File to FireBase Storage:
+                StorageReference ref = mStorageReference.child("files/" + rawdataUserFile.getName() );
+                FirebaseUtil.UploadFileToFirebaseStorage(DataCollectorActivity.this, rawdataUserFile, ref);
 
-                // Updating JSON in the FireStore: (Collection->Documents->Collection->Documents->...)
-                uploadJSONintoFireBaseFireStore();
-
-                //
-                // Saving into .CSV file
-                //
-
-
-                Log.d(TAG,"Saving CSV to FireStore...");
-                //
-                // Saving CSV to firestore
-                //
-
-                //
-                // Updating JSON in the FireStore (Collection->Documents->Collection->Documents->...)
-                //
+                // Updating (JSON) Object in the FireStore: (Collection->Documents->Collection->Documents->...)
+                String randomId = UUID.randomUUID().toString();
+                UserAndHisFile info = new UserAndHisFile(mDate.toString(), rawdataUserFile.getName());
+                mDocRef = FirebaseFirestore.getInstance()
+                        .collection(FirebaseUtil.USER_RECORDS_KEY_NEW + "/" )
+                        .document( mAuth.getUid() + "" )
+                        .collection( Util.deviceId )
+                        .document( randomId ) ;
+                FirebaseUtil.UploadObjectToFirebaseFirestore(DataCollectorActivity.this, info, mDocRef);
 
             }
         });
@@ -409,136 +408,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
     }// OnCreate
 
-
-    // step: 1
-    //region HELP
-    /*
-        savingAccArrayIntoCSV()
-            | This method saves the accArray<Accelerometer> list
-            | into .CSV file including header.
-    */
-    //endregion
-    private void savingAccArrayIntoCSV(){
-        Log.d(TAG,">>>RUN>>>savingAccArrayIntoCSV()");
-
-        try {
-            FileOutputStream f = new FileOutputStream(rawdataUserFile);
-            PrintWriter pw = new PrintWriter(f);
-
-            // Header:
-            if(Util.rawDataHasHeader) {
-                pw.println(Util.rawDataHeaderStr);
-            }
-
-            for( Accelerometer a : accArray){
-                pw.println( a.toString() );
-            }
-            pw.flush();
-            pw.close();
-            f.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            Log.d(TAG, "******* File not found.");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        Log.d(TAG,"<<<FINISH<<<savingAccArrayIntoCSV()");
-    }
-
-    // step: 2
-    //region HELP
-    /*
-        savingCSVtoFireBaseStorage()
-            | This method uploads the .CSV file
-            | to FireBase Storage.
-    */
-    //endregion
-    private void savingCSVtoFireBaseStorage(){
-        Log.d(TAG,">>>RUN>>>savingCSVtoFireBaseStorage()");
-        if (checkCallingOrSelfPermission("android.permission.INTERNET") != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(DataCollectorActivity.this, new String[]{Manifest.permission.INTERNET}, REQUEST_CODE);
-        }
-
-        Uri path = Uri.fromFile( rawdataUserFile );
-
-        if( path != null){
-            //final ProgressDialog progressDialog = new ProgressDialog(DataCollectorActivity.this);
-            //progressDialog.setTitle("Uploading...");
-            //progressDialog.show();
-            /*
-             *
-             *  Generate
-             *
-             */
-            StorageReference ref = mStorageReference.child("files/" + path.getLastPathSegment() );
-            ref.putFile(path)
-                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                            //progressDialog.dismiss();
-                            Log.i(TAG,"CSV Uploaded");
-                            Toast.makeText(DataCollectorActivity.this, "CSV file has been saved to FireBase Storage!", Toast.LENGTH_LONG).show();
-                            Log.d(TAG,"<<<FINISH<<<savingCSVtoFireBaseStorage() - onSuccess");
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(DataCollectorActivity.this, "Upload Failed", Toast.LENGTH_LONG).show();
-                            Log.d(TAG,"<<<FINISH<<<savingCSVtoFireBaseStorage() - onFailure");
-                        }
-                    })
-                    .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                            //double progress = (100.0*taskSnapshot.getBytesTransferred()/taskSnapshot.getTotalByteCount());
-                            //progressDialog.setMessage("Uploaded " + (int)progress + "%" );
-                        }
-                    });
-        }
-    }
-
-    // step: 3
-    //region HELP
-    /*
-        uploadJSONintoFireBaseFireStore()
-            | This method uploads the UserAndHisFile
-            | object(JSON) into FireBase FireStore.
-     */
-    //endregion
-    private void uploadJSONintoFireBaseFireStore(){
-        Log.d(TAG,">>>RUN>>>uploadJSONintoFireBaseFireStore()");
-        Util.deviceId = Settings.Secure.getString(DataCollectorActivity.this.getContentResolver(), Settings.Secure.ANDROID_ID);
-        String randomId = UUID.randomUUID().toString();
-
-        // Just to test Different device situations:
-        //Random r = new Random();
-        //deviceId += "_" + r.nextInt(100);
-
-        // OLD:
-        // mDocRef = FirebaseFirestore.getInstance().document("user_records/" + randomUserRecordID );
-        // "user_records" / <userID> / <deviceID> / <randomId> / ...fields...
-        mDocRef = FirebaseFirestore.getInstance()
-                .collection("user_records_2/" )
-                .document( mAuth.getUid() + "" )
-                .collection( Util.deviceId )
-                .document( randomId ) ;
-
-        UserAndHisFile info = new UserAndHisFile(mDate.toString(), randomId);
-        Log.d(TAG,"File: randomId" + randomId);
-
-        mDocRef.set(info).addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                Log.d(TAG,"Document has been saved to FireStore!");
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Log.w(TAG,"Problem saving to FireStore!");
-            }
-        });
-    }
 
     /*
      *
@@ -672,6 +541,8 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     public void onStart() {
         Log.d(TAG, ">>>RUN>>>onStart()");
         super.onStart();
+
+        Util.deviceId = Settings.Secure.getString(DataCollectorActivity.this.getContentResolver(), Settings.Secure.ANDROID_ID);
 
         Util.mPreferences = getSharedPreferences(Util.sharedPrefFile,MODE_PRIVATE);
 
