@@ -11,8 +11,8 @@ import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.provider.Settings;
-import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -20,7 +20,9 @@ import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,25 +30,19 @@ import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepDetector;
 import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepListener;
 import com.example.jancsi_pc.playingwithsensors.Utils.Accelerometer;
 import com.example.jancsi_pc.playingwithsensors.Utils.FirebaseUtil;
-import com.example.jancsi_pc.playingwithsensors.Utils.UserAndHisFile;
+import com.example.jancsi_pc.playingwithsensors.Utils.MyFileRenameException;
+import com.example.jancsi_pc.playingwithsensors.Utils.UserRecordObject;
 import com.example.jancsi_pc.playingwithsensors.Utils.Util;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -115,6 +111,12 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     // Internal Files:
     private File rawdataUserFile;
 
+    // Progress:
+    private ProgressDialog progressDialog;
+
+    // Debug Mode:
+    private Switch debugSwitch;
+
     /*
      *
      *   OnCreate
@@ -129,6 +131,8 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         setContentView(R.layout.activity_data_collector);
 
         Log.d(TAG, ">>>RUN>>>onCreate()");
+
+        progressDialog = new ProgressDialog(DataCollectorActivity.this);
 
         //
         // Internal Saving Location for ALL hidden files:
@@ -225,6 +229,8 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         simpleStepDetector = new StepDetector();
         simpleStepDetector.registerListener(this);
 
+        debugSwitch = findViewById(R.id.debugSwitch);
+
         if( NO_PYTHON_SERVER_YET ){
             ImageView pythonServerImageView = findViewById(R.id.pythonServerImageView);
             sendToServerButton.setVisibility(View.INVISIBLE);
@@ -305,6 +311,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
             @Override
             public void onClick(View v) {
                 Log.d(TAG, ">>>RUN>>>stopButtonClickListener");
+                Util.recordDateAndTimeFormatted  = DateFormat.format("yyyyMMdd_HHmmss", mDate.getTime());
                 isRecording = false;
                 startButton.setEnabled(true);
                 stopButton.setEnabled(false);
@@ -362,29 +369,80 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
             @Override
             public void onClick(View v) {
                 Log.d(TAG, ">>>RUN>>>saveToFirebaseButtonClickListener");
-                if (checkCallingOrSelfPermission("android.permission.WRITE_EXTERNAL_STORAGE") != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(DataCollectorActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, Util.REQUEST_CODE);
+
+                progressDialog.setTitle("Progress Dialog");
+                progressDialog.setMessage("Uploading");
+                progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                progressDialog.show();
+
+                try {
+
+                    //region Explanation
+                    /*
+                        We have to upload the files withDate then after upload
+                        the files has to be renamed withoutDate to make sure
+                        there will be no copy in the internal storage.
+                     */
+                    //endregion
+                    if( ! renameIternalFiles_to_withDate() ){ //return false if an error occured     // will be renamed back after uploads
+                        throw new MyFileRenameException("Error renaming file to \"..._<date>_<time>...\"");
+                    }
+                    if (checkCallingOrSelfPermission("android.permission.WRITE_EXTERNAL_STORAGE") != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(DataCollectorActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, Util.REQUEST_CODE);
+                    }
+                    if (checkCallingOrSelfPermission("android.permission.INTERNET") != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(DataCollectorActivity.this, new String[]{Manifest.permission.INTERNET}, Util.REQUEST_CODE);
+                    }
+
+                    // Change Debug DIR
+                    String fileStorageName = "";
+                    String collectionName = "";
+                    if( Util.debugMode ){
+                        fileStorageName = FirebaseUtil.STORAGE_FILES_KEY_DEBUG;
+                        collectionName = FirebaseUtil.USER_RECORDS_KEY_DEBUG;
+                    }else{
+                        fileStorageName = FirebaseUtil.STORAGE_FILES_KEY;
+                        collectionName = FirebaseUtil.USER_RECORDS_KEY_NEW;
+                    }
+
+                    // Saving array into .CSV file (Local):
+                    Util.SaveAccArrayIntoCsvFile(accArray, rawdataUserFile);
+
+                    // Saving CSV File to FireBase Storage:
+                    StorageReference ref = mStorageReference.child( fileStorageName+ "/" + rawdataUserFile.getName() );
+                    FirebaseUtil.UploadFileToFirebaseStorage(DataCollectorActivity.this, rawdataUserFile, ref);
+
+                    // Updating (JSON) Object in the FireStore: (Collection->Documents->Collection->Documents->...)
+                    String randomId = UUID.randomUUID().toString();
+                    String downloadUrl = ref.getDownloadUrl().toString();
+                    UserRecordObject info = new UserRecordObject(mDate.toString(), rawdataUserFile.getName(), downloadUrl);
+
+                    mDocRef = FirebaseFirestore.getInstance()
+                            .collection( collectionName + "/" )
+                            .document( mAuth.getUid() + "" )
+                            .collection( Util.deviceId )
+                            .document( randomId ) ;
+                    FirebaseUtil.UploadObjectToFirebaseFirestore(DataCollectorActivity.this, info, mDocRef);
+
+                    // TODO: VARJA BE OKET ES FUTTASSA LE EZT: !!!
+                    // Wait until these two async uploads finish !
+                    if (!renameIternalFiles_to_withoutDate()) { //return false if an error occured     // will be renamed back after uploads
+                        Toast.makeText(DataCollectorActivity.this,"ERROR (renamig file)",Toast.LENGTH_LONG).show();
+                        throw new MyFileRenameException("Error renaming file to \"..._<date>_<time>...\"");
+                    }
+
+                }catch( MyFileRenameException e ){
+                    progressDialog.dismiss();
+                    Log.e(TAG,"ERROR (MyFileRenameError): File cannot be renamed !");
+                    e.printStackTrace();
+                }catch( Exception e ){
+                    progressDialog.dismiss();
+                    e.printStackTrace();
                 }
-                if (checkCallingOrSelfPermission("android.permission.INTERNET") != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(DataCollectorActivity.this, new String[]{Manifest.permission.INTERNET}, Util.REQUEST_CODE);
-                }
 
-                // Saving array into .CSV file (Local):
-                Util.SaveAccArrayIntoCsvFile(accArray, rawdataUserFile);
+                // TODO: if( az utolso 4 fuggveny hibatlanul lefutott ) ==> ROLLBACK
 
-                // Saving CSV File to FireBase Storage:
-                StorageReference ref = mStorageReference.child("files/" + rawdataUserFile.getName() );
-                FirebaseUtil.UploadFileToFirebaseStorage(DataCollectorActivity.this, rawdataUserFile, ref);
 
-                // Updating (JSON) Object in the FireStore: (Collection->Documents->Collection->Documents->...)
-                String randomId = UUID.randomUUID().toString();
-                UserAndHisFile info = new UserAndHisFile(mDate.toString(), rawdataUserFile.getName());
-                mDocRef = FirebaseFirestore.getInstance()
-                        .collection(FirebaseUtil.USER_RECORDS_KEY_NEW + "/" )
-                        .document( mAuth.getUid() + "" )
-                        .collection( Util.deviceId )
-                        .document( randomId ) ;
-                FirebaseUtil.UploadObjectToFirebaseFirestore(DataCollectorActivity.this, info, mDocRef);
 
             }
         });
@@ -409,15 +467,72 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     }// OnCreate
 
 
-    /*
-     *
-     * ArrayList<Accelerometer> accArray ==> String str
-     *
-     * output format:   "timestamp,x,y,z,currentStepCount,timestamp,x,y,z,currentStepCount,timestamp,x,y,z,timestamp,currentStepCount, ... ,end"
-     *
-     *
-     */
 
+
+    //region HELP
+    /*
+        renameIternalFiles_withDate()
+                | Before upload add "_<date>_<time>" to the end of the file (and path)
+                | ( After reload rename it back! )
+                | return:
+                |   true - No errors
+                |   false - Error
+    */
+    //endregion
+    private boolean renameIternalFiles_to_withDate(){
+        Log.d(TAG,">>RUN>>renameIternalFiles_to_withDate()");
+        File f = null;
+        Util.rawdata_user_path  = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/rawdata_" + mAuth.getUid() + "_" + Util.recordDateAndTimeFormatted + ".csv";
+
+        try {
+            f= new File( Util.rawdata_user_path );
+            rawdataUserFile.renameTo(f);
+        }catch( Exception e ){
+            Log.e(TAG,"renameIternalFiles_withDate() - CANNOT RENAME FILE TO: " + f.getAbsolutePath() );
+            e.printStackTrace();
+            Log.d(TAG,"<<FINISHED<<renameIternalFiles_to_withDate() - ERROR");
+            return false;
+        }
+        Log.d(TAG,"<<FINISHED<<renameIternalFiles_to_withDate() - OK");
+        return true;
+    }
+
+    //region HELP
+    /*
+        renameIternalFiles_withDate()
+                | ( Before upload add "_<date>_<time>" to the end of the file (and path) )
+                | After reload rename it back!
+                | return:
+                |   true - No errors
+                |   false - Error
+    */
+    //endregion
+    private boolean renameIternalFiles_to_withoutDate(){
+        Log.d(TAG,">>RUN>>renameIternalFiles_to_withoutDate()");
+        File f = null;
+        Util.rawdata_user_path  = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/rawdata_" + mAuth.getUid() + "_0_0" + ".csv";
+
+        try {
+            f= new File( Util.rawdata_user_path );
+            rawdataUserFile.renameTo(f);
+
+        }catch( Exception e ){
+            Log.e(TAG,"renameIternalFiles_withoutDate() - CANNOT RENAME FILE TO: " + f.getAbsolutePath() );
+            e.printStackTrace();
+            Log.d(TAG,"<<FINISHED<<renameIternalFiles_to_withoutDate() - ERROR");
+            return false;
+        }
+        Log.d(TAG,"<<FINISHED<<renameIternalFiles_to_withoutDate() - OK");
+        return true;
+    }
+
+    //region HELP
+    /*
+    ArrayList<Accelerometer> accArray ==> String str
+
+    output format:   "timestamp,x,y,z,currentStepCount,timestamp,x,y,z,currentStepCount,timestamp,x,y,z,timestamp,currentStepCount, ... ,end"
+    */
+    //endregion
     public String accArrayToString(){
         Log.d(TAG, ">>>RUN>>>accArrayToString()");
         StringBuilder sb = new StringBuilder();
@@ -447,14 +562,13 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         return sb.toString();
     }
 
+    //region HELP
     /*
-     *
-     * Same as accArrayToString just grouped in N groups
-     * NO return value, the result is in accArrayStringGroups variable !
-     * adds "end" to the end of the package-chain
-     *
-     */
-
+      Same as accArrayToString just grouped in N groups
+      NO return value, the result is in accArrayStringGroups variable !
+      adds "end" to the end of the package-chain
+    */
+    //endregion
     public void accArrayGroupArrayToString(){
         Log.d(TAG, ">>>RUN>>>accArrayGroupArrayToString()");
         accArrayStringGroups.clear();
@@ -568,6 +682,27 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         loggedInUserEmailTextView.setText(Util.userEmail);
 
         sensorManager.registerListener(accelerometerEventListener, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
+
+        // Admin Mode:
+        if( Util.isAdminLoggedIn ){
+            debugSwitch.setChecked(false);
+            debugSwitch.setVisibility(View.VISIBLE);
+            debugSwitch = findViewById(R.id.debugSwitch);
+            debugSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if (isChecked) {
+                        Util.debugMode = true;
+                        Log.i(TAG, "Debug Mode -> ON");
+                    } else {
+                        Util.debugMode = false;
+                        Log.i(TAG, "Debug Mode -> OFF");
+                    }
+                }
+            });
+        }else{
+            debugSwitch.setChecked(false);
+            debugSwitch.setVisibility(View.INVISIBLE);
+        }
 
         // Show on screen model status
         if(Util.isSetUserModel) {

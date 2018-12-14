@@ -31,6 +31,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class Util {
@@ -134,6 +135,15 @@ public class Util {
 
     public static final int REQUEST_CODE = 212;
 
+    public static boolean isAdminLoggedIn = false;
+    public static boolean debugMode = false;
+    public static final List<String> adminList = new ArrayList<String>() {
+        {
+            add("fuloptimea1427@gmail.com");
+            add("margitantal68@gmail.com");
+            add("millejanos31@gmail.com");
+            add("wolterwill31@gmail.com");
+        }};
 
     //region HELP
     /*

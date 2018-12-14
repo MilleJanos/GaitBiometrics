@@ -23,10 +23,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.jancsi_pc.playingwithsensors.Utils.Util;
+import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -177,6 +179,7 @@ public class AuthenticationActivity extends AppCompatActivity {
             }
         });
 
+
         /*
         *
         *  Setup the Interface
@@ -207,7 +210,11 @@ public class AuthenticationActivity extends AppCompatActivity {
         Util.hideKeyboard(AuthenticationActivity.this);
 
         if( ! RequireInternetConnection() /*RequireEnabledInternetAndInternetConnection()*/ ){
+            progressDialog.dismiss();
             return;
+        }else{
+            Util.hideKeyboard(AuthenticationActivity.this);
+            Snackbar.make(findViewById(R.id.auth_main_layout),"No internet connection!",Snackbar.LENGTH_LONG).show();
         }
 
         mEmail = emailEditText.getText().toString();
@@ -219,24 +226,28 @@ public class AuthenticationActivity extends AppCompatActivity {
         if( mEmail.equals("") ){
             emailEditText.setError("Wrong mEmail");
             emailEditText.requestFocus();
+            progressDialog.dismiss();
             return;
         }
 
         if( mPassword.length() <= 6 ){
             passwordEditText.setError("At least 6 character!");
             passwordEditText.requestFocus();
+            progressDialog.dismiss();
             return;
         }
 
         if(  mPassword.equals("") ){
             passwordEditText.setError("Must be filled!");
             passwordEditText.requestFocus();
+            progressDialog.dismiss();
             return;
         }
 
         if( ! mPassword.equals(password2) ){
             passwordEditText2.setError("Passwords has to be the same!");
             passwordEditText2.requestFocus();
+            progressDialog.dismiss();
             return;
         }
 
@@ -249,15 +260,15 @@ public class AuthenticationActivity extends AppCompatActivity {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "createUserWithEmail:success");
                             //FirebaseUser user = Util.mAuth.getCurrentUser();
-                            //updateUI(user);
                             sendVerificationEmail();
                             //Toast.makeText(AuthenticationActivity.this, getString(R.string.verifyMailbox),Toast.LENGTH_LONG).show();
                             Snackbar.make(findViewById(R.id.auth_main_layout),getString(R.string.verifyMailbox),Snackbar.LENGTH_LONG).show();
+                            progressDialog.dismiss();
                             finish();
                         } else {
+                            progressDialog.dismiss();
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "createUserWithEmail:failure", task.getException());
-                            //updateUI(null);
                             //Toast.makeText(AuthenticationActivity.this, getString(R.string.registerFailed),Toast.LENGTH_LONG).show();
                             Snackbar.make(findViewById(R.id.auth_main_layout),getString(R.string.registerFailed),Snackbar.LENGTH_LONG).show();
                         }
@@ -277,6 +288,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                                             // after mEmail is sent just logout the user and finish this activity
                                             FirebaseAuth.getInstance().signOut();
                                             //startActivity(new Intent(AuthenticationActivity.this, DataCollectorActivity.class));
+                                            progressDialog.dismiss();
                                             finish();
                                         }
                                         else
@@ -285,6 +297,7 @@ public class AuthenticationActivity extends AppCompatActivity {
 
                                             //restart this activity
                                             overridePendingTransition(0, 0);
+                                            progressDialog.dismiss();
                                             finish();
                                             overridePendingTransition(0, 0);
                                             startActivity(getIntent());
@@ -304,6 +317,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         authButton.setEnabled(false);
 
         if( ! RequireInternetConnection() /*RequireEnabledInternetAndInternetConnection()*/ ){
+            progressDialog.dismiss();
             return;
         }
 
@@ -345,14 +359,17 @@ public class AuthenticationActivity extends AppCompatActivity {
                             Util.userEmail = mEmail;
                             Util.isSignedIn = true;
                             authButton.setEnabled(true);
-                            // progressDialog.dismiss();
+                            progressDialog.dismiss();
 
-                            CheckUserModel();// Wait to get the model or create new one, will do the finish() !
+                            CheckUserModel_and_small_stuff();// Wait to get the model or create new one, will do the finish() !
 
                         } else {
+                            progressDialog.dismiss();
+                            authButton.setEnabled(true);
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithEmail:failure", task.getException());
                             //Toast.makeText(AuthenticationActivity.this, "Login Failed!", Toast.LENGTH_LONG).show();
+                            Util.hideKeyboard(AuthenticationActivity.this);
                             Snackbar.make(findViewById(R.id.auth_main_layout),"Email or Password is incorrect!",Snackbar.LENGTH_LONG).show();
                         }
                         // ...
@@ -400,9 +417,14 @@ public class AuthenticationActivity extends AppCompatActivity {
 
                 if ( RequireInternetConnection() /*RequireEnabledInternetAndInternetConnection()*/) {            // This method gives feedback using Snackbar
                     //Log.d(TAG, " isNetworkEnabled = true");
-                    Log.d(TAG, " isNetworkConnection = true");
+                    //Log.d(TAG, " isNetworkConnection = true");
                     mEmail = emailEditText.getText().toString();
 
+                    progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                    progressDialog.setTitle("Authentication");
+                    progressDialog.setMessage("Checking email.");
+                    progressDialog.setCancelable(false);
+                    progressDialog.show();
 
                     Log.d(TAG, "Waiting for fetchProvidersForEmail() ...");
                     if (!mEmail.equals("")) {
@@ -425,6 +447,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                                         prepareScreenUIFor_password();
                                         authButton.setEnabled(true);
                                         authButton.setEnabled(true);
+                                        progressDialog.dismiss();
                                     } else {
                                         userExists=false;
                                         emailEditText.setError("Please fill the Email field with a registered email address!");
@@ -433,6 +456,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                                         Log.d(TAG, "Login user doesn't exist");
                                         //TODO Snackbar asking the user to register
                                         authButton.setEnabled(true);
+                                        progressDialog.dismiss();
                                     }
                                 } else {
                                     Log.w(TAG, "User check failed", task.getException());
@@ -456,6 +480,9 @@ public class AuthenticationActivity extends AppCompatActivity {
 
                 }else{
                     authButton.setEnabled(true);
+                    Util.hideKeyboard(AuthenticationActivity.this);
+                    View view = findViewById(R.id.auth_main_layout);
+                    Snackbar.make(view, "No internet connection!", Snackbar.LENGTH_SHORT).show();
                 }
             }
         });
@@ -609,16 +636,19 @@ public class AuthenticationActivity extends AppCompatActivity {
                 if( RequireInternetConnection() /*RequireEnabledInternetAndInternetConnection()*/ ) {            // This method gives feedback using Snackbar
                     mPassword = passwordEditText.getText().toString();
 
-                    // progressDialog.setTitle("Progress Dialog");
-                    // progressDialog.setMessage("Logging in");
-                    // progressDialog.setCancelable(false);
-                    // progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-                    // progressDialog.show();
+                    progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                    progressDialog.setTitle("Authentication");
+                    progressDialog.setMessage("Logging in.\nPlease wait.");
+                    progressDialog.setCancelable(false);
+                    progressDialog.show();
 
                     Login();        // will dismiss the progressDialog
 
                 }else{
                     authButton.setEnabled(true);
+                    Util.hideKeyboard(AuthenticationActivity.this);
+                    View view = findViewById(R.id.auth_main_layout);
+                    Snackbar.make(view, "No internet connection!", Snackbar.LENGTH_SHORT).show();
                 }
             }
         });
@@ -678,6 +708,20 @@ public class AuthenticationActivity extends AppCompatActivity {
         // alphaAnimation.setDuration(300);
         // alphaAnimation.setFillBefore(true);
         // alphaAnimation.setFillAfter(false);
+
+        Util.isAdminLoggedIn = false;
+        for( String e : Util.adminList ){
+            if( e.equals(mEmail) ) {
+                Util.isAdminLoggedIn = true;
+                break;
+            }
+        }
+        if(Util.isAdminLoggedIn){
+            Log.i(TAG,"Util.isAdminLoggedIn -> true");
+        }else {
+            Log.i(TAG,"Util.isAdminLoggedIn -> false");
+        }
+
 
         if( emailToPass ) {
             TranslateAnimation translateAnimation = new TranslateAnimation(0, 0, -150, 0);
@@ -765,37 +809,54 @@ public class AuthenticationActivity extends AppCompatActivity {
 
                 mEmail =emailEditText.getText().toString();
                 if(!mEmail.equals("")) {
-                    // TODO: kicserelni a fetchProviderForEmail-t lecserelni: https://firebase.google.com/docs/auth/admin/manage-users#list_all_users
-                    Util.mAuth.fetchProvidersForEmail(mEmail).addOnCompleteListener(new OnCompleteListener<ProviderQueryResult>() {
-                        @Override
-                        public void onComplete(@NonNull Task<ProviderQueryResult> task) {
-                            if (task.isSuccessful()) {
-                                Log.d(TAG, "checking to see if user exists in firebase or not");
-                                ProviderQueryResult result = task.getResult();
 
-                                if (result != null && result.getProviders() != null && result.getProviders().size() > 0) {
-                                    Log.d(TAG, "User exists, stopping");
-                                    userExists = true;
-                                    Toast.makeText(AuthenticationActivity.this, "Email already registered!", Toast.LENGTH_LONG).show();
+                    if ( RequireInternetConnection() /*RequireEnabledInternetAndInternetConnection()*/) {
+
+                        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                        progressDialog.setTitle("Authentication");
+                        progressDialog.setMessage("Creating new user.\nPlease wait.");
+                        progressDialog.setCancelable(false);
+                        progressDialog.show();
+
+                        // TODO: kicserelni a fetchProviderForEmail-t lecserelni: https://firebase.google.com/docs/auth/admin/manage-users#list_all_users
+                        Util.mAuth.fetchProvidersForEmail(mEmail).addOnCompleteListener(new OnCompleteListener<ProviderQueryResult>() {
+                            @Override
+                            public void onComplete(@NonNull Task<ProviderQueryResult> task) {
+                                if (task.isSuccessful()) {
+                                    Log.d(TAG, "checking to see if user exists in firebase or not");
+                                    ProviderQueryResult result = task.getResult();
+
+                                    if (result != null && result.getProviders() != null && result.getProviders().size() > 0) {
+                                        Log.d(TAG, "User exists, stopping");
+                                        userExists = true;
+                                        Toast.makeText(AuthenticationActivity.this, "Email already registered!", Toast.LENGTH_LONG).show();
+                                    } else {
+                                        Log.d(TAG, "User doesn't exist ==> Register");
+                                        //Toast.makeText(AuthenticationActivity.this, "Please fill the Email field!", Toast.LENGTH_LONG).show();
+                                        userExists = false;
+                                        mPassword = passwordEditText.getText().toString().trim();
+                                        Register();
+                                    }
                                 } else {
-                                    Log.d(TAG, "User doesn't exist ==> Register");
-                                    //Toast.makeText(AuthenticationActivity.this, "Please fill the Email field!", Toast.LENGTH_LONG).show();
-                                    userExists=false;
+                                    Log.w(TAG, "User check failed", task.getException());
+                                    Toast.makeText(AuthenticationActivity.this,
+                                            "There is a problem, please try again later.",
+                                            Toast.LENGTH_SHORT).show();
+                                    userExists = false;
                                     mPassword = passwordEditText.getText().toString().trim();
-                                    Register();
+                                    Register();     // will dismiss the progressDialog
                                 }
-                            } else {
-                                Log.w(TAG, "User check failed", task.getException());
-                                Toast.makeText(AuthenticationActivity.this,
-                                        "There is a problem, please try again later.",
-                                        Toast.LENGTH_SHORT).show();
-                                userExists=false;
-                                mPassword = passwordEditText.getText().toString().trim();
-                                Register();
+                                authButton.setEnabled(true);
                             }
-                            authButton.setEnabled(true);
-                        }
-                    });
+                        });
+
+                    }else{
+                        authButton.setEnabled(true);
+                        Util.hideKeyboard(AuthenticationActivity.this);
+                        View view = findViewById(R.id.auth_main_layout);
+                        Snackbar.make(view, "No internet connection!", Snackbar.LENGTH_SHORT).show();
+                    }
+
                 }
                 /*if(userExists){
                     Toast.makeText(AuthenticationActivity.this, "Email already registered!", Toast.LENGTH_LONG).show();
@@ -829,7 +890,15 @@ public class AuthenticationActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Log.d(TAG, ">>>RUN>>>forgotPassTextViewClickListener");
-                resetPassword();
+                if ( RequireInternetConnection() /*RequireEnabledInternetAndInternetConnection()*/) {
+
+                    resetPassword();
+
+                }else{
+                    Util.hideKeyboard(AuthenticationActivity.this);
+                    View view = findViewById(R.id.auth_main_layout);
+                    Snackbar.make(view, "No internet connection!", Snackbar.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -1096,10 +1165,10 @@ public class AuthenticationActivity extends AppCompatActivity {
         forgotPassTextView.setVisibility(View.VISIBLE);
     }
 
-    private void CheckUserModel() {
+    private void CheckUserModel_and_small_stuff() {
         // Test user model existence in firebase
         // AFTER signInWithEmailAndPassword is succed !
-        Log.d(TAG, ">>>RUN>>>CheckUserModel()");
+        Log.d(TAG, ">>>RUN>>>CheckUserModel_and_small_stuff()");
 
         Util.mRef = Util.mStorage.getReference().child("models/model_" + Util.mAuth.getUid() + ".mdl" );
 
@@ -1167,7 +1236,7 @@ public class AuthenticationActivity extends AppCompatActivity {
             finish();
         }
 
-        Log.d(TAG, "<<<FINISHED<<<CheckUserModel()");
+        Log.d(TAG, "<<<FINISHED<<<CheckUserModel_and_small_stuff()");
     }
 
     @Override

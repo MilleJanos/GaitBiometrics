@@ -10,7 +10,6 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -18,7 +17,9 @@ import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,7 +29,7 @@ import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepListener;
 import com.example.jancsi_pc.playingwithsensors.Utils.Accelerometer;
 import com.example.jancsi_pc.playingwithsensors.Utils.FirebaseUtil;
 import com.example.jancsi_pc.playingwithsensors.Utils.MyFileRenameException;
-import com.example.jancsi_pc.playingwithsensors.Utils.UserAndHisFile;
+import com.example.jancsi_pc.playingwithsensors.Utils.UserRecordObject;
 import com.example.jancsi_pc.playingwithsensors.Utils.Util;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -43,10 +44,6 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -107,10 +104,13 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
     private File modelUserFile;     // only the path exists !
 
     // for shared pres
-    CharSequence lastModelDate;
+    private CharSequence lastModelDate;
 
+    // Progress:
     private ProgressDialog progressDialog;
 
+    //Debug mode:
+    Switch debugSwitch;
 
     /*
      *
@@ -128,9 +128,12 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
 
         progressDialog = new ProgressDialog(ModelUploaderActivity.this);
 
-        //
-        // Internal files Path:
-        //
+        /*
+         *
+         *   Internal files Path:
+         *
+         */
+
         mDate = new Date();
 
         // Create folder if not exists:
@@ -203,11 +206,19 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
             }
         }
 
-        // FIREBASE INIT:
+        /*
+         *
+         *   Firebase Init
+         *
+         */
         mFirestore = FirebaseStorage.getInstance();
         mStorageReference = mFirestore.getReference();
 
-        // SENSOR:
+        /*
+         *
+         *   Sensor
+         *
+         */
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
@@ -228,6 +239,9 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
 
         stopButton.setEnabled(false);
         saveToFirebaseButton.setEnabled(false);
+
+        debugSwitch = findViewById(R.id.debugSwitch);
+
 
         final DecimalFormat df = new DecimalFormat("0");
         df.setMaximumIntegerDigits(20);
@@ -352,36 +366,61 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
                 progressDialog.show();
 
                 try {
-
-                    if( ! renameIternalFiles_to_withoutDate() ){ //return false if an error occured     // will be renamed back after uploads
+                    //region Explanation
+                    /*
+                        We have to upload the files withDate then after upload
+                        the files has to be renamed withoutDate to make sure
+                        there will be no copy in the internal storage.
+                     */
+                    //endregion
+                    if( ! renameIternalFiles_to_withDate() ){ //return false if an error occured     // will be renamed back after uploads
                         throw new MyFileRenameException("Error renaming file to \"..._<date>_<time>...\"");
                     }
                     if (checkCallingOrSelfPermission("android.permission.INTERNET") != PackageManager.PERMISSION_GRANTED) {
                         ActivityCompat.requestPermissions(ModelUploaderActivity.this, new String[]{Manifest.permission.INTERNET}, Util.REQUEST_CODE);
                     }
 
+                    // Change Debug DIR
+                    String fileStorageName = "";
+                    String collectionName = "";
+                    if( Util.debugMode ){
+                        fileStorageName = FirebaseUtil.STORAGE_FILES_KEY_DEBUG;
+                        collectionName = FirebaseUtil.USER_RECORDS_KEY_DEBUG;
+                    }else{
+                        fileStorageName = FirebaseUtil.STORAGE_FILES_KEY;
+                        collectionName = FirebaseUtil.USER_RECORDS_KEY_NEW;
+                    }
+
                     // Saving array into .CSV file (Local):
                     Util.SaveAccArrayIntoCsvFile(accArray, rawdataUserFile);
 
                     // Saving CSV File to FireBase Storage:
-                    StorageReference ref = mStorageReference.child("files/" + rawdataUserFile.getName() );
+                    StorageReference ref = mStorageReference.child( fileStorageName + "/" + rawdataUserFile.getName() );
                     FirebaseUtil.UploadFileToFirebaseStorage(ModelUploaderActivity.this, rawdataUserFile, ref);
 
                     // Updating (JSON) Object in the FireStore: (Collection->Documents->Collection->Documents->...)
                     String randomId = UUID.randomUUID().toString();
-                    UserAndHisFile info = new UserAndHisFile(mDate.toString(), rawdataUserFile.getName());
+                    String downloadUrl = ref.getDownloadUrl().toString();
+                    UserRecordObject info = new UserRecordObject(mDate.toString(), rawdataUserFile.getName(), downloadUrl);
                     mDocRef = FirebaseFirestore.getInstance()
-                            .collection(FirebaseUtil.USER_RECORDS_KEY_NEW + "/" )
+                            .collection(collectionName + "/" )
                             .document( mAuth.getUid() + "" )
                             .collection( Util.deviceId )
                             .document( randomId ) ;
                     FirebaseUtil.UploadObjectToFirebaseFirestore(ModelUploaderActivity.this, info, mDocRef);
 
+                    // TODO: VARJA BE OKET ES FUTTASSA LE EZT: !!!
+                    // Wait until these two async uploads finish !
+                    if (!renameIternalFiles_to_withoutDate()) { //return false if an error occured     // will be renamed back after uploads
+                        Toast.makeText(ModelUploaderActivity.this,"ERROR (renamig file)",Toast.LENGTH_LONG).show();
+                        throw new MyFileRenameException("Error renaming file to \"..._<date>_<time>...\"");
+                    }
 
-                }catch( MyFileRenameException e ){
+                }catch( MyFileRenameException e ){progressDialog.dismiss();
                     Log.e(TAG,"ERROR (MyFileRenameError): File cannot be renamed !");
                     e.printStackTrace();
                 }catch( Exception e ){
+                    progressDialog.dismiss();
                     e.printStackTrace();
                 }
 
@@ -668,6 +707,27 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
             Log.d(TAG, " isFinished() = true");
             //Util.isFinished = false;    // TODO: VIGYAZZ MERT ITT MEGSZAKITJA A LANCOLT KILEPEST, MIVEL EZ AZ UTOLSO ACTIVITY A STACKBEN, ugy(e nelkul) ujrainditaskor is kikapcsolt
             finish();
+        }
+
+        // Admin Mode:
+        if( Util.isAdminLoggedIn ){
+            debugSwitch.setChecked(false);
+            debugSwitch.setVisibility(View.VISIBLE);
+            debugSwitch = findViewById(R.id.debugSwitch);
+            debugSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if (isChecked) {
+                        Util.debugMode = true;
+                        Log.i(TAG, "Debug Mode -> ON");
+                    } else {
+                        Util.debugMode = false;
+                        Log.i(TAG, "Debug Mode -> OFF");
+                    }
+                }
+            });
+        }else{
+            debugSwitch.setChecked(false);
+            debugSwitch.setVisibility(View.INVISIBLE);
         }
 
         // Check if user is signed in (non-null) and update UI accordingly.
