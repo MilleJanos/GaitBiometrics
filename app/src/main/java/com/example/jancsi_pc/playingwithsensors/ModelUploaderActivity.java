@@ -1,5 +1,6 @@
 package com.example.jancsi_pc.playingwithsensors;
 
+import ro.sapientia.gaitbiom.GaitModelBuilder;
 import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -23,7 +24,6 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.jancsi_pc.playingwithsensors.ModelBuilder.ModelBuilderMain;
 import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepDetector;
 import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepListener;
 import com.example.jancsi_pc.playingwithsensors.Utils.Accelerometer;
@@ -48,6 +48,9 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
+
+import ro.sapientia.gaitbiom.GaitModelBuilder;
+import ro.sapientia.gaitbiom.IGaitModelBuilder;
 
 
 public class ModelUploaderActivity extends AppCompatActivity implements SensorEventListener, StepListener{
@@ -384,11 +387,11 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
                     String fileStorageName = "";
                     String collectionName = "";
                     if( Util.debugMode ){
-                        fileStorageName = FirebaseUtil.STORAGE_FILES_KEY_DEBUG;
-                        collectionName = FirebaseUtil.USER_RECORDS_KEY_DEBUG;
+                        fileStorageName = FirebaseUtil.STORAGE_FILES_DEBUG_KEY;
+                        collectionName = FirebaseUtil.USER_RECORDS_DEBUG_KEY;
                     }else{
                         fileStorageName = FirebaseUtil.STORAGE_FILES_KEY;
-                        collectionName = FirebaseUtil.USER_RECORDS_KEY_NEW;
+                        collectionName = FirebaseUtil.USER_RECORDS_NEW_KEY;
                     }
 
                     // Saving array into .CSV file (Local):
@@ -409,14 +412,23 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
                             .document( randomId ) ;
                     FirebaseUtil.UploadObjectToFirebaseFirestore(ModelUploaderActivity.this, info, mDocRef);
 
-                    // TODO: VARJA BE OKET ES FUTTASSA LE EZT: !!!
-                    // Wait until these two async uploads finish !
-                    if (!renameIternalFiles_to_withoutDate()) { //return false if an error occured     // will be renamed back after uploads
-                        Toast.makeText(ModelUploaderActivity.this,"ERROR (renamig file)",Toast.LENGTH_LONG).show();
-                        throw new MyFileRenameException("Error renaming file to \"..._<date>_<time>...\"");
-                    }
+                    // solved in ContinueModelGenerating
+                    //
+                    // // TODO: VARJA BE OKET ES FUTTASSA LE EZT: !!!
+                    // // Wait until these two async uploads finish !
+                    // if (!renameIternalFiles_to_withoutDate()) { //return false if an error occured     // will be renamed back after uploads
+                    //     Toast.makeText(ModelUploaderActivity.this,"ERROR (renamig file)",Toast.LENGTH_LONG).show();
+                    //     throw new MyFileRenameException("Error renaming file to \"..._<date>_<time>...\"");
+                    // }
+
+                    /*
+                     * Model generating:
+                     */
+
+                    DownloadDummyDataFromFireBaseStorage_and_GenerateModel();
 
                 }catch( MyFileRenameException e ){progressDialog.dismiss();
+                    progressDialog.dismiss();
                     Log.e(TAG,"ERROR (MyFileRenameError): File cannot be renamed !");
                     e.printStackTrace();
                 }catch( Exception e ){
@@ -450,22 +462,35 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
 
     }// OnCreate
 
+    // step: 2,3 in FirebaseUtil
 
     // step: 4
     //region HELP
     /*
-        createModelForCurrentUser()
+        DownloadDummyDataFromFireBaseStorage_and_GenerateModel()
             | This method downloads the
-            | dummy data (.arff) from Firebase
-            | Storage and generates the model
+            | dummy user data (.arff) from Firebase
+            | Storage
+
+        ModelGenerating()
+            | Generates the model
             | for the current signed in user.
+
+        UploadModelToFireBaseStorage()
+            | Uploads the generated model
+            | to FireBase Storage.
     */
     //endregion
-    private void downloadDummyDataFromFireBaseStorage_and_GenerateModel() throws MyFileRenameException{
-        Log.d(TAG,">>>RUN>>>downloadDummyDataFromFireBaseStorage_and_GenerateModel()");
+    private void DownloadDummyDataFromFireBaseStorage_and_GenerateModel() throws MyFileRenameException{
+        Log.d(TAG,">>>RUN>>>DownloadDummyDataFromFireBaseStorage_and_GenerateModel()");
         // Dowloading Dummy Feature from FireBase Storage:
-
-        Util.mRef = Util.mStorage.getReference().child("features/" + Util.firebaseDumyFileName );
+        String featureFolder;
+        if( Util.debugMode ){
+            featureFolder = FirebaseUtil.STORAGE_FEATURES_DEBUG_KEY;
+        }else {
+            featureFolder = FirebaseUtil.STORAGE_FEATURES_KEY;
+        }
+        Util.mRef = Util.mStorage.getReference().child( featureFolder + "/" + Util.firebaseDumyFileName );
         Log.i(TAG,"mRef = "  + Util.mRef.toString() );
 
         Log.d(TAG,"Downloading local dummy from FireBase Storage...");
@@ -475,7 +500,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
                 public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
                     Log.i(TAG, "Dummy feature found and downloaded: Local PATH: " + featureDummyFile.getAbsolutePath());
                     try {
-                        continueModelGenerating();
+                        ModelGenerating();
                     }catch (Exception e){
                         // do nothing
                     }
@@ -494,55 +519,62 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
             return;
         }
     }
-    private void continueModelGenerating() throws MyFileRenameException {
-        Log.d(TAG,">>RUN>>>continueModelGenerating()");
+    private void ModelGenerating() throws MyFileRenameException {
+        Log.d(TAG,">>RUN>>>ContinueModelGenerating()");
+
+        /*ModelBuilder*/
+
+        /*
 
         //region *
         Log.i(TAG," |IN| String Util.rawdata_user_path [size:"+ new File(Util.rawdata_user_path).length() +"]= "   + Util.rawdata_user_path );
         Log.i(TAG," |IN| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= " + Util.feature_user_path);
         //endregion
-        ModelBuilderMain.getFeatures(Util.rawdata_user_path, Util.feature_user_path.substring(0,Util.feature_user_path.length()-(".arff").length()) );  // getFeatures will add the ".arff" to the end of the file (and saves it)
+        // ModelBuilderMain.getFeatures(Util.rawdata_user_path, Util.feature_user_path.substring(0,Util.feature_user_path.length()-(".arff").length()) );  // getFeatures will add the ".arff" to the end of the file (and saves it)
+        GaitModelBuilder.createFeaturesFileFromRawFile(Util.rawdata_user_path, Util.feature_user_path.substring(0,Util.feature_user_path.length()-(".arff").length()) );
         //region *
         Log.i(TAG," |OUT| String Util.rawdata_user_path [size:"+ new File(Util.rawdata_user_path).length() +"]= "   + Util.rawdata_user_path );
         Log.i(TAG," |OUT| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= " + Util.feature_user_path);
         //endregion
-        // TODO: find mergeArffFiles() stuck problem
+
         //region *
         Log.i(TAG," |IN| String Util.feature_dummy_path [size:"+ new File(Util.feature_dummy_path).length() +"]= " + Util.feature_dummy_path);
         Log.i(TAG," |IN| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= "  + Util.feature_user_path);
         //endregion
-        ModelBuilderMain.mergeArffFiles(Util.feature_dummy_path, Util.feature_user_path);
+        // ModelBuilderMain.mergeArffFiles(Util.feature_dummy_path, Util.feature_user_path);
+        GaitModelBuilder.mergeEquallyArffFiles(Util.feature_dummy_path, Util.feature_user_path);
         //region *
         Log.i(TAG," |OUT| String Util.feature_dummy_path [size:"+ new File(Util.feature_dummy_path).length() +"]= " + Util.feature_dummy_path);
         Log.i(TAG," |OUT| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= "  + Util.feature_user_path);
         //endregion
-
         try{
             //region *
             Log.i(TAG," |IN| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= "  + Util.feature_user_path );
             Log.i(TAG," |IN| String Util.model_user_path = [size:"+ new File(Util.model_user_path).length() +"]" + Util.model_user_path);
             //endregion
-            ModelBuilderMain.CreateAndSaveModel(Util.feature_user_path, Util.model_user_path);
+            //ModelBuilderMain.CreateAndSaveModel(Util.feature_user_path, Util.model_user_path);
+            IGaitModelBuilder builder = new GaitModelBuilder();
+            GaitModelBuilder.Classifier classifier = builder.createModel(Util.feature_user_path);
+            ArrayList<GaitModelBuilder.Attribute> attributes = builder.getAttributes(Util.feature_user_path);
             //region *
             Log.i(TAG," |OUT| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= "  + Util.feature_user_path );
             Log.i(TAG," |OUT| String Util.model_user_path = [size:"+ new File(Util.model_user_path).length() +"]" + Util.model_user_path);
             //endregion
         }
         catch (Exception e){
+            progressDialog.dismiss();
+            Toast.makeText(ModelUploaderActivity.this,"Model generating failed!",Toast.LENGTH_LONG).show();
             Log.e(TAG,"ERROR: ModelBuilderMain.CreateAndSaveModel(Util.feature_user_path, Util.model_user_path)");
             e.printStackTrace();
         }
-        uploadModeltoFireBaseStorage();
+        UploadModelToFireBaseStorage();
         progressDialog.dismiss();
+
+
+        */
+
     }
-    //region HELP
-    /*
-            uploadModeltoFireBaseStorage()
-                | Uploads the generated model
-                | to FireBase Storage.
-     */
-    //endregion
-    private void uploadModeltoFireBaseStorage() throws MyFileRenameException {
+    private void UploadModelToFireBaseStorage() throws MyFileRenameException {
         Log.d(TAG,">>>RUN>>>uploadModeltoFireBaseStorage()");
 
         Uri path = Uri.fromFile( modelUserFile );
@@ -552,21 +584,37 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
             //final ProgressDialog progressDialog = new ProgressDialog(ModelUploaderActivity.this);
             //progressDialog.setTitle("Uploading...");
             //progressDialog.show();
-            StorageReference ref = mStorageReference.child("files/" + path.getLastPathSegment() );
+            String filesDir;
+            if( Util.debugMode ){
+                filesDir = FirebaseUtil.STORAGE_MODELS_DEBUG_KEY;
+            }else{
+                filesDir = FirebaseUtil.STORAGE_MODELS_KEY;
+            }
+            StorageReference ref = mStorageReference.child( filesDir + "/" + path.getLastPathSegment() );
             ref.putFile(path)
                     .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>(){
                         @Override
                         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                             //progressDialog.dismiss();
                             Log.i(TAG,"Model Uploaded");
-                            Toast.makeText(ModelUploaderActivity.this, "CSV file has been saved to FireBase Storage!", Toast.LENGTH_LONG).show();
+                            Toast.makeText(ModelUploaderActivity.this, "Model uploaded.", Toast.LENGTH_LONG).show();
+                            // Wait until these two async uploads finish !
+                            if (!renameIternalFiles_to_withoutDate()) { //return false if an error occured     // will be renamed back after uploads
+                                Toast.makeText(ModelUploaderActivity.this,"ERROR (renamig file)",Toast.LENGTH_LONG).show();
+                                //throw new MyFileRenameException("Error renaming file to \"..._<date>_<time>...\"");
+                            }
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
                             Log.e(TAG,"CSV upload Failed");
-                            Toast.makeText(ModelUploaderActivity.this, "CSV upload Failed", Toast.LENGTH_LONG).show();
+                            Toast.makeText(ModelUploaderActivity.this, "Model upload failed!", Toast.LENGTH_LONG).show();
+                            // Wait until these two async uploads finish !
+                            if (!renameIternalFiles_to_withoutDate()) { //return false if an error occured     // will be renamed back after uploads
+                                Toast.makeText(ModelUploaderActivity.this,"ERROR (renamig file)",Toast.LENGTH_LONG).show();
+                                //throw new MyFileRenameException("Error renaming file to \"..._<date>_<time>...\"");
+                            }
                         }
                     })
                     .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {

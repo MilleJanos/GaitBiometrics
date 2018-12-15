@@ -398,11 +398,11 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                     String fileStorageName = "";
                     String collectionName = "";
                     if( Util.debugMode ){
-                        fileStorageName = FirebaseUtil.STORAGE_FILES_KEY_DEBUG;
-                        collectionName = FirebaseUtil.USER_RECORDS_KEY_DEBUG;
+                        fileStorageName = FirebaseUtil.STORAGE_FILES_DEBUG_KEY;
+                        collectionName = FirebaseUtil.USER_RECORDS_DEBUG_KEY;
                     }else{
                         fileStorageName = FirebaseUtil.STORAGE_FILES_KEY;
-                        collectionName = FirebaseUtil.USER_RECORDS_KEY_NEW;
+                        collectionName = FirebaseUtil.USER_RECORDS_NEW_KEY;
                     }
 
                     // Saving array into .CSV file (Local):
@@ -467,7 +467,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     }// OnCreate
 
 
-
+    // step: 1,2,3 in FirebaseUtil
 
     //region HELP
     /*

@@ -19,9 +19,9 @@ import java.net.URL;
 public class FirebaseUtil {
 
     // FireStore (Beta database)
-    public static final String USER_RECORDS_KEY_OLD = "user_records";
-    public static final String USER_RECORDS_KEY_NEW = "user_records_2";
-    public static final String USER_RECORDS_KEY_DEBUG = "user_records_debug";
+    public static final String USER_RECORDS_OLD_KEY = "user_records";
+    public static final String USER_RECORDS_NEW_KEY = "user_records_2";
+    public static final String USER_RECORDS_DEBUG_KEY = "user_records_debug";
         /* <user_id> */
             /* <device_id> */
                 /* <random_id> */
@@ -33,9 +33,11 @@ public class FirebaseUtil {
     // Storage (Files)
     public static final String STORAGE_FEATURES_KEY = "features";
     public static final String STORAGE_FILES_KEY = "files";
-    public static final String STORAGE_FILES_KEY_DEBUG = "files_debug";
     public static final String STORAGE_FILES_METADATA_KEY = "files_metadata";
     public static final String STORAGE_MODELS_KEY = "models";
+    public static final String STORAGE_FEATURES_DEBUG_KEY = "features_debug";
+    public static final String STORAGE_FILES_DEBUG_KEY = "files_debug";
+    public static final String STORAGE_MODELS_DEBUG_KEY = "models_debug";
 
     public static boolean fileUploadFunctionFinished = false;
     public static boolean objectUploadDunctionFinished = false;
