@@ -537,8 +537,8 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
         Log.i(TAG," |IN| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= " + Util.feature_user_path);
         //endregion
         // ModelBuilderMain.getFeatures(Util.rawdata_user_path, Util.feature_user_path.substring(0,Util.feature_user_path.length()-(".arff").length()) );  // getFeatures will add the ".arff" to the end of the file (and saves it)
-        String userId="";//TODO
-        Main.createFeaturesFileFromRawFile(Util.rawdata_user_path, Util.feature_user_path.substring(0,Util.feature_user_path.length()-(".arff").length()),userId );
+        //String userId="";//TODO
+        Main.createFeaturesFileFromRawFile(Util.rawdata_user_path, Util.feature_user_path.substring(0,Util.feature_user_path.length()-(".arff").length()),Util.mAuth.getUid() ); //TODO userID?
         //region *
         Log.i(TAG," |OUT| String Util.rawdata_user_path [size:"+ new File(Util.rawdata_user_path).length() +"]= "   + Util.rawdata_user_path );
         Log.i(TAG," |OUT| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= " + Util.feature_user_path);
