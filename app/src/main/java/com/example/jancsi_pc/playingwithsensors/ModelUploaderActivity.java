@@ -1,6 +1,6 @@
 package com.example.jancsi_pc.playingwithsensors;
 
-import ro.sapientia.gaitbiom.GaitModelBuilder;
+//import ro.sapientia.gaitbiom.GaitModelBuilder;
 import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -51,6 +51,12 @@ import java.util.UUID;
 
 import ro.sapientia.gaitbiom.GaitModelBuilder;
 import ro.sapientia.gaitbiom.IGaitModelBuilder;
+import ro.sapientia.gaitbiom.Main;
+import weka.classifiers.Classifier;
+import weka.core.Attribute;
+
+//import ro.sapientia.gaitbiom.GaitModelBuilder;
+//import ro.sapientia.gaitbiom.IGaitModelBuilder;
 
 
 public class ModelUploaderActivity extends AppCompatActivity implements SensorEventListener, StepListener{
@@ -524,14 +530,15 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
 
         /*ModelBuilder*/
 
-        /*
+
 
         //region *
         Log.i(TAG," |IN| String Util.rawdata_user_path [size:"+ new File(Util.rawdata_user_path).length() +"]= "   + Util.rawdata_user_path );
         Log.i(TAG," |IN| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= " + Util.feature_user_path);
         //endregion
         // ModelBuilderMain.getFeatures(Util.rawdata_user_path, Util.feature_user_path.substring(0,Util.feature_user_path.length()-(".arff").length()) );  // getFeatures will add the ".arff" to the end of the file (and saves it)
-        GaitModelBuilder.createFeaturesFileFromRawFile(Util.rawdata_user_path, Util.feature_user_path.substring(0,Util.feature_user_path.length()-(".arff").length()) );
+        String userId="";//TODO
+        Main.createFeaturesFileFromRawFile(Util.rawdata_user_path, Util.feature_user_path.substring(0,Util.feature_user_path.length()-(".arff").length()),userId );
         //region *
         Log.i(TAG," |OUT| String Util.rawdata_user_path [size:"+ new File(Util.rawdata_user_path).length() +"]= "   + Util.rawdata_user_path );
         Log.i(TAG," |OUT| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= " + Util.feature_user_path);
@@ -542,7 +549,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
         Log.i(TAG," |IN| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= "  + Util.feature_user_path);
         //endregion
         // ModelBuilderMain.mergeArffFiles(Util.feature_dummy_path, Util.feature_user_path);
-        GaitModelBuilder.mergeEquallyArffFiles(Util.feature_dummy_path, Util.feature_user_path);
+        Main.mergeEquallyArffFiles(Util.feature_dummy_path, Util.feature_user_path);
         //region *
         Log.i(TAG," |OUT| String Util.feature_dummy_path [size:"+ new File(Util.feature_dummy_path).length() +"]= " + Util.feature_dummy_path);
         Log.i(TAG," |OUT| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= "  + Util.feature_user_path);
@@ -554,8 +561,8 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
             //endregion
             //ModelBuilderMain.CreateAndSaveModel(Util.feature_user_path, Util.model_user_path);
             IGaitModelBuilder builder = new GaitModelBuilder();
-            GaitModelBuilder.Classifier classifier = builder.createModel(Util.feature_user_path);
-            ArrayList<GaitModelBuilder.Attribute> attributes = builder.getAttributes(Util.feature_user_path);
+            Classifier classifier = builder.createModel(Util.feature_user_path);
+            ArrayList<Attribute> attributes = builder.getAttributes(Util.feature_user_path);
             //region *
             Log.i(TAG," |OUT| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= "  + Util.feature_user_path );
             Log.i(TAG," |OUT| String Util.model_user_path = [size:"+ new File(Util.model_user_path).length() +"]" + Util.model_user_path);
@@ -571,7 +578,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
         progressDialog.dismiss();
 
 
-        */
+
 
     }
     private void UploadModelToFireBaseStorage() throws MyFileRenameException {
