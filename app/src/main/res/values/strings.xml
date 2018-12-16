@@ -13,7 +13,7 @@
     <string name="errorReportTextView">Report Error</string>
     <string name="calculating">Calculating...</string>
     <string name="startRecording">Press START to start recording</string>
-    <string name="forgotPassword">Forgot password.</string>
+    <string name="forgotPassword">Forgot password</string>
     <string name="login">Login</string>
     <string name="createNewAccount">Create new account</string>
     <string name="register">Register</string>

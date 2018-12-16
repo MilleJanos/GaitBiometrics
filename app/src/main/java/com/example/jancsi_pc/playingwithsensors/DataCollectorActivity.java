@@ -11,6 +11,7 @@ import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.provider.ContactsContract;
 import android.provider.Settings;
 import android.support.design.widget.Snackbar;
@@ -78,6 +79,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     public static int stepNumber=0;
     public static final int MAX_STEP_NUMBER=10;
     public static final int MIN_STEP_NUMBER=5;
+    private TextView accelerometerTitleTextView;
     private TextView textViewStatus;
     private TextView accelerometerX;
     private TextView accelerometerY;
@@ -112,10 +114,21 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     private File rawdataUserFile;
 
     // Progress:
-    private ProgressDialog progressDialog;
+    //private ProgressDialog progressDialog;
 
     // Debug Mode:
     private Switch debugSwitch;
+
+    // Proxy sensor:
+    private SensorManager mSensorManager;
+    private Sensor mProximity;
+    private static final int SENSOR_SENSITIVITY = 4;
+
+    // WakeLock (for proxy)
+    private PowerManager powerManager;
+    private PowerManager.WakeLock wakeLock;
+    private int field = 0x00000020;
+
 
     /*
      *
@@ -132,7 +145,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
         Log.d(TAG, ">>>RUN>>>onCreate()");
 
-        progressDialog = new ProgressDialog(DataCollectorActivity.this);
+        Util.progressDialog = new ProgressDialog(DataCollectorActivity.this);
 
         //
         // Internal Saving Location for ALL hidden files:
@@ -231,6 +244,26 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
         debugSwitch = findViewById(R.id.debugSwitch);
 
+        // HIDE ACCELEROMETER COORDINATES:
+        accelerometerTitleTextView = findViewById(R.id.textViewAccelerometer2);
+        accelerometerTitleTextView.setVisibility(View.INVISIBLE);
+        accelerometerX.setVisibility(View.INVISIBLE);
+        accelerometerY.setVisibility(View.INVISIBLE);
+        accelerometerZ.setVisibility(View.INVISIBLE);
+
+        // Proxy sensor:
+        mSensorManager = (SensorManager) getSystemService(DataCollectorActivity.this.SENSOR_SERVICE);
+        mProximity = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
+
+        // wake lock (for proxy)
+        powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+        try {
+            // Yeah, this is hidden field.
+            field = PowerManager.class.getClass().getField("PROXIMITY_SCREEN_OFF_WAKE_LOCK").getInt(null);
+        } catch (Throwable ignored) {
+        }
+        wakeLock = powerManager.newWakeLock(field, getLocalClassName());
+
         if( NO_PYTHON_SERVER_YET ){
             ImageView pythonServerImageView = findViewById(R.id.pythonServerImageView);
             sendToServerButton.setVisibility(View.INVISIBLE);
@@ -298,6 +331,8 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                 saveToFirebaseButton.setEnabled(false);
                 Log.d("ConnectionActivity_", "Start Rec.");
                 //textViewStatus.setText("Recording ...");
+                // Proxy sensor:
+                mSensorManager.registerListener(DataCollectorActivity.this, mProximity, SensorManager.SENSOR_DELAY_NORMAL);
             }
         });
 
@@ -324,6 +359,8 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                 CMD += ",end";
                 Log.d("ConnectionActivity","CMD Generated.");
                 textViewStatus.setText(("Recorded: " + recordCount + " datapoints and " + stepNumber +" step cycles."));
+                // Proxy sensor:
+                mSensorManager.unregisterListener(DataCollectorActivity.this);
             }
         });
 
@@ -370,10 +407,10 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
             public void onClick(View v) {
                 Log.d(TAG, ">>>RUN>>>saveToFirebaseButtonClickListener");
 
-                progressDialog.setTitle("Progress Dialog");
-                progressDialog.setMessage("Uploading");
-                progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-                progressDialog.show();
+                Util.progressDialog.setTitle("Progress Dialog");
+                Util.progressDialog.setMessage("Uploading");
+                Util.progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                Util.progressDialog.show();
 
                 try {
 
@@ -384,9 +421,9 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                         there will be no copy in the internal storage.
                      */
                     //endregion
-                    if( ! renameIternalFiles_to_withDate() ){ //return false if an error occured     // will be renamed back after uploads
-                        throw new MyFileRenameException("Error renaming file to \"..._<date>_<time>...\"");
-                    }
+                    //RENAME//if( ! renameIternalFiles_to_withDate() ){ //return false if an error occured     // will be renamed back after uploads
+                    //RENAME//    throw new MyFileRenameException("Error renaming file to \"..._<date>_<time>...\"");
+                    //RENAME//}
                     if (checkCallingOrSelfPermission("android.permission.WRITE_EXTERNAL_STORAGE") != PackageManager.PERMISSION_GRANTED) {
                         ActivityCompat.requestPermissions(DataCollectorActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, Util.REQUEST_CODE);
                     }
@@ -426,17 +463,17 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
                     // TODO: VARJA BE OKET ES FUTTASSA LE EZT: !!!
                     // Wait until these two async uploads finish !
-                    if (!renameIternalFiles_to_withoutDate()) { //return false if an error occured     // will be renamed back after uploads
-                        Toast.makeText(DataCollectorActivity.this,"ERROR (renamig file)",Toast.LENGTH_LONG).show();
-                        throw new MyFileRenameException("Error renaming file to \"..._<date>_<time>...\"");
-                    }
+                    //RENAME//if (!renameIternalFiles_to_withoutDate()) { //return false if an error occured     // will be renamed back after uploads
+                    //RENAME//    Toast.makeText(DataCollectorActivity.this,"ERROR (renamig file)",Toast.LENGTH_LONG).show();
+                    //RENAME//    throw new MyFileRenameException("Error renaming file to \"..._<date>_<time>...\"");
+                    //RENAME//}
 
-                }catch( MyFileRenameException e ){
-                    progressDialog.dismiss();
-                    Log.e(TAG,"ERROR (MyFileRenameError): File cannot be renamed !");
-                    e.printStackTrace();
+                //RENAME//}catch( MyFileRenameException e ){
+                //RENAME//    Util.progressDialog.dismiss();
+                //RENAME//    Log.e(TAG,"ERROR (MyFileRenameError): File cannot be renamed !");
+                //RENAME//    e.printStackTrace();
                 }catch( Exception e ){
-                    progressDialog.dismiss();
+                    Util.progressDialog.dismiss();
                     e.printStackTrace();
                 }
 
@@ -734,6 +771,8 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         Util.preferencesEditor.apply();
 
         sensorManager.unregisterListener(accelerometerEventListener);
+
+
     }
 
     //(STEPCOUNT)
@@ -747,6 +786,19 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
             simpleStepDetector.updateAccel(
                     event.timestamp, event.values[0], event.values[1], event.values[2]);
+        }
+
+        // Proxy sensor:
+        if (event.sensor.getType() == Sensor.TYPE_PROXIMITY) {
+            if (event.values[0] >= -SENSOR_SENSITIVITY && event.values[0] <= SENSOR_SENSITIVITY) {
+                //near
+                //Toast.makeText(getApplicationContext(), "near", Toast.LENGTH_SHORT).show();
+                wakeLock.release();
+            } else {
+                //far
+                //Toast.makeText(getApplicationContext(), "far", Toast.LENGTH_SHORT).show();
+                wakeLock.acquire();
+            }
         }
     }
 

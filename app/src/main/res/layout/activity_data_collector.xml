@@ -26,21 +26,21 @@
         android:text="Accelerometer:"
         android:textColor="@color/colorBlack"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.2"
+        app:layout_constraintHorizontal_bias="0.18"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/logoutImageView" />
+        app:layout_constraintTop_toBottomOf="@+id/datacollector_titleTextView" />
 
     <TextView
         android:id="@+id/textViewAX2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
         android:layout_marginEnd="8dp"
         android:fontFamily="@font/aldrich"
         android:text="X: -x.xx-"
         android:textColor="@color/colorBlack"
         app:layout_constraintBottom_toTopOf="@+id/textViewAY2"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.503"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewAccelerometer2" />
 
@@ -48,7 +48,6 @@
         android:id="@+id/textViewAY2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
         android:layout_marginEnd="8dp"
         android:fontFamily="@font/aldrich"
         android:text="Y: -y.yy-"
@@ -62,7 +61,6 @@
         android:id="@+id/textViewAZ2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
         android:layout_marginEnd="8dp"
         android:fontFamily="@font/aldrich"
         android:text="Z: -z.zz-"
@@ -247,13 +245,32 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ic_power" />
 
+<!--
     <ImageView
-        android:id="@+id/imageView3"
+    android:id="@+id/imageView3"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    app:srcCompat="@android:drawable/screen_background_light"
+    tools:layout_editor_absoluteX="32dp"
+    tools:layout_editor_absoluteY="107dp" />
+-->
+
+    <TextView
+        android:id="@+id/datacollector_titleTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:srcCompat="@android:drawable/screen_background_light"
-        tools:layout_editor_absoluteX="32dp"
-        tools:layout_editor_absoluteY="107dp" />
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="52dp"
+        android:layout_marginEnd="8dp"
+        android:fontFamily="@font/aldrich"
+        android:text="Data Collector"
+        android:textColor="@color/colorBlack"
+        android:textSize="20dp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.502"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/logoutImageView" />
 
     <TextView
         android:id="@+id/errorReportTextView"

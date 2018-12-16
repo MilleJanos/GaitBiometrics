@@ -11,6 +11,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.StorageTask;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
@@ -50,11 +51,12 @@ public class FirebaseUtil {
     //endregion
     public static void UploadFileToFirebaseStorage(Activity activity, File file, StorageReference ref){
         String TAG = "Util";
-        Log.d(TAG,">>>RUN>>>savingCSVtoFireBaseStorage()");
+        Log.d(TAG,">>>RUN>>>UploadFileToFirebaseStorage()");
 
         fileUploadFunctionFinished = false;
 
         Uri path = Uri.fromFile( file );
+        StorageTask task = null;
 
         if( path != null){
             //final ProgressDialog progressDialog = new ProgressDialog(DataCollectorActivity.this);
@@ -66,21 +68,23 @@ public class FirebaseUtil {
              *
              */
 
-            ref.putFile(path)
+            task = ref.putFile(path)
                     .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
                         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                             //progressDialog.dismiss();
+                            Util.progressDialog.dismiss();
                             Toast.makeText(activity, "File uploaded.", Toast.LENGTH_LONG).show();
-                            Log.d(TAG,"<<<FINISH(async)<<<savingCSVtoFireBaseStorage() - onSuccess");
+                            Log.d(TAG,"<<<FINISH(async)<<<UploadFileToFirebaseStorage - onSuccess");
                             fileUploadFunctionFinished = true;
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
+                            Util.progressDialog.dismiss();
                             Toast.makeText(activity, "File upload Failed!", Toast.LENGTH_LONG).show();
-                            Log.d(TAG,"<<<FINISH(async)<<<savingCSVtoFireBaseStorage() - onFailure");
+                            Log.d(TAG,"<<<FINISH(async)<<<UploadFileToFirebaseStorage - onFailure");
                             fileUploadFunctionFinished = true;
                         }
                     })
@@ -96,7 +100,16 @@ public class FirebaseUtil {
             Log.e(TAG,"ERROR: path = null");
             fileUploadFunctionFinished = true;
         }
-        Log.d(TAG,"(<<<FINISH<<<)savingCSVtoFireBaseStorage() - running task in background");
+        Log.d(TAG,"(<<<FINISH<<<)UploadFileToFirebaseStorage() - running task in background");
+        /*
+        if( task.isSuccessful() ){
+            Log.d(TAG,"SUCCESS");
+        }else {
+            Log.d(TAG,"FAILURE");
+        }
+        */
+
+
     }
 
     //region HELP
@@ -107,26 +120,28 @@ public class FirebaseUtil {
     //endregion
     public static void UploadObjectToFirebaseFirestore(Activity activity, UserRecordObject info, DocumentReference ref){
         String TAG = "Util";
-        Log.d(TAG,">>>RUN>>>uploadJSONintoFireBaseFireStore()");
+        Log.d(TAG,">>>RUN>>>UploadObjectToFirebaseFirestore()");
 
         objectUploadDunctionFinished = false;
 
         ref.set(info).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
+                Util.progressDialog.dismiss();
                 Toast.makeText(activity, "Object uploaded.",Toast.LENGTH_LONG).show();
-                Log.d(TAG,"<<<FINISH(async)<<<uploadJSONintoFireBaseFireStore() - onSuccess");
+                Log.d(TAG,"<<<FINISH(async)<<<UploadObjectToFirebaseFirestore() - onSuccess");
                 objectUploadDunctionFinished = true;
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
+                Util.progressDialog.dismiss();
                 Toast.makeText(activity, "Object upload failed!",Toast.LENGTH_LONG).show();
-                Log.d(TAG,"<<<FINISH(async)<<<uploadJSONintoFireBaseFireStore() - onFailure");
+                Log.d(TAG,"<<<FINISH(async)<<<UploadObjectToFirebaseFirestore() - onFailure");
                 objectUploadDunctionFinished = true;
             }
         });
-        Log.d(TAG,"(<<<FINISH<<<)uploadJSONintoFireBaseFireStore() - running task in background");
+        Log.d(TAG,"(<<<FINISH<<<)UploadObjectToFirebaseFirestore() - running task in background");
     }
 
 

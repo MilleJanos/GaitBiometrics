@@ -2,6 +2,7 @@ package com.example.jancsi_pc.playingwithsensors.Utils;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -91,7 +92,7 @@ public class Util {
     public static String customDIR = "";
 
     // download this dummy for generating
-    public static String firebaseDumyFileName = "features_rRHyStiEKkN4Cq5rVSxlpvrCwA72.arff";   // TODO: hardcoded dummy (name) from firebase (!?)
+    public static String firebaseDummyFileName = "features_rRHyStiEKkN4Cq5rVSxlpvrCwA72.arff";
 
     // show errors for user
     public static String intoTextViewString = "";
@@ -131,6 +132,9 @@ public class Util {
     public static final String LAST_MODEL_EMAIL_KEY = "lastmodelemailkey";
     public static final String LAST_MODEL_ID_KEY = "lastmodelidkey";
     public static final String LAST_MODEL_DATE_KEY = "lastmodeldatekey";
+
+    // progressDialog
+    public static ProgressDialog progressDialog;
 
 
     public static final int REQUEST_CODE = 212;

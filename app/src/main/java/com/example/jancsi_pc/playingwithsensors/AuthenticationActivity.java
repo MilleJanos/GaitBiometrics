@@ -787,22 +787,37 @@ public class AuthenticationActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if( emailEditText.getText().toString().trim().equals("") ){
                     emailEditText.setError("This field must be filled!");
+                    if(progressDialog.isShowing()){
+                        progressDialog.dismiss();
+                    }
                     return;
                 }
                 if( passwordEditText.getText().toString().trim().equals("") ){
                     passwordEditText.setError("This field must be filled!");
+                    if(progressDialog.isShowing()){
+                        progressDialog.dismiss();
+                    }
                     return;
                 }
                 if( passwordEditText.getText().toString().trim().length() < 6 ){
                     passwordEditText.setError("Passwords has to be at least 6 characters!");
+                    if(progressDialog.isShowing()){
+                        progressDialog.dismiss();
+                    }
                     return;
                 }
                 if( passwordEditText2.getText().toString().trim().equals("") ){
                     passwordEditText2.setError("This field must be filled!");
+                    if(progressDialog.isShowing()){
+                        progressDialog.dismiss();
+                    }
                     return;
                 }
                 if( ! passwordEditText.getText().toString().trim().equals( passwordEditText2.getText().toString().trim() ) ){
                     passwordEditText2.setError("The passwords must be the same!");
+                    if(progressDialog.isShowing()){
+                        progressDialog.dismiss();
+                    }
                     return;
                 }
                 authButton.setEnabled(false);
@@ -857,6 +872,10 @@ public class AuthenticationActivity extends AppCompatActivity {
                         Snackbar.make(view, "No internet connection!", Snackbar.LENGTH_SHORT).show();
                     }
 
+                }else{
+                    if(progressDialog.isShowing()){
+                        progressDialog.dismiss();
+                    }
                 }
                 /*if(userExists){
                     Toast.makeText(AuthenticationActivity.this, "Email already registered!", Toast.LENGTH_LONG).show();
