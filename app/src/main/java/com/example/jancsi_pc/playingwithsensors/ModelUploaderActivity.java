@@ -1,6 +1,5 @@
 package com.example.jancsi_pc.playingwithsensors;
 
-//import ro.sapientia.gaitbiom.GaitModelBuilder;
 import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -49,14 +48,15 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
 
+import ro.sapientia.gaitbiom.GaitHelperFunctions;
 import ro.sapientia.gaitbiom.GaitModelBuilder;
 import ro.sapientia.gaitbiom.IGaitModelBuilder;
-import ro.sapientia.gaitbiom.Main;
+import ro.sapientia.gaitbiom.GaitHelperFunctions;
 import weka.classifiers.Classifier;
 import weka.core.Attribute;
 
-//import ro.sapientia.gaitbiom.GaitModelBuilder;
-//import ro.sapientia.gaitbiom.IGaitModelBuilder;
+// import ro.sapientia.gaitbiom.GaitModelBuilder;
+// import ro.sapientia.gaitbiom.IGaitModelBuilder;
 
 
 public class ModelUploaderActivity extends AppCompatActivity implements SensorEventListener, StepListener{
@@ -506,7 +506,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
                 public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
                     Log.i(TAG, "Dummy feature found and downloaded: Local PATH: " + featureDummyFile.getAbsolutePath());
                     try {
-                        ModelGenerating();
+                        ModelBuilder();
                     }catch (Exception e){
                         // do nothing
                     }
@@ -525,20 +525,17 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
             return;
         }
     }
-    private void ModelGenerating() throws MyFileRenameException {
+    private void ModelBuilder() throws MyFileRenameException {
         Log.d(TAG,">>RUN>>>ContinueModelGenerating()");
-
-        /*ModelBuilder*/
-
-
-
+        /*
         //region *
         Log.i(TAG," |IN| String Util.rawdata_user_path [size:"+ new File(Util.rawdata_user_path).length() +"]= "   + Util.rawdata_user_path );
         Log.i(TAG," |IN| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= " + Util.feature_user_path);
         //endregion
-        // ModelBuilderMain.getFeatures(Util.rawdata_user_path, Util.feature_user_path.substring(0,Util.feature_user_path.length()-(".arff").length()) );  // getFeatures will add the ".arff" to the end of the file (and saves it)
-        //String userId="";//TODO
-        Main.createFeaturesFileFromRawFile(Util.rawdata_user_path, Util.feature_user_path.substring(0,Util.feature_user_path.length()-(".arff").length()),Util.mAuth.getUid() ); //TODO userID?
+        GaitHelperFunctions.createFeaturesFileFromRawFile(
+                Util.rawdata_user_path,                                                                 // INPUT
+                Util.feature_user_path.substring(0,Util.feature_user_path.length()-(".arff").length()), // OUTPUT       // getFeatures will add the ".arff" to the end of the file (and saves it)
+                Util.mAuth.getUid() );                                                                  // INPUT
         //region *
         Log.i(TAG," |OUT| String Util.rawdata_user_path [size:"+ new File(Util.rawdata_user_path).length() +"]= "   + Util.rawdata_user_path );
         Log.i(TAG," |OUT| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= " + Util.feature_user_path);
@@ -548,8 +545,9 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
         Log.i(TAG," |IN| String Util.feature_dummy_path [size:"+ new File(Util.feature_dummy_path).length() +"]= " + Util.feature_dummy_path);
         Log.i(TAG," |IN| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= "  + Util.feature_user_path);
         //endregion
-        // ModelBuilderMain.mergeArffFiles(Util.feature_dummy_path, Util.feature_user_path);
-        Main.mergeEquallyArffFiles(Util.feature_dummy_path, Util.feature_user_path);
+        GaitHelperFunctions.mergeEquallyArffFiles(
+                Util.feature_dummy_path,    // INPUT
+                Util.feature_user_path);    // INPUT & OUTPUT
         //region *
         Log.i(TAG," |OUT| String Util.feature_dummy_path [size:"+ new File(Util.feature_dummy_path).length() +"]= " + Util.feature_dummy_path);
         Log.i(TAG," |OUT| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= "  + Util.feature_user_path);
@@ -559,10 +557,13 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
             Log.i(TAG," |IN| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= "  + Util.feature_user_path );
             Log.i(TAG," |IN| String Util.model_user_path = [size:"+ new File(Util.model_user_path).length() +"]" + Util.model_user_path);
             //endregion
-            //ModelBuilderMain.CreateAndSaveModel(Util.feature_user_path, Util.model_user_path);
             IGaitModelBuilder builder = new GaitModelBuilder();
+
+            // Creates the model from feature
             Classifier classifier = builder.createModel(Util.feature_user_path);
-            ArrayList<Attribute> attributes = builder.getAttributes(Util.feature_user_path);
+
+            // Save model to file
+            ((GaitModelBuilder) builder).saveModel(classifier, Util.model_user_path );
             //region *
             Log.i(TAG," |OUT| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= "  + Util.feature_user_path );
             Log.i(TAG," |OUT| String Util.model_user_path = [size:"+ new File(Util.model_user_path).length() +"]" + Util.model_user_path);
@@ -576,9 +577,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
         }
         UploadModelToFireBaseStorage();
         progressDialog.dismiss();
-
-
-
+        */
 
     }
     private void UploadModelToFireBaseStorage() throws MyFileRenameException {
