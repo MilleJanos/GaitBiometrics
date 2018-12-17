@@ -356,6 +356,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
         saveToFirebaseButton.setOnClickListener(v -> {
             Log.d(TAG, ">>>RUN>>>saveToFirebaseButtonClickListener");
 
+                Util.progressDialog = new ProgressDialog(ModelUploaderActivity.this,ProgressDialog.STYLE_SPINNER);
                 Util.progressDialog.setTitle("Progress Dialog");
                 Util.progressDialog.setMessage("Generating feature and model");
                 Util.progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
@@ -559,6 +560,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
             Log.i(TAG," |OUT| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= "  + Util.feature_user_path );
             Log.i(TAG," |OUT| String Util.model_user_path = [size:"+ new File(Util.model_user_path).length() +"]" + Util.model_user_path);
             //endregion
+
         }
         catch (Exception e){
             Util.progressDialog.dismiss();
@@ -574,6 +576,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
     private void UploadModelToFireBaseStorage() {
         Log.d(TAG,">>>RUN>>>uploadModeltoFireBaseStorage()");
         Util.progressDialog.dismiss();
+        Util.progressDialog = new ProgressDialog(ModelUploaderActivity.this,ProgressDialog.STYLE_SPINNER);
         Util.progressDialog.setTitle("Model Generated");
         Util.progressDialog.setMessage("Uploading Model");
         Util.progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
