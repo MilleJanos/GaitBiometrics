@@ -114,30 +114,15 @@ public class AuthenticationActivity extends AppCompatActivity {
 
         emailEditText = findViewById(R.id.auth_emailEditText);
         deleteEmailImageView = findViewById(R.id.auth_deleteEmailImageView);
-        emailEditText.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                emailEditText.setError(null);
-            }
-        });
+        emailEditText.setOnClickListener(v -> emailEditText.setError(null));
 
         passwordEditText = findViewById(R.id.auth_passwordEditText);
         deletePasswordImageView = findViewById(R.id.auth_deletePasswordImageView);
-        passwordEditText.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                passwordEditText.setError(null);
-            }
-        });
+        passwordEditText.setOnClickListener(v -> passwordEditText.setError(null));
 
         passwordEditText2 = findViewById(R.id.auth_passwordEditText2);
         deletePasswordImageView2 = findViewById(R.id.auth_deletePasswordImageView2);
-        passwordEditText2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                passwordEditText2.setError(null);
-            }
-        });
+        passwordEditText2.setOnClickListener(v -> passwordEditText2.setError(null));
 
         authButton = findViewById(R.id.auth_button);
         registerORloginTextView = findViewById(R.id.auth_registerORloginTextView);
@@ -150,16 +135,13 @@ public class AuthenticationActivity extends AppCompatActivity {
         forgotPassTextView.setText(R.string.forgotPassword);
 
         reportErrorTextView = findViewById(R.id.auth_errorReportTextView);
-        reportErrorTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, ">>>RUN>>>reportErrorTextViewClickListener");
-                Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto","abc@gmail.com", null));
-                emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Problem with authentication.");
-                emailIntent.putExtra(Intent.EXTRA_TEXT, "");
-                emailIntent.putExtra(Intent.EXTRA_EMAIL, "");
-                startActivity(Intent.createChooser(emailIntent, "Send mEmail..."));
-            }
+        reportErrorTextView.setOnClickListener(v -> {
+            Log.d(TAG, ">>>RUN>>>reportErrorTextViewClickListener");
+            Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto","abc@gmail.com", null));
+            emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Problem with authentication.");
+            emailIntent.putExtra(Intent.EXTRA_TEXT, "");
+            emailIntent.putExtra(Intent.EXTRA_EMAIL, "");
+            startActivity(Intent.createChooser(emailIntent, "Send mEmail..."));
         });
 
         emailEditText.setText("");
@@ -172,12 +154,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         progressBar.setVisibility(View.INVISIBLE);
 
         auth_offlineValidationTextView = findViewById(R.id.auth_offlineValidationTextView);
-        auth_offlineValidationTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity( new Intent(AuthenticationActivity.this, GaitValidationActivity.class) );
-            }
-        });
+        auth_offlineValidationTextView.setOnClickListener(v -> startActivity( new Intent(AuthenticationActivity.this, GaitValidationActivity.class) ));
 
 
         /*
@@ -279,30 +256,27 @@ public class AuthenticationActivity extends AppCompatActivity {
                         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
                         user.sendEmailVerification()
-                                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<Void> task) {
-                                        if (task.isSuccessful()) {
-                                            // mEmail sent
+                                .addOnCompleteListener(task -> {
+                                    if (task.isSuccessful()) {
+                                        // mEmail sent
 
-                                            // after mEmail is sent just logout the user and finish this activity
-                                            FirebaseAuth.getInstance().signOut();
-                                            //startActivity(new Intent(AuthenticationActivity.this, DataCollectorActivity.class));
-                                            progressDialog.dismiss();
-                                            finish();
-                                        }
-                                        else
-                                        {
-                                            // mEmail not sent, so display message and restart the activity or do whatever you wish to do
+                                        // after mEmail is sent just logout the user and finish this activity
+                                        FirebaseAuth.getInstance().signOut();
+                                        //startActivity(new Intent(AuthenticationActivity.this, DataCollectorActivity.class));
+                                        progressDialog.dismiss();
+                                        finish();
+                                    }
+                                    else
+                                    {
+                                        // mEmail not sent, so display message and restart the activity or do whatever you wish to do
 
-                                            //restart this activity
-                                            overridePendingTransition(0, 0);
-                                            progressDialog.dismiss();
-                                            finish();
-                                            overridePendingTransition(0, 0);
-                                            startActivity(getIntent());
+                                        //restart this activity
+                                        overridePendingTransition(0, 0);
+                                        progressDialog.dismiss();
+                                        finish();
+                                        overridePendingTransition(0, 0);
+                                        startActivity(getIntent());
 
-                                        }
                                     }
                                 });
 
@@ -348,32 +322,29 @@ public class AuthenticationActivity extends AppCompatActivity {
         }
 
         Util.mAuth.signInWithEmailAndPassword(mEmail, mPassword)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            Log.d(TAG, "signInWithEmail:success");
-                            //FirebaseUser user = Util.mAuth.getCurrentUser();
-                            //updateUI(user);
-                            Util.userEmail = mEmail;
-                            Util.isSignedIn = true;
-                            authButton.setEnabled(true);
-                            progressDialog.dismiss();
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        // Sign in success, update UI with the signed-in user's information
+                        Log.d(TAG, "signInWithEmail:success");
+                        //FirebaseUser user = Util.mAuth.getCurrentUser();
+                        //updateUI(user);
+                        Util.userEmail = mEmail;
+                        Util.isSignedIn = true;
+                        authButton.setEnabled(true);
+                        progressDialog.dismiss();
 
-                            CheckUserModel_and_small_stuff();// Wait to get the model or create new one, will do the finish() !
+                        CheckUserModel_and_small_stuff();// Wait to get the model or create new one, will do the finish() !
 
-                        } else {
-                            progressDialog.dismiss();
-                            authButton.setEnabled(true);
-                            // If sign in fails, display a message to the user.
-                            Log.w(TAG, "signInWithEmail:failure", task.getException());
-                            //Toast.makeText(AuthenticationActivity.this, "Login Failed!", Toast.LENGTH_LONG).show();
-                            Util.hideKeyboard(AuthenticationActivity.this);
-                            Snackbar.make(findViewById(R.id.auth_main_layout),"Email or Password is incorrect!",Snackbar.LENGTH_LONG).show();
-                        }
-                        // ...
+                    } else {
+                        progressDialog.dismiss();
+                        authButton.setEnabled(true);
+                        // If sign in fails, display a message to the user.
+                        Log.w(TAG, "signInWithEmail:failure", task.getException());
+                        //Toast.makeText(AuthenticationActivity.this, "Login Failed!", Toast.LENGTH_LONG).show();
+                        Util.hideKeyboard(AuthenticationActivity.this);
+                        Snackbar.make(findViewById(R.id.auth_main_layout),"Email or Password is incorrect!",Snackbar.LENGTH_LONG).show();
                     }
+                    // ...
                 });
         Log.d(TAG, "<<<FINISHED<<<Login()");
     }
@@ -395,12 +366,7 @@ public class AuthenticationActivity extends AppCompatActivity {
 
         emailEditText.setVisibility(View.VISIBLE);
         deleteEmailImageView.setVisibility(View.VISIBLE);
-        deleteEmailImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                emailEditText.setText("");
-            }
-        });
+        deleteEmailImageView.setOnClickListener(v -> emailEditText.setText(""));
 
         passwordEditText.setVisibility(View.INVISIBLE);
         deletePasswordImageView.setVisibility(View.INVISIBLE);
@@ -409,81 +375,77 @@ public class AuthenticationActivity extends AppCompatActivity {
         deletePasswordImageView2.setVisibility(View.INVISIBLE);
 
         authButton.setText(R.string.login);
-        authButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, ">>>RUN>>>authButtonClickListener");
-                authButton.setEnabled(false);
+        authButton.setOnClickListener(v -> {
+            Log.d(TAG, ">>>RUN>>>authButtonClickListener");
+            authButton.setEnabled(false);
 
-                if ( RequireInternetConnection() /*RequireEnabledInternetAndInternetConnection()*/) {            // This method gives feedback using Snackbar
-                    //Log.d(TAG, " isNetworkEnabled = true");
-                    //Log.d(TAG, " isNetworkConnection = true");
-                    mEmail = emailEditText.getText().toString();
+            if ( RequireInternetConnection() /*RequireEnabledInternetAndInternetConnection()*/) {            // This method gives feedback using Snackbar
+                //Log.d(TAG, " isNetworkEnabled = true");
+                //Log.d(TAG, " isNetworkConnection = true");
+                mEmail = emailEditText.getText().toString();
 
-                    progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-                    progressDialog.setTitle("Authentication");
-                    progressDialog.setMessage("Checking email.");
-                    progressDialog.setCancelable(false);
-                    progressDialog.show();
+                progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                progressDialog.setTitle("Authentication");
+                progressDialog.setMessage("Checking email.");
+                progressDialog.setCancelable(false);
+                progressDialog.show();
 
-                    Log.d(TAG, "Waiting for fetchProvidersForEmail() ...");
-                    if (!mEmail.equals("")) {
-                        // TODO: kicserelni a fetchProviderForEmail-t lecserelni: https://firebase.google.com/docs/auth/admin/manage-users#list_all_users
-                        Util.mAuth.fetchProvidersForEmail(mEmail).addOnCompleteListener(new OnCompleteListener<ProviderQueryResult>() {
-                            @Override
-                            public void onComplete(@NonNull Task<ProviderQueryResult> task) {
-                                if (task.isSuccessful()) {
-                                    Log.d(TAG, "Checking to see if user exists in firebase or not");
-                                    ProviderQueryResult result = task.getResult();
+                Log.d(TAG, "Waiting for fetchProvidersForEmail() ...");
+                if (!mEmail.equals("")) {
+                    // TODO: kicserelni a fetchProviderForEmail-t lecserelni: https://firebase.google.com/docs/auth/admin/manage-users#list_all_users
+                    Util.mAuth.fetchProvidersForEmail(mEmail).addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            Log.d(TAG, "Checking to see if user exists in firebase or not");
+                            ProviderQueryResult result = task.getResult();
 
-                                    if(result != null && result.getProviders()!= null && result.getProviders().size() > 0){
-                                        Log.d(TAG, "User exists, trying to go further");
-                                        Log.d(TAG, "Go To: PASSWORD_MODE");
-                                        emailToPass = true;         //
-                                        passToEmail = false;        //
-                                        emailToRegister = false;    // because of animations
-                                        registerToEmail = false;    //
-                                        Util.screenMode = Util.ScreenModeEnum.PASSWORD_MODE;
-                                        prepareScreenUIFor_password();
-                                        authButton.setEnabled(true);
-                                        authButton.setEnabled(true);
-                                        progressDialog.dismiss();
-                                    } else {
-                                        userExists=false;
-                                        emailEditText.setError("Please fill the Email field with a registered email address!");
-                                        emailEditText.requestFocus();
-                                        authButton.setEnabled(true);
-                                        Log.d(TAG, "Login user doesn't exist");
-                                        //TODO Snackbar asking the user to register
-                                        authButton.setEnabled(true);
-                                        progressDialog.dismiss();
-                                    }
-                                } else {
-                                    Log.w(TAG, "User check failed", task.getException());
-                                    Toast.makeText(AuthenticationActivity.this,
-                                            "There is a problem, please try again later.",
-                                            Toast.LENGTH_SHORT).show();
-                                    userExists=false;
-                                    authButton.setEnabled(true);
-                                }
-                                //hide progress dialog
-                                //hideProgressDialog();
-                                //enable and disable login, logout buttons depending on signin status
-                                ///showAppropriateOptions();
+                            if(result != null && result.getProviders()!= null && result.getProviders().size() > 0){
+                                Log.d(TAG, "User exists, trying to go further");
+                                Log.d(TAG, "Go To: PASSWORD_MODE");
+                                emailToPass = true;         //
+                                passToEmail = false;        //
+                                emailToRegister = false;    // because of animations
+                                registerToEmail = false;    //
+                                Util.screenMode = Util.ScreenModeEnum.PASSWORD_MODE;
+                                prepareScreenUIFor_password();
+                                authButton.setEnabled(true);
+                                authButton.setEnabled(true);
+                                progressDialog.dismiss();
+                            } else {
+                                userExists=false;
+                                emailEditText.setError("Please fill the Email field with a registered email address!");
+                                emailEditText.requestFocus();
+                                authButton.setEnabled(true);
+                                Log.d(TAG, "Login user doesn't exist");
+                                //TODO Snackbar asking the user to register
+                                authButton.setEnabled(true);
+                                progressDialog.dismiss();
                             }
-                        });
-                    }else{
-                        //Toast.makeText(AuthenticationActivity.this, "Please fill the Email field!", Toast.LENGTH_LONG).show();
-                        emailEditText.setError("Please fill the Email field with a valid mEmail address!");
-                        emailEditText.requestFocus();
-                    }
-
+                        } else {
+                            Log.w(TAG, "User check failed", task.getException());
+                            Toast.makeText(AuthenticationActivity.this,
+                                    "There is a problem, please try again later.",
+                                    Toast.LENGTH_SHORT).show();
+                            userExists=false;
+                            authButton.setEnabled(true);
+                        }
+                        //hide progress dialog
+                        //hideProgressDialog();
+                        //enable and disable login, logout buttons depending on signin status
+                        ///showAppropriateOptions();
+                    });
                 }else{
-                    authButton.setEnabled(true);
-                    Util.hideKeyboard(AuthenticationActivity.this);
-                    View view = findViewById(R.id.auth_main_layout);
-                    Snackbar.make(view, "No internet connection!", Snackbar.LENGTH_SHORT).show();
+                    //Toast.makeText(AuthenticationActivity.this, "Please fill the Email field!", Toast.LENGTH_LONG).show();
+                    emailEditText.setError("Please fill the Email field with a valid mEmail address!");
+                    emailEditText.requestFocus();
+                    progressDialog.dismiss();
+
                 }
+
+            }else{
+                authButton.setEnabled(true);
+                Util.hideKeyboard(AuthenticationActivity.this);
+                View view = findViewById(R.id.auth_main_layout);
+                Snackbar.make(view, "No internet connection!", Snackbar.LENGTH_SHORT).show();
             }
         });
         params = (ConstraintLayout.LayoutParams) authButton.getLayoutParams();
@@ -493,62 +455,56 @@ public class AuthenticationActivity extends AppCompatActivity {
 
         registerORloginTextView.setText(R.string.createNewAccount);
         registerORloginTextView.setVisibility(View.VISIBLE);
-        registerORloginTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, ">>>RUN>>>registerORloginTextViewClickListener");
-                Log.d(TAG,"Go To: REGISTER_MODE");
-                /*
-                userExists=false;
-                mEmail=emailEditText.getText().toString();
-                if(!mEmail.equals("")) {
-                    /Util.mAuth.fetchProvidersForEmail(mEmail).addOnCompleteListener(new OnCompleteListener<ProviderQueryResult>() {
-                        @Override
-                        public void onComplete(@NonNull Task<ProviderQueryResult> task) {
-                            if (task.isSuccessful()) {
-                                Log.d(TAG, "checking to see if user exists in firebase or not");
-                                ProviderQueryResult result = task.getResult();
+        registerORloginTextView.setOnClickListener(v -> {
+            Log.d(TAG, ">>>RUN>>>registerORloginTextViewClickListener");
+            Log.d(TAG,"Go To: REGISTER_MODE");
+            /*
+            userExists=false;
+            mEmail=emailEditText.getText().toString();
+            if(!mEmail.equals("")) {
+                /Util.mAuth.fetchProvidersForEmail(mEmail).addOnCompleteListener(new OnCompleteListener<ProviderQueryResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<ProviderQueryResult> task) {
+                        if (task.isSuccessful()) {
+                            Log.d(TAG, "checking to see if user exists in firebase or not");
+                            ProviderQueryResult result = task.getResult();
 
-                                if (result != null && result.getProviders() != null && result.getProviders().size() > 0) {
-                                    Log.d(TAG, "User exists, stopping");
-                                    userExists = true;
-                                } else {
-                                    Log.d(TAG, "User doesn't exist");
-                                    //Toast.makeText(AuthenticationActivity.this, "Please fill the Email field!", Toast.LENGTH_LONG).show();
-                                    userExists=false;
-                                }
+                            if (result != null && result.getProviders() != null && result.getProviders().size() > 0) {
+                                Log.d(TAG, "User exists, stopping");
+                                userExists = true;
                             } else {
-                                Log.w(TAG, "User check failed", task.getException());
-                                Toast.makeText(AuthenticationActivity.this,
-                                        "There is a problem, please try again later.",
-                                        Toast.LENGTH_SHORT).show();
+                                Log.d(TAG, "User doesn't exist");
+                                //Toast.makeText(AuthenticationActivity.this, "Please fill the Email field!", Toast.LENGTH_LONG).show();
                                 userExists=false;
                             }
+                        } else {
+                            Log.w(TAG, "User check failed", task.getException());
+                            Toast.makeText(AuthenticationActivity.this,
+                                    "There is a problem, please try again later.",
+                                    Toast.LENGTH_SHORT).show();
+                            userExists=false;
                         }
-                    });
-                }
-                if(userExists){
-                    Toast.makeText(AuthenticationActivity.this, "Email already registered!", Toast.LENGTH_LONG).show();
-                    Log.d(TAG, "Stopped registration");
-                    return;
-                }
-                */
-                emailToPass = false;        //
-                passToEmail = false;         //
-                emailToRegister = true;    // because of animations
-                registerToEmail = false;    //
-                Util.screenMode = Util.ScreenModeEnum.REGISTER_MODE;
-                prepareScreenUIFor_register();
+                    }
+                });
             }
+            if(userExists){
+                Toast.makeText(AuthenticationActivity.this, "Email already registered!", Toast.LENGTH_LONG).show();
+                Log.d(TAG, "Stopped registration");
+                return;
+            }
+            */
+            emailToPass = false;        //
+            passToEmail = false;         //
+            emailToRegister = true;    // because of animations
+            registerToEmail = false;    //
+            Util.screenMode = Util.ScreenModeEnum.REGISTER_MODE;
+            prepareScreenUIFor_register();
         });
 
         forgotPassTextView.setVisibility(View.VISIBLE);
-        forgotPassTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, ">>>RUN>>>forgotPassTextViewClickListener");
-                resetPassword();
-            }
+        forgotPassTextView.setOnClickListener(v -> {
+            Log.d(TAG, ">>>RUN>>>forgotPassTextViewClickListener");
+            resetPassword();
         });
 
         backButton.setVisibility(View.INVISIBLE);
@@ -606,12 +562,7 @@ public class AuthenticationActivity extends AppCompatActivity {
 
         passwordEditText.setVisibility(View.VISIBLE);
         deletePasswordImageView.setVisibility(View.VISIBLE);
-        deletePasswordImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                passwordEditText.setText("");
-            }
-        });
+        deletePasswordImageView.setOnClickListener(v -> passwordEditText.setText(""));
 
         passwordEditText2.setVisibility(View.INVISIBLE);
         deletePasswordImageView2.setVisibility(View.INVISIBLE);
@@ -627,29 +578,26 @@ public class AuthenticationActivity extends AppCompatActivity {
         authButton.setLayoutParams( params );
         authButton.requestLayout();
         authButton.setText(R.string.login);
-        authButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        authButton.setOnClickListener(v -> {
 
-                // Finishing Login
-                Log.d(TAG, ">>>RUN>>>authButtonClickListener");
-                if( RequireInternetConnection() /*RequireEnabledInternetAndInternetConnection()*/ ) {            // This method gives feedback using Snackbar
-                    mPassword = passwordEditText.getText().toString();
+            // Finishing Login
+            Log.d(TAG, ">>>RUN>>>authButtonClickListener");
+            if( RequireInternetConnection() /*RequireEnabledInternetAndInternetConnection()*/ ) {            // This method gives feedback using Snackbar
+                mPassword = passwordEditText.getText().toString();
 
-                    progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-                    progressDialog.setTitle("Authentication");
-                    progressDialog.setMessage("Logging in.\nPlease wait.");
-                    progressDialog.setCancelable(false);
-                    progressDialog.show();
+                progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                progressDialog.setTitle("Authentication");
+                progressDialog.setMessage("Logging in.\nPlease wait.");
+                progressDialog.setCancelable(false);
+                progressDialog.show();
 
-                    Login();        // will dismiss the progressDialog
+                Login();        // will dismiss the progressDialog
 
-                }else{
-                    authButton.setEnabled(true);
-                    Util.hideKeyboard(AuthenticationActivity.this);
-                    View view = findViewById(R.id.auth_main_layout);
-                    Snackbar.make(view, "No internet connection!", Snackbar.LENGTH_SHORT).show();
-                }
+            }else{
+                authButton.setEnabled(true);
+                Util.hideKeyboard(AuthenticationActivity.this);
+                View view = findViewById(R.id.auth_main_layout);
+                Snackbar.make(view, "No internet connection!", Snackbar.LENGTH_SHORT).show();
             }
         });
 
@@ -666,41 +614,32 @@ public class AuthenticationActivity extends AppCompatActivity {
 
         forgotPassTextView.setText(R.string.forgotPassword);
         forgotPassTextView.setVisibility(View.VISIBLE);
-        forgotPassTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, ">>>RUN>>>forgotPassTextViewClickListener");
-                resetPassword();
-            }
+        forgotPassTextView.setOnClickListener(v -> {
+            Log.d(TAG, ">>>RUN>>>forgotPassTextViewClickListener");
+            resetPassword();
         });
 
         backButton.setVisibility(View.VISIBLE);
-        backButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, ">>>RUN>>>backButtonClickListener");
-                Log.d(TAG,"Go To: EMAIL_MODE");
-                emailToPass = false;        //
-                passToEmail = true;         //
-                emailToRegister = false;    // because of animations
-                registerToEmail = false;    //
-                Util.screenMode = Util.ScreenModeEnum.EMAIL_MODE;
-                prepareScreenUIFor_email();
-            }
+        backButton.setOnClickListener(v -> {
+            Log.d(TAG, ">>>RUN>>>backButtonClickListener");
+            Log.d(TAG,"Go To: EMAIL_MODE");
+            emailToPass = false;        //
+            passToEmail = true;         //
+            emailToRegister = false;    // because of animations
+            registerToEmail = false;    //
+            Util.screenMode = Util.ScreenModeEnum.EMAIL_MODE;
+            prepareScreenUIFor_email();
         });
         editEmailImageView.setVisibility(View.VISIBLE);
-        editEmailImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, ">>>RUN>>>editEmailImageViewClickListener");
-                Log.d(TAG,"Go To: EMAIL_MODE");
-                emailToPass = false;        //
-                passToEmail = true;         //
-                emailToRegister = false;    // because of animations
-                registerToEmail = false;    //
-                Util.screenMode = Util.ScreenModeEnum.EMAIL_MODE;
-                prepareScreenUIFor_email();
-            }
+        editEmailImageView.setOnClickListener(v -> {
+            Log.d(TAG, ">>>RUN>>>editEmailImageViewClickListener");
+            Log.d(TAG,"Go To: EMAIL_MODE");
+            emailToPass = false;        //
+            passToEmail = true;         //
+            emailToRegister = false;    // because of animations
+            registerToEmail = false;    //
+            Util.screenMode = Util.ScreenModeEnum.EMAIL_MODE;
+            prepareScreenUIFor_email();
         });
         //Animation:
 
@@ -748,33 +687,18 @@ public class AuthenticationActivity extends AppCompatActivity {
 
         emailEditText.setVisibility(View.VISIBLE);
         deleteEmailImageView.setVisibility(View.VISIBLE);
-        deleteEmailImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                emailEditText.setText("");
-            }
-        });
+        deleteEmailImageView.setOnClickListener(v -> emailEditText.setText(""));
 
 
         passwordEditText.setText("");
         passwordEditText.setVisibility(View.VISIBLE);
         deletePasswordImageView.setVisibility(View.VISIBLE);
-        deletePasswordImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                passwordEditText.setText("");
-            }
-        });
+        deletePasswordImageView.setOnClickListener(v -> passwordEditText.setText(""));
 
         passwordEditText2.setText("");
         passwordEditText2.setVisibility(View.VISIBLE);
         deletePasswordImageView2.setVisibility(View.VISIBLE);
-        deletePasswordImageView2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                passwordEditText2.setText("");
-            }
-        });
+        deletePasswordImageView2.setOnClickListener(v -> passwordEditText2.setText(""));
 
         params = (ConstraintLayout.LayoutParams) authButton.getLayoutParams();
         params.topToBottom = passwordEditText2.getId();
@@ -782,142 +706,116 @@ public class AuthenticationActivity extends AppCompatActivity {
         authButton.requestLayout();
 
         authButton.setText(R.string.register);
-        authButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if( emailEditText.getText().toString().trim().equals("") ){
-                    emailEditText.setError("This field must be filled!");
-                    if(progressDialog.isShowing()){
-                        progressDialog.dismiss();
-                    }
-                    return;
-                }
-                if( passwordEditText.getText().toString().trim().equals("") ){
-                    passwordEditText.setError("This field must be filled!");
-                    if(progressDialog.isShowing()){
-                        progressDialog.dismiss();
-                    }
-                    return;
-                }
-                if( passwordEditText.getText().toString().trim().length() < 6 ){
-                    passwordEditText.setError("Passwords has to be at least 6 characters!");
-                    if(progressDialog.isShowing()){
-                        progressDialog.dismiss();
-                    }
-                    return;
-                }
-                if( passwordEditText2.getText().toString().trim().equals("") ){
-                    passwordEditText2.setError("This field must be filled!");
-                    if(progressDialog.isShowing()){
-                        progressDialog.dismiss();
-                    }
-                    return;
-                }
-                if( ! passwordEditText.getText().toString().trim().equals( passwordEditText2.getText().toString().trim() ) ){
-                    passwordEditText2.setError("The passwords must be the same!");
-                    if(progressDialog.isShowing()){
-                        progressDialog.dismiss();
-                    }
-                    return;
-                }
-                authButton.setEnabled(false);
-
-                mEmail =emailEditText.getText().toString();
-                if(!mEmail.equals("")) {
-
-                    if ( RequireInternetConnection() /*RequireEnabledInternetAndInternetConnection()*/) {
-
-                        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-                        progressDialog.setTitle("Authentication");
-                        progressDialog.setMessage("Creating new user.\nPlease wait.");
-                        progressDialog.setCancelable(false);
-                        progressDialog.show();
-
-                        // TODO: kicserelni a fetchProviderForEmail-t lecserelni: https://firebase.google.com/docs/auth/admin/manage-users#list_all_users
-                        Util.mAuth.fetchProvidersForEmail(mEmail).addOnCompleteListener(new OnCompleteListener<ProviderQueryResult>() {
-                            @Override
-                            public void onComplete(@NonNull Task<ProviderQueryResult> task) {
-                                if (task.isSuccessful()) {
-                                    Log.d(TAG, "checking to see if user exists in firebase or not");
-                                    ProviderQueryResult result = task.getResult();
-
-                                    if (result != null && result.getProviders() != null && result.getProviders().size() > 0) {
-                                        Log.d(TAG, "User exists, stopping");
-                                        userExists = true;
-                                        Toast.makeText(AuthenticationActivity.this, "Email already registered!", Toast.LENGTH_LONG).show();
-                                    } else {
-                                        Log.d(TAG, "User doesn't exist ==> Register");
-                                        //Toast.makeText(AuthenticationActivity.this, "Please fill the Email field!", Toast.LENGTH_LONG).show();
-                                        userExists = false;
-                                        mPassword = passwordEditText.getText().toString().trim();
-                                        Register();
-                                    }
-                                } else {
-                                    Log.w(TAG, "User check failed", task.getException());
-                                    Toast.makeText(AuthenticationActivity.this,
-                                            "There is a problem, please try again later.",
-                                            Toast.LENGTH_SHORT).show();
-                                    userExists = false;
-                                    mPassword = passwordEditText.getText().toString().trim();
-                                    Register();     // will dismiss the progressDialog
-                                }
-                                authButton.setEnabled(true);
-                            }
-                        });
-
-                    }else{
-                        authButton.setEnabled(true);
-                        Util.hideKeyboard(AuthenticationActivity.this);
-                        View view = findViewById(R.id.auth_main_layout);
-                        Snackbar.make(view, "No internet connection!", Snackbar.LENGTH_SHORT).show();
-                    }
-
-                }else{
-                    if(progressDialog.isShowing()){
-                        progressDialog.dismiss();
-                    }
-                }
-                /*if(userExists){
-                    Toast.makeText(AuthenticationActivity.this, "Email already registered!", Toast.LENGTH_LONG).show();
-                    return;
-                }
-                mPassword = passwordEditText.getText().toString().trim();
-                Register();
-                */
+        authButton.setOnClickListener(v -> {
+            if( emailEditText.getText().toString().trim().equals("") ){
+                emailEditText.setError("This field must be filled!");
+                return;
             }
-        });
-
-        registerORloginTextView.setText(R.string.alreadyHaveAccount);
-        registerORloginTextView.setVisibility(View.VISIBLE);
-        registerORloginTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, ">>>RUN>>>registerORloginTextViewClickListener");
-                Log.d(TAG,"Go To: EMAIL_MODE");
-                emailToPass = false;        //
-                passToEmail = false;         //
-                emailToRegister = false;    // because of animations
-                registerToEmail = true;    //
-                Util.screenMode = Util.ScreenModeEnum.EMAIL_MODE;
-                prepareScreenUIFor_email();
+            if( passwordEditText.getText().toString().trim().equals("") ){
+                passwordEditText.setError("This field must be filled!");
+                return;
             }
-        });
+            if( passwordEditText.getText().toString().trim().length() < 6 ){
+                passwordEditText.setError("Passwords has to be at least 6 characters!");
+                return;
+            }
+            if( passwordEditText2.getText().toString().trim().equals("") ){
+                passwordEditText2.setError("This field must be filled!");
+                return;
+            }
+            if( ! passwordEditText.getText().toString().trim().equals( passwordEditText2.getText().toString().trim() ) ){
+                passwordEditText2.setError("The passwords must be the same!");
+                return;
+            }
+            authButton.setEnabled(false);
 
-        //forgotPassTextView.setText("forgot password.");
-        forgotPassTextView.setVisibility(View.INVISIBLE);
-        forgotPassTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, ">>>RUN>>>forgotPassTextViewClickListener");
+            mEmail =emailEditText.getText().toString();
+            if(!mEmail.equals("")) {
+
                 if ( RequireInternetConnection() /*RequireEnabledInternetAndInternetConnection()*/) {
 
-                    resetPassword();
+                    progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                    progressDialog.setTitle("Authentication");
+                    progressDialog.setMessage("Creating new user.\nPlease wait.");
+                    progressDialog.setCancelable(false);
+                    progressDialog.show();
+
+                    // TODO: kicserelni a fetchProviderForEmail-t lecserelni: https://firebase.google.com/docs/auth/admin/manage-users#list_all_users
+                    Util.mAuth.fetchProvidersForEmail(mEmail).addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            Log.d(TAG, "checking to see if user exists in firebase or not");
+                            ProviderQueryResult result = task.getResult();
+
+                            if (result != null && result.getProviders() != null && result.getProviders().size() > 0) {
+                                Log.d(TAG, "User exists, stopping");
+                                userExists = true;
+                                Toast.makeText(AuthenticationActivity.this, "Email already registered!", Toast.LENGTH_LONG).show();
+                            } else {
+                                Log.d(TAG, "User doesn't exist ==> Register");
+                                //Toast.makeText(AuthenticationActivity.this, "Please fill the Email field!", Toast.LENGTH_LONG).show();
+                                userExists = false;
+                                mPassword = passwordEditText.getText().toString().trim();
+                                Register();
+                            }
+                        } else {
+                            Log.w(TAG, "User check failed", task.getException());
+                            Toast.makeText(AuthenticationActivity.this,
+                                    "There is a problem, please try again later.",
+                                    Toast.LENGTH_SHORT).show();
+                            userExists = false;
+                            mPassword = passwordEditText.getText().toString().trim();
+                            Register();     // will dismiss the progressDialog
+                        }
+                        authButton.setEnabled(true);
+                    });
 
                 }else{
+                    authButton.setEnabled(true);
                     Util.hideKeyboard(AuthenticationActivity.this);
                     View view = findViewById(R.id.auth_main_layout);
                     Snackbar.make(view, "No internet connection!", Snackbar.LENGTH_SHORT).show();
                 }
+
+            }else{
+                if(progressDialog.isShowing()){
+                    progressDialog.dismiss();
+                }
+            }
+            /*if(userExists){
+                Toast.makeText(AuthenticationActivity.this, "Email already registered!", Toast.LENGTH_LONG).show();
+                return;
+            }
+            mPassword = passwordEditText.getText().toString().trim();
+            Register();
+            */
+
+        });
+
+        registerORloginTextView.setText(R.string.alreadyHaveAccount);
+        registerORloginTextView.setVisibility(View.VISIBLE);
+        registerORloginTextView.setOnClickListener(v -> {
+            Log.d(TAG, ">>>RUN>>>registerORloginTextViewClickListener");
+            Log.d(TAG,"Go To: EMAIL_MODE");
+            emailToPass = false;        //
+            passToEmail = false;         //
+            emailToRegister = false;    // because of animations
+            registerToEmail = true;    //
+            Util.screenMode = Util.ScreenModeEnum.EMAIL_MODE;
+            prepareScreenUIFor_email();
+        });
+
+        //forgotPassTextView.setText("forgot password.");
+        forgotPassTextView.setVisibility(View.INVISIBLE);
+        forgotPassTextView.setOnClickListener(v -> {
+            Log.d(TAG, ">>>RUN>>>forgotPassTextViewClickListener");
+            if ( RequireInternetConnection() /*RequireEnabledInternetAndInternetConnection()*/) {
+
+                resetPassword();
+
+            }else{
+                Util.hideKeyboard(AuthenticationActivity.this);
+                View view = findViewById(R.id.auth_main_layout);
+                Snackbar.make(view, "No internet connection!", Snackbar.LENGTH_SHORT).show();
             }
         });
 
@@ -947,12 +845,12 @@ public class AuthenticationActivity extends AppCompatActivity {
 
     /*
      *
-     *  Connection Testers:
+     *  Connection Testers:   ///TODO replace all invokations with static ones from Util class
      *
      */
 
     // A + B and feedback with Snackbar to the user
-    private boolean RequireEnabledInternetAndInternetConnection() {          // TODO: altalanositas: RequireEnabledInternetAndInternetConnection(Activity activity) {...}
+    private boolean RequireEnabledInternetAndInternetConnection() {
         Log.d(TAG, ">>>RUN>>>RequireEnabledInternetAndInternetConnection()");
         Util.hideKeyboard(AuthenticationActivity.this);
 
@@ -1129,15 +1027,12 @@ public class AuthenticationActivity extends AppCompatActivity {
             Log.d(TAG,"requestPasswordResetCount(" + requestPasswordResetCount + ") > 0 ==> AlertDialog");
 
             Util.mAuth.sendPasswordResetEmail(Util.userEmail)
-                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            if (task.isSuccessful()) {
-                                Log.d(TAG, "Reset mPassword request sent.");
-                                View mainLayoutView = findViewById(R.id.auth_main_layout);
-                                //Snackbar.make(mainLayoutView, "Reset mEmail is sent!", Snackbar.LENGTH_SHORT).show();
-                                Toast.makeText(AuthenticationActivity.this, "Reset mPassword request was sent!", Toast.LENGTH_LONG ).show();
-                            }
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            Log.d(TAG, "Reset mPassword request sent.");
+                            //View mainLayoutView = findViewById(R.id.auth_main_layout);
+                            //Snackbar.make(mainLayoutView, "Reset mEmail is sent!", Snackbar.LENGTH_SHORT).show();
+                            Toast.makeText(AuthenticationActivity.this, "Reset mPassword request was sent!", Toast.LENGTH_LONG ).show();
                         }
                     });
             requestPasswordResetCount++;
@@ -1149,31 +1044,21 @@ public class AuthenticationActivity extends AppCompatActivity {
             AlertDialog.Builder builder = new AlertDialog.Builder(AuthenticationActivity.this);
             builder.setTitle("Confirm");
             builder.setMessage("Are you sure you want to send a reset request?");
-            builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-                    // leave the method to run
-                    //Toast.makeText(AuthenticationActivity.this, "SEND REQUEST NUMBER: " + requestPasswordResetCount, Toast.LENGTH_SHORT).show();
-                    Util.mAuth.sendPasswordResetEmail(Util.userEmail)
-                            .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-                                    if (task.isSuccessful()) {
-                                        Log.d(TAG, "Reset mPassword request sent.");
-                                        View mainLayoutView = findViewById(R.id.auth_main_layout);
-                                        //Snackbar.make(mainLayoutView, "Reset mEmail is sent!", Snackbar.LENGTH_SHORT).show();
-                                        Toast.makeText(AuthenticationActivity.this, "Reset mPassword request was sent!", Toast.LENGTH_LONG ).show();
-                                    }
-                                }
-                            });
-                    requestPasswordResetCount++;
-                }
+            builder.setPositiveButton("YES", (dialog, which) -> {
+                // leave the method to run
+                //Toast.makeText(AuthenticationActivity.this, "SEND REQUEST NUMBER: " + requestPasswordResetCount, Toast.LENGTH_SHORT).show();
+                Util.mAuth.sendPasswordResetEmail(Util.userEmail)
+                        .addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
+                                Log.d(TAG, "Reset mPassword request sent.");
+                                //View mainLayoutView = findViewById(R.id.auth_main_layout);
+                                //Snackbar.make(mainLayoutView, "Reset mEmail is sent!", Snackbar.LENGTH_SHORT).show();
+                                Toast.makeText(AuthenticationActivity.this, "Reset mPassword request was sent!", Toast.LENGTH_LONG ).show();
+                            }
+                        });
+                requestPasswordResetCount++;
             });
-            builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss();
-                }
-            });
+            builder.setNegativeButton("NO", (dialog, which) -> dialog.dismiss());
             AlertDialog alert = builder.create();
             alert.show();
 
@@ -1202,42 +1087,28 @@ public class AuthenticationActivity extends AppCompatActivity {
         try {
             //localFile = new File("/storage/emulated/0/logmein","model.mdl");
             localFile = File.createTempFile("model_", ".mdl");
-            Util.mRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                    // Local temp file has been created
-                    Util.hasUserModel = true;
-                    Util.isSetUserModel = true;
-                    Log.i(TAG,"### Util.hasUserModel = true;");
-                    Log.i(TAG, "MODEL FOUND: Local File Path: " + localFile.getAbsolutePath());
-                    Log.i(TAG,"<<<finish()<<<");
-                    loadingTextView.setVisibility(View.VISIBLE);
-                    finish();
-                }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    Util.hasUserModel = false;
-                    Util.isSetUserModel = true;
-                    Log.i(TAG,"### Util.hasUserModel = false;");
-                    Log.i(TAG, "MODEL NOT FOUND: ERROR: getFile()");
-                    Log.i(TAG,"<<<finish()<<<");
-                    //e.printStackTrace();
-                    loadingTextView.setVisibility(View.VISIBLE);
-                    finish();
-                }
-            }).addOnProgressListener(new OnProgressListener<FileDownloadTask.TaskSnapshot>() {
-                @Override
-                public void onProgress(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                    final double process = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
-                    //progressDialog.setMessage("Downloaded: " + (int) process + "%");
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            progressBar.setProgress((int)process);
-                        }
-                    });
-                }
+            Util.mRef.getFile(localFile).addOnSuccessListener(taskSnapshot -> {
+                // Local temp file has been created
+                Util.hasUserModel = true;
+                Util.isSetUserModel = true;
+                Log.i(TAG,"### Util.hasUserModel = true;");
+                Log.i(TAG, "MODEL FOUND: Local File Path: " + localFile.getAbsolutePath());
+                Log.i(TAG,"<<<finish()<<<");
+                loadingTextView.setVisibility(View.VISIBLE);
+                finish();
+            }).addOnFailureListener(e -> {
+                Util.hasUserModel = false;
+                Util.isSetUserModel = true;
+                Log.i(TAG,"### Util.hasUserModel = false;");
+                Log.i(TAG, "MODEL NOT FOUND: ERROR: getFile()");
+                Log.i(TAG,"<<<finish()<<<");
+                //e.printStackTrace();
+                loadingTextView.setVisibility(View.VISIBLE);
+                finish();
+            }).addOnProgressListener(taskSnapshot -> {
+                final double process = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
+                //progressDialog.setMessage("Downloaded: " + (int) process + "%");
+                mHandler.post(() -> progressBar.setProgress((int)process));
             });
             /*mHandler.post(new Runnable() {
                 @Override
@@ -1274,13 +1145,7 @@ public class AuthenticationActivity extends AppCompatActivity {
             this.doubleBackToExitPressedOnce = true;
             Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
 
-            new Handler().postDelayed(new Runnable() {
-
-                @Override
-                public void run() {
-                    doubleBackToExitPressedOnce = false;
-                }
-            }, 2000);
+            new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
         }
         if( Util.screenMode == Util.ScreenModeEnum.PASSWORD_MODE ) {
             Log.d(TAG,"Go To: EMAIL_MODE");

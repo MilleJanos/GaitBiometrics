@@ -1,30 +1,22 @@
 package com.example.jancsi_pc.playingwithsensors.Utils;
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.net.Uri;
-import android.provider.Settings;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.wifi.WifiManager;
+import android.support.design.widget.Snackbar;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Toast;
 
 import com.example.jancsi_pc.playingwithsensors.AuthenticationActivity;
-import com.example.jancsi_pc.playingwithsensors.DataCollectorActivity;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
+import com.example.jancsi_pc.playingwithsensors.R;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -33,7 +25,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class Util {
 
@@ -200,4 +191,119 @@ public class Util {
     }
 
 
+
+
+    /*
+     *
+     *  Connection Testers:
+     *
+     */
+
+    // A + B and feedback with Snackbar to the user
+    public static boolean RequireEnabledInternetAndInternetConnection(Activity activity) {
+        Log.d(TAG, ">>>RUN>>>RequireEnabledInternetAndInternetConnection()");
+        Util.hideKeyboard(activity);
+
+        //Asking the user to enable WiFi:
+        boolean isNetworkEnabled = CheckWiFiNetwork(activity);
+
+        //Asking for connection:
+        boolean isNetworkConnection = RequireInternetConnection(activity);
+
+        if (!isNetworkEnabled) {
+            //authButton.setError("Please enable internet connection!");
+            Log.d("TAG", " isNetworkEnabled = false");
+            View mainLayoutView = activity.findViewById(R.id.auth_main_layout);
+            Snackbar.make(mainLayoutView, "Please enable internet connection!", Snackbar.LENGTH_SHORT).show();
+        } else {
+            if (!isNetworkConnection) {
+                //authButton.setError("No internet connection detected!");
+                Log.d("TAG", " isNetworkConnection = false");
+                View view = activity.findViewById(R.id.auth_main_layout);
+                Snackbar.make(view, "No internet connection detected!", Snackbar.LENGTH_SHORT).show();
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
+    // B
+    private static boolean RequireInternetConnection(Activity activity) {
+        Log.d(TAG, ">>>RUN>>>RequireInternetConnection()");
+        ConnectivityManager cm = (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        boolean isConnected = activeNetwork != null && activeNetwork.isConnected();
+        // While there is no connection, force the user to connect
+        /*while( ! isConnected ){
+
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(AuthenticationActivity.this);
+
+            // set title
+            alertDialogBuilder.setTitle("No internet detected");
+
+            // set dialog message
+            alertDialogBuilder
+                    .setMessage("Make you shore you are connected to the internet")
+                    .setCancelable(false)
+                    .setPositiveButton("Retry", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            //Nothing (Retry)
+                        }
+                    })
+                    .setNegativeButton("Exit", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            Util.isFinished = true;
+                            finish(); //close the App
+                        }
+                    });
+            isConnected = activeNetwork != null && activeNetwork.isConnected();
+
+            return false;
+        }*/
+        return isConnected;
+    }
+    // A
+    private static boolean CheckWiFiNetwork(Context context) {
+        Log.d(TAG, ">>>RUN>>>CheckWiFiNetwork()");
+
+        final WifiManager mWifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+
+        if( ! mWifiManager.isWifiEnabled() ) {
+            /*
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(AuthenticationActivity.this);
+
+            // set title
+            alertDialogBuilder.setTitle("Wifi Settings");
+
+            // set dialog message
+            alertDialogBuilder
+                    .setMessage("Do you want to enable WIFI ?")
+                    .setCancelable(false)
+                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // enable wifi
+                            mWifiManager.setWifiEnabled(true);
+
+                        }
+                    })
+                    .setNegativeButton("Exit", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            //disable wifi
+                            //mWifiManager.setWifiEnabled(false);
+                            Util.isFinished = true;
+                            finish(); //close the App
+                        }
+                    });
+
+            // create alert dialog
+            AlertDialog alertDialog = alertDialogBuilder.create();
+
+            // show it
+            alertDialog.show();
+            */
+            return false;
+        }
+        // else:
+        return true;
+    }
 }

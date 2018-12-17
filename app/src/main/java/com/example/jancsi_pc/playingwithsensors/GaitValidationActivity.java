@@ -6,11 +6,10 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.Uri;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.text.format.DateFormat;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -160,12 +159,7 @@ public class GaitValidationActivity extends AppCompatActivity implements SensorE
         }
 
         backButton = findViewById(R.id.backButton);
-        backButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
+        backButton.setOnClickListener(v -> finish());
 
         textViewStatus = findViewById(R.id.gaitverif_textViewStatus);
         textViewStatus.setText(R.string.startRecording);
@@ -187,16 +181,13 @@ public class GaitValidationActivity extends AppCompatActivity implements SensorE
         simpleStepDetector.registerListener(this);
 
         reportErrorTextView = findViewById(R.id.errorReportTextView);
-        reportErrorTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, ">>>RUN>>>reportErrorTextViewClickListener");
-                Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto","abc@gmail.com", null));
-                emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Problem with authentication.");
-                emailIntent.putExtra(Intent.EXTRA_TEXT, "");
-                emailIntent.putExtra(Intent.EXTRA_EMAIL, "");
-                startActivity(Intent.createChooser(emailIntent, "Send email..."));
-            }
+        reportErrorTextView.setOnClickListener(v -> {
+            Log.d(TAG, ">>>RUN>>>reportErrorTextViewClickListener");
+            Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto","abc@gmail.com", null));
+            emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Problem with authentication.");
+            emailIntent.putExtra(Intent.EXTRA_TEXT, "");
+            emailIntent.putExtra(Intent.EXTRA_EMAIL, "");
+            startActivity(Intent.createChooser(emailIntent, "Send email..."));
         });
 
         accelerometerEventListener = new SensorEventListener() {
@@ -235,22 +226,19 @@ public class GaitValidationActivity extends AppCompatActivity implements SensorE
          *
          */
 
-        startButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, ">>>RUN>>>startButtonClickListener");
-                //mediaPlayer.create(null,R.raw.start);
-                //mediaPlayer.start();
-                recordCount = 0;
-                stepNumber = 0;
-                sensorManager.registerListener(GaitValidationActivity.this, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
-                accArray.clear();
-                isRecording = true;
-                startButton.setEnabled(false);
-                stopButton.setEnabled(true);
-                Log.d("ConnectionActivity_", "Start Rec.");
-                //textViewStatus.setText("Recording ...");
-            }
+        startButton.setOnClickListener(v -> {
+            Log.d(TAG, ">>>RUN>>>startButtonClickListener");
+            //mediaPlayer.create(null,R.raw.start);
+            //mediaPlayer.start();
+            recordCount = 0;
+            stepNumber = 0;
+            sensorManager.registerListener(GaitValidationActivity.this, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
+            accArray.clear();
+            isRecording = true;
+            startButton.setEnabled(false);
+            stopButton.setEnabled(true);
+            Log.d("ConnectionActivity_", "Start Rec.");
+            //textViewStatus.setText("Recording ...");
         });
 
         /*
@@ -259,23 +247,20 @@ public class GaitValidationActivity extends AppCompatActivity implements SensorE
          *
          */
 
-        stopButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, ">>>RUN>>>stopButtonClickListener");
-                Util.recordDateAndTimeFormatted  = DateFormat.format("yyyyMMdd_HHmmss", mDate.getTime());
-                isRecording = false;
-                startButton.setEnabled(true);
-                stopButton.setEnabled(false);
-                gaitVerificationButton.setEnabled(true);
-                sensorManager.unregisterListener(GaitValidationActivity.this);
-                Log.d(TAG, "Stop Rec. - Generating CMD");
-                textViewStatus.setText(R.string.calculating);
-                CMD = accArrayToString();
-                CMD += ",end";
-                Log.d(TAG,"CMD Generated.");
-                textViewStatus.setText(("Recorded: " + recordCount + " datapoints and " + stepNumber +" step cycles."));
-            }
+        stopButton.setOnClickListener(v -> {
+            Log.d(TAG, ">>>RUN>>>stopButtonClickListener");
+            Util.recordDateAndTimeFormatted  = DateFormat.format("yyyyMMdd_HHmmss", mDate.getTime());
+            isRecording = false;
+            startButton.setEnabled(true);
+            stopButton.setEnabled(false);
+            gaitVerificationButton.setEnabled(true);
+            sensorManager.unregisterListener(GaitValidationActivity.this);
+            Log.d(TAG, "Stop Rec. - Generating CMD");
+            textViewStatus.setText(R.string.calculating);
+            CMD = accArrayToString();
+            CMD += ",end";
+            Log.d(TAG,"CMD Generated.");
+            textViewStatus.setText(("Recorded: " + recordCount + " datapoints and " + stepNumber +" step cycles."));
         });
 
         /*
@@ -285,12 +270,9 @@ public class GaitValidationActivity extends AppCompatActivity implements SensorE
          *
          */
 
-        gaitVerificationButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, ">>>RUN>>>gaitVerificationButtonClickListener");
-
-            }
+        gaitVerificationButton.setOnClickListener(v -> {
+            Log.d(TAG, ">>>RUN>>>gaitVerificationButtonClickListener");
+            //TODO
         });
 
 

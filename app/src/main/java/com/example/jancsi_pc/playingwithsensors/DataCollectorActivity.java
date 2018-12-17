@@ -11,8 +11,6 @@ import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.PowerManager;
-import android.provider.ContactsContract;
 import android.provider.Settings;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -79,7 +77,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     public static int stepNumber=0;
     public static final int MAX_STEP_NUMBER=10;
     public static final int MIN_STEP_NUMBER=5;
-    private TextView accelerometerTitleTextView;
     private TextView textViewStatus;
     private TextView accelerometerX;
     private TextView accelerometerY;
@@ -118,17 +115,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
     // Debug Mode:
     private Switch debugSwitch;
-
-    // Proxy sensor:
-    private SensorManager mSensorManager;
-    private Sensor mProximity;
-    private static final int SENSOR_SENSITIVITY = 4;
-
-    // WakeLock (for proxy)
-    private PowerManager powerManager;
-    private PowerManager.WakeLock wakeLock;
-    private int field = 0x00000020;
-
 
     /*
      *
@@ -219,16 +205,13 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         //goToLoginTextView = findViewById(R.id.goToLoginTextView);
 
         reportErrorTextView = findViewById(R.id.errorReportTextView);
-        reportErrorTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, ">>>RUN>>>reportErrorTextViewClickListener");
-                Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto","abc@gmail.com", null));
-                emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Problem with authentication.");
-                emailIntent.putExtra(Intent.EXTRA_TEXT, "");
-                emailIntent.putExtra(Intent.EXTRA_EMAIL, "");
-                startActivity(Intent.createChooser(emailIntent, "Send email..."));
-            }
+        reportErrorTextView.setOnClickListener(v -> {
+            Log.d(TAG, ">>>RUN>>>reportErrorTextViewClickListener");
+            Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto","abc@gmail.com", null));
+            emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Problem with authentication.");
+            emailIntent.putExtra(Intent.EXTRA_TEXT, "");
+            emailIntent.putExtra(Intent.EXTRA_EMAIL, "");
+            startActivity(Intent.createChooser(emailIntent, "Send email..."));
         });
 
         final DecimalFormat df = new DecimalFormat("0");
@@ -243,26 +226,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         simpleStepDetector.registerListener(this);
 
         debugSwitch = findViewById(R.id.debugSwitch);
-
-        // HIDE ACCELEROMETER COORDINATES:
-        accelerometerTitleTextView = findViewById(R.id.textViewAccelerometer2);
-        accelerometerTitleTextView.setVisibility(View.INVISIBLE);
-        accelerometerX.setVisibility(View.INVISIBLE);
-        accelerometerY.setVisibility(View.INVISIBLE);
-        accelerometerZ.setVisibility(View.INVISIBLE);
-
-        // Proxy sensor:
-        mSensorManager = (SensorManager) getSystemService(DataCollectorActivity.this.SENSOR_SERVICE);
-        mProximity = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
-
-        // wake lock (for proxy)
-        powerManager = (PowerManager) getSystemService(POWER_SERVICE);
-        try {
-            // Yeah, this is hidden field.
-            field = PowerManager.class.getClass().getField("PROXIMITY_SCREEN_OFF_WAKE_LOCK").getInt(null);
-        } catch (Throwable ignored) {
-        }
-        wakeLock = powerManager.newWakeLock(field, getLocalClassName());
 
         if( NO_PYTHON_SERVER_YET ){
             ImageView pythonServerImageView = findViewById(R.id.pythonServerImageView);
@@ -314,26 +277,21 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
          *
          */
 
-        startButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, ">>>RUN>>>startButtonClickListener");
-                //mediaPlayer.create(null,R.raw.start);
-                //mediaPlayer.start();
-                recordCount = 0;
-                stepNumber = 0;
-                sensorManager.registerListener(DataCollectorActivity.this, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
-                accArray.clear();
-                isRecording = true;
-                startButton.setEnabled(false);
-                stopButton.setEnabled(true);
-                sendToServerButton.setEnabled(false);
-                saveToFirebaseButton.setEnabled(false);
-                Log.d("ConnectionActivity_", "Start Rec.");
-                //textViewStatus.setText("Recording ...");
-                // Proxy sensor:
-                mSensorManager.registerListener(DataCollectorActivity.this, mProximity, SensorManager.SENSOR_DELAY_NORMAL);
-            }
+        startButton.setOnClickListener(v -> {
+            Log.d(TAG, ">>>RUN>>>startButtonClickListener");
+            //mediaPlayer.create(null,R.raw.start);
+            //mediaPlayer.start();
+            recordCount = 0;
+            stepNumber = 0;
+            sensorManager.registerListener(DataCollectorActivity.this, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
+            accArray.clear();
+            isRecording = true;
+            startButton.setEnabled(false);
+            stopButton.setEnabled(true);
+            sendToServerButton.setEnabled(false);
+            saveToFirebaseButton.setEnabled(false);
+            Log.d("ConnectionActivity_", "Start Rec.");
+            //textViewStatus.setText("Recording ...");
         });
 
         /*
@@ -342,26 +300,21 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
          *
          */
 
-        stopButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, ">>>RUN>>>stopButtonClickListener");
-                Util.recordDateAndTimeFormatted  = DateFormat.format("yyyyMMdd_HHmmss", mDate.getTime());
-                isRecording = false;
-                startButton.setEnabled(true);
-                stopButton.setEnabled(false);
-                sendToServerButton.setEnabled(true);
-                saveToFirebaseButton.setEnabled(true);
-                sensorManager.unregisterListener(DataCollectorActivity.this);
-                Log.d("ConnectionActivity", "Stop Rec. - Generating CMD");
-                textViewStatus.setText(R.string.calculating);
-                CMD = accArrayToString();
-                CMD += ",end";
-                Log.d("ConnectionActivity","CMD Generated.");
-                textViewStatus.setText(("Recorded: " + recordCount + " datapoints and " + stepNumber +" step cycles."));
-                // Proxy sensor:
-                mSensorManager.unregisterListener(DataCollectorActivity.this);
-            }
+        stopButton.setOnClickListener(v -> {
+            Log.d(TAG, ">>>RUN>>>stopButtonClickListener");
+            Util.recordDateAndTimeFormatted  = DateFormat.format("yyyyMMdd_HHmmss", mDate.getTime());
+            isRecording = false;
+            startButton.setEnabled(true);
+            stopButton.setEnabled(false);
+            sendToServerButton.setEnabled(true);
+            saveToFirebaseButton.setEnabled(true);
+            sensorManager.unregisterListener(DataCollectorActivity.this);
+            Log.d("ConnectionActivity", "Stop Rec. - Generating CMD");
+            textViewStatus.setText(R.string.calculating);
+            CMD = accArrayToString();
+            CMD += ",end";
+            Log.d("ConnectionActivity","CMD Generated.");
+            textViewStatus.setText(("Recorded: " + recordCount + " datapoints and " + stepNumber +" step cycles."));
         });
 
         /*
@@ -369,30 +322,27 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
          *   Sending records to server
          *
          */
-        sendToServerButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, ">>>RUN>>>sendButtonClickListener");
-                sendToServerButton.setEnabled(false);
-                Toast.makeText(DataCollectorActivity.this,"freq1: " + Util.samplingFrequency(accArray) + "freq2: " + Util.samplingFrequency2(accArray),Toast.LENGTH_LONG).show();
-                //TODO check if connected to wifi before attempting to send
-                //extract features first TODO
-                //ArrayList<byte[]> byteList = new FeatureExtractor(accArray).getByteList();
+        sendToServerButton.setOnClickListener(v -> {
+            Log.d(TAG, ">>>RUN>>>sendButtonClickListener");
+            sendToServerButton.setEnabled(false);
+            Toast.makeText(DataCollectorActivity.this,"freq1: " + Util.samplingFrequency(accArray) + "freq2: " + Util.samplingFrequency2(accArray),Toast.LENGTH_LONG).show();
+            //TODO check if connected to wifi before attempting to send
+            //extract features first TODO
+            //ArrayList<byte[]> byteList = new FeatureExtractor(accArray).getByteList();
 
-                // STOP button generates the CMD
-                //sentTextView.setText( CMD );
-                // Sending the array in multiple packages:
-                accArrayGroupArrayToString();
-                for(int i=0; i<accArrayStringGroups.size(); ++i) {
-                    Log.i("accArrayString","aASG.get("+i+")= " + accArrayStringGroups.get(i) );
-                    CMD = accArrayStringGroups.get(i);  //group of RECORDS_LIMIT_PER_PACKAGE records
-                    //Prepare and Send
-                    getIPandPort();
-                    Socket_AsyncTask cmd_send_data = new Socket_AsyncTask();
-                    cmd_send_data.execute();
-                }
-                Toast.makeText(DataCollectorActivity.this,"Data has been sent. " + Calendar.getInstance().getTime(), Toast.LENGTH_LONG).show();
+            // STOP button generates the CMD
+            //sentTextView.setText( CMD );
+            // Sending the array in multiple packages:
+            accArrayGroupArrayToString();
+            for(int i=0; i<accArrayStringGroups.size(); ++i) {
+                Log.i("accArrayString","aASG.get("+i+")= " + accArrayStringGroups.get(i) );
+                CMD = accArrayStringGroups.get(i);  //group of RECORDS_LIMIT_PER_PACKAGE records
+                //Prepare and Send
+                getIPandPort();
+                Socket_AsyncTask cmd_send_data = new Socket_AsyncTask();
+                cmd_send_data.execute();
             }
+            Toast.makeText(DataCollectorActivity.this,"Data has been sent. " + Calendar.getInstance().getTime(), Toast.LENGTH_LONG).show();
         });
 
         /*
@@ -402,64 +352,62 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
          *
          */
 
-        saveToFirebaseButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d(TAG, ">>>RUN>>>saveToFirebaseButtonClickListener");
+        saveToFirebaseButton.setOnClickListener(v -> {
+            Log.d(TAG, ">>>RUN>>>saveToFirebaseButtonClickListener");
 
                 Util.progressDialog.setTitle("Progress Dialog");
                 Util.progressDialog.setMessage("Uploading");
                 Util.progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
                 Util.progressDialog.show();
 
-                try {
+            try {
 
-                    //region Explanation
-                    /*
-                        We have to upload the files withDate then after upload
-                        the files has to be renamed withoutDate to make sure
-                        there will be no copy in the internal storage.
-                     */
-                    //endregion
-                    //RENAME//if( ! renameIternalFiles_to_withDate() ){ //return false if an error occured     // will be renamed back after uploads
-                    //RENAME//    throw new MyFileRenameException("Error renaming file to \"..._<date>_<time>...\"");
-                    //RENAME//}
-                    if (checkCallingOrSelfPermission("android.permission.WRITE_EXTERNAL_STORAGE") != PackageManager.PERMISSION_GRANTED) {
-                        ActivityCompat.requestPermissions(DataCollectorActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, Util.REQUEST_CODE);
-                    }
-                    if (checkCallingOrSelfPermission("android.permission.INTERNET") != PackageManager.PERMISSION_GRANTED) {
-                        ActivityCompat.requestPermissions(DataCollectorActivity.this, new String[]{Manifest.permission.INTERNET}, Util.REQUEST_CODE);
-                    }
+                //region Explanation
+                /*
+                    We have to upload the files withDate then after upload
+                    the files has to be renamed withoutDate to make sure
+                    there will be no copy in the internal storage.
+                 */
+                //endregion
+                //RENAME//if( ! renameIternalFiles_to_withDate() ){ //return false if an error occured     // will be renamed back after uploads
+                //RENAME//    throw new MyFileRenameException("Error renaming file to \"..._<date>_<time>...\"");
+                //RENAME//}
+                if (checkCallingOrSelfPermission("android.permission.WRITE_EXTERNAL_STORAGE") != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(DataCollectorActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, Util.REQUEST_CODE);
+                }
+                if (checkCallingOrSelfPermission("android.permission.INTERNET") != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(DataCollectorActivity.this, new String[]{Manifest.permission.INTERNET}, Util.REQUEST_CODE);
+                }
 
-                    // Change Debug DIR
-                    String fileStorageName = "";
-                    String collectionName = "";
-                    if( Util.debugMode ){
-                        fileStorageName = FirebaseUtil.STORAGE_FILES_DEBUG_KEY;
-                        collectionName = FirebaseUtil.USER_RECORDS_DEBUG_KEY;
-                    }else{
-                        fileStorageName = FirebaseUtil.STORAGE_FILES_KEY;
-                        collectionName = FirebaseUtil.USER_RECORDS_NEW_KEY;
-                    }
+                // Change Debug DIR
+                String fileStorageName = "";
+                String collectionName = "";
+                if( Util.debugMode ){
+                    fileStorageName = FirebaseUtil.STORAGE_FILES_DEBUG_KEY;
+                    collectionName = FirebaseUtil.USER_RECORDS_DEBUG_KEY;
+                }else{
+                    fileStorageName = FirebaseUtil.STORAGE_FILES_KEY;
+                    collectionName = FirebaseUtil.USER_RECORDS_NEW_KEY;
+                }
 
-                    // Saving array into .CSV file (Local):
-                    Util.SaveAccArrayIntoCsvFile(accArray, rawdataUserFile);
+                // Saving array into .CSV file (Local):
+                Util.SaveAccArrayIntoCsvFile(accArray, rawdataUserFile);
 
-                    // Saving CSV File to FireBase Storage:
-                    StorageReference ref = mStorageReference.child( fileStorageName+ "/" + rawdataUserFile.getName() );
-                    FirebaseUtil.UploadFileToFirebaseStorage(DataCollectorActivity.this, rawdataUserFile, ref);
+                // Saving CSV File to FireBase Storage:
+                StorageReference ref = mStorageReference.child( fileStorageName+ "/" + rawdataUserFile.getName() );
+                FirebaseUtil.UploadFileToFirebaseStorage(DataCollectorActivity.this, rawdataUserFile, ref);
 
-                    // Updating (JSON) Object in the FireStore: (Collection->Documents->Collection->Documents->...)
-                    String randomId = UUID.randomUUID().toString();
-                    String downloadUrl = ref.getDownloadUrl().toString();
-                    UserRecordObject info = new UserRecordObject(mDate.toString(), rawdataUserFile.getName(), downloadUrl);
+                // Updating (JSON) Object in the FireStore: (Collection->Documents->Collection->Documents->...)
+                String randomId = UUID.randomUUID().toString();
+                String downloadUrl = ref.getDownloadUrl().toString();
+                UserRecordObject info = new UserRecordObject(mDate.toString(), rawdataUserFile.getName(), downloadUrl);
 
-                    mDocRef = FirebaseFirestore.getInstance()
-                            .collection( collectionName + "/" )
-                            .document( mAuth.getUid() + "" )
-                            .collection( Util.deviceId )
-                            .document( randomId ) ;
-                    FirebaseUtil.UploadObjectToFirebaseFirestore(DataCollectorActivity.this, info, mDocRef);
+                mDocRef = FirebaseFirestore.getInstance()
+                        .collection( collectionName + "/" )
+                        .document( mAuth.getUid() + "" )
+                        .collection( Util.deviceId )
+                        .document( randomId ) ;
+                FirebaseUtil.UploadObjectToFirebaseFirestore(DataCollectorActivity.this, info, mDocRef);
 
                     // TODO: VARJA BE OKET ES FUTTASSA LE EZT: !!!
                     // Wait until these two async uploads finish !
@@ -477,11 +425,10 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                     e.printStackTrace();
                 }
 
-                // TODO: if( az utolso 4 fuggveny hibatlanul lefutott ) ==> ROLLBACK
+            // TODO: if( az utolso 4 fuggveny hibatlanul lefutott ) ==> ROLLBACK
 
 
 
-            }
         });
 
 
@@ -490,15 +437,12 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
          *  Logout user:
          *
          */
-        logoutImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mAuth.signOut();
-                Util.isSignedIn = false;
-                Util.screenMode = Util.ScreenModeEnum.EMAIL_MODE;
-                Util.userEmail = "";
-                startActivity( new Intent(DataCollectorActivity.this,AuthenticationActivity.class) );
-            }
+        logoutImageView.setOnClickListener(v -> {
+            mAuth.signOut();
+            Util.isSignedIn = false;
+            Util.screenMode = Util.ScreenModeEnum.EMAIL_MODE;
+            Util.userEmail = "";
+            startActivity( new Intent(DataCollectorActivity.this,AuthenticationActivity.class) );
         });
 
     }// OnCreate
@@ -725,15 +669,13 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
             debugSwitch.setChecked(false);
             debugSwitch.setVisibility(View.VISIBLE);
             debugSwitch = findViewById(R.id.debugSwitch);
-            debugSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    if (isChecked) {
-                        Util.debugMode = true;
-                        Log.i(TAG, "Debug Mode -> ON");
-                    } else {
-                        Util.debugMode = false;
-                        Log.i(TAG, "Debug Mode -> OFF");
-                    }
+            debugSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (isChecked) {
+                    Util.debugMode = true;
+                    Log.i(TAG, "Debug Mode -> ON");
+                } else {
+                    Util.debugMode = false;
+                    Log.i(TAG, "Debug Mode -> OFF");
                 }
             });
         }else{
@@ -771,8 +713,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         Util.preferencesEditor.apply();
 
         sensorManager.unregisterListener(accelerometerEventListener);
-
-
     }
 
     //(STEPCOUNT)
@@ -786,19 +726,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
             simpleStepDetector.updateAccel(
                     event.timestamp, event.values[0], event.values[1], event.values[2]);
-        }
-
-        // Proxy sensor:
-        if (event.sensor.getType() == Sensor.TYPE_PROXIMITY) {
-            if (event.values[0] >= -SENSOR_SENSITIVITY && event.values[0] <= SENSOR_SENSITIVITY) {
-                //near
-                //Toast.makeText(getApplicationContext(), "near", Toast.LENGTH_SHORT).show();
-                wakeLock.release();
-            } else {
-                //far
-                //Toast.makeText(getApplicationContext(), "far", Toast.LENGTH_SHORT).show();
-                wakeLock.acquire();
-            }
         }
     }
 
