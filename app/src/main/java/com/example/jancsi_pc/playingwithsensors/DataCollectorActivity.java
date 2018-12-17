@@ -1,7 +1,9 @@
 package com.example.jancsi_pc.playingwithsensors;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
@@ -23,6 +25,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -112,6 +115,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
     // Internal Files:
     private File rawdataUserFile;
+    private File featureUserFile;
 
     // Progress:
     //private ProgressDialog progressDialog;
@@ -125,9 +129,9 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     private static final int SENSOR_SENSITIVITY = 4;
 
     // WakeLock (for proxy)
-    private PowerManager powerManager;
-    private PowerManager.WakeLock wakeLock;
-    private int field = 0x00000020;
+    //WAKELOCK//private PowerManager powerManager;
+    //WAKELOCK//private PowerManager.WakeLock wakeLock;
+    //WAKELOCK//private int field = 0x00000020;
 
 
     /*
@@ -147,6 +151,12 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
         Util.progressDialog = new ProgressDialog(DataCollectorActivity.this);
 
+        // hide keyboard if needed:
+        try {
+            Util.hideKeyboard(DataCollectorActivity.this);
+        }catch(Exception ignore){
+
+        }
         //
         // Internal Saving Location for ALL hidden files:
         //
@@ -170,8 +180,12 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
         // Creating user's raw data file path:
         Util.rawdata_user_path  = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/rawdata_" + mAuth.getUid() + ".csv";
+        Util.feature_user_path  = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/feature_" + mAuth.getUid() + ".arff";   //*// we need this for validation only
+        Util.feature_dummy_path = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/feature_dummy.arff" ;                   //*//  - dummy exists and it is not empty
         rawdataUserFile  = new File( Util.rawdata_user_path );
+        featureUserFile  = new File( Util.feature_user_path );                                                                          //*//
         Log.i(TAG,"PATH: Util.rawdata_user_path  = " + Util.rawdata_user_path  );
+        Log.i(TAG,"PATH: Util.rawdata_user_path  = " + Util.feature_user_path  );                                                   //*//
 
         // Creating user's raw data file (if not exists):
         if(!rawdataUserFile.exists()){
@@ -180,6 +194,15 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
             }catch (Exception e){
                 e.printStackTrace();
                 Log.e(TAG,"File can't be created: " + Util.rawdata_user_path);
+            }
+        }
+        // Creating user's feature file (if not exists):
+        if(!featureUserFile.exists()){
+            try {
+                featureUserFile.createNewFile();
+            }catch (Exception e){
+                e.printStackTrace();
+                Log.e(TAG,"File can't be created: " + Util.feature_user_path);
             }
         }
 
@@ -256,13 +279,13 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         mProximity = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
 
         // wake lock (for proxy)
-        powerManager = (PowerManager) getSystemService(POWER_SERVICE);
-        try {
-            // Yeah, this is hidden field.
-            field = PowerManager.class.getClass().getField("PROXIMITY_SCREEN_OFF_WAKE_LOCK").getInt(null);
-        } catch (Throwable ignored) {
-        }
-        wakeLock = powerManager.newWakeLock(field, getLocalClassName());
+        //WAKELOCK//powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+        //WAKELOCK//try {
+        //WAKELOCK//    // Yeah, this is hidden field.
+        //WAKELOCK//    field = PowerManager.class.getClass().getField("PROXIMITY_SCREEN_OFF_WAKE_LOCK").getInt(null);
+        //WAKELOCK//} catch (Throwable ignored) {
+        //WAKELOCK//}
+        //WAKELOCK//wakeLock = powerManager.newWakeLock(field, getLocalClassName());
 
         if( NO_PYTHON_SERVER_YET ){
             ImageView pythonServerImageView = findViewById(R.id.pythonServerImageView);
@@ -346,7 +369,9 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
             @Override
             public void onClick(View v) {
                 Log.d(TAG, ">>>RUN>>>stopButtonClickListener");
-                Util.recordDateAndTimeFormatted  = DateFormat.format("yyyyMMdd_HHmmss", mDate.getTime());
+                mDate = new Date();
+                //Util.recordDateAndTimeFormatted  = DateFormat.format("yyyyMMdd_HHmmss", mDate.getTime());
+                Toast.makeText(DataCollectorActivity.this, Util.recordDateAndTimeFormatted, Toast.LENGTH_LONG).show();
                 isRecording = false;
                 startButton.setEnabled(true);
                 stopButton.setEnabled(false);
@@ -407,6 +432,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
             public void onClick(View v) {
                 Log.d(TAG, ">>>RUN>>>saveToFirebaseButtonClickListener");
 
+                Util.progressDialog = new ProgressDialog(DataCollectorActivity.this,ProgressDialog.STYLE_SPINNER);
                 Util.progressDialog.setTitle("Progress Dialog");
                 Util.progressDialog.setMessage("Uploading");
                 Util.progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
@@ -477,6 +503,13 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                     e.printStackTrace();
                 }
 
+//                /*DELETE_ME_PLEASE*/ // SAVE TO FIREBASE FOR TIMI FOR RAW DATA -> MODEL
+//                String r = UUID.randomUUID().toString();
+//                String fileNameWithDate = "/rawdata_" + mAuth.getUid() + "_" + Util.recordDateAndTimeFormatted + ".csv";
+//                /*DELETE_ME_PLEASE*/ StorageReference ref = mStorageReference.child( "jancsi_raw_data_for_model/" + fileNameWithDate );
+//                /*DELETE_ME_PLEASE*/ FirebaseUtil.UploadFileToFirebaseStorage(DataCollectorActivity.this,rawdataUserFile, ref);
+
+
                 // TODO: if( az utolso 4 fuggveny hibatlanul lefutott ) ==> ROLLBACK
 
 
@@ -500,6 +533,95 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                 startActivity( new Intent(DataCollectorActivity.this,AuthenticationActivity.class) );
             }
         });
+
+        // Test if user is imposter:
+
+        startButton.callOnClick();
+
+
+        AlertDialog.Builder builderInitial = new AlertDialog.Builder(this);
+        builderInitial.setTitle("Usage");
+        builderInitial.setMessage("Press OK then put the device in you pocket then after a walk press OK again");
+        builderInitial.setCancelable(true);
+        builderInitial.setNeutralButton(android.R.string.ok,
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialogInitial, int id) {
+                        dialogInitial.cancel();
+
+
+                        AlertDialog.Builder builder = new AlertDialog.Builder(DataCollectorActivity.this);
+                        builder.setTitle("Authentificate yourselfe");
+                        builder.setMessage("Walk then press OK.");
+                        builder.setCancelable(true);
+                        builder.setCancelable(false);
+                        builder.setNeutralButton(android.R.string.ok,
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        stopButton.callOnClick();
+                                        saveToFirebaseButton.setEnabled(false);
+
+                                        if (checkCallingOrSelfPermission("android.permission.WRITE_EXTERNAL_STORAGE") != PackageManager.PERMISSION_GRANTED) {
+                                            ActivityCompat.requestPermissions(DataCollectorActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, Util.REQUEST_CODE);
+                                        }
+
+                                        // Download user model from Firebase Storage:
+                                        String modelFileName = "model_" + Util.mAuth.getUid() + ".mdl";
+                                        StorageReference ref = Util.mStorage.getReference().child( FirebaseUtil.STORAGE_MODELS_KEY + "/" + modelFileName  );
+                                        File downloadedUserModelFile = new File(Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/downloadedmodel_" + mAuth.getUid() + ".mdl");
+                                        String downloadedUserModelFilePath = downloadedUserModelFile.getAbsolutePath();
+
+                                        //FirebaseUtil.DownloadFileFromFirebaseStorage(DataCollectorActivity.this, ref, downloadedUserModelFile);
+                                        FirebaseUtil.DownloadFileFromFirebaseStorage_AND_CheckUserInPercentage(DataCollectorActivity.this, ref, downloadedUserModelFile);
+
+                                        // Saving array into .CSV file (Local):
+                                        if( Util.SaveAccArrayIntoCsvFile(accArray, rawdataUserFile) == 1 ){
+                                            Toast.makeText(DataCollectorActivity.this,"Error saving raw data!",Toast.LENGTH_LONG).show();
+                                        }
+                                        // String rawDataUserFilePath = rawdataUserFile.getAbsolutePath(); // == Util.rawdata_user_path
+
+                                        // User raw (VAN)
+                                        // Feature user (LESZ)
+                                        // Dummy feature (VAN)
+
+                                        // double percentage = Util.CheckUserInPercentage(
+                                        //         DataCollectorActivity.this,
+                                        //         Util.rawdata_user_path,
+                                        //         Util.feature_user_path,
+                                        //         Util.feature_dummy_path,
+                                        //         downloadedUserModelFilePath,
+                                        //         Util.mAuth.getUid() );
+                                        //
+                                        //               //dialog.cancel();
+                                        //
+                                        // AlertDialog.Builder builder1 = new AlertDialog.Builder(DataCollectorActivity.this);
+                                        // builder1.setTitle("Gait Validation");
+                                        // builder1.setMessage("Result: " + percentage );
+                                        // builder1.setCancelable(true);
+                                        // builder1.setNeutralButton(android.R.string.ok,
+                                        //         new DialogInterface.OnClickListener() {
+                                        //             public void onClick(DialogInterface dialog1, int id) {
+                                        //                 dialog1.cancel();
+                                        //             }
+                                        //         });
+                                        //
+                                        // AlertDialog alert11 = builder1.create();
+                                        // alert11.show();
+
+                                    }
+                                });
+
+                        AlertDialog alert = builder.create();
+                        alert.show();
+
+
+
+                    }
+                });
+
+        AlertDialog alertInitial = builderInitial.create();
+        alertInitial.show();
+
+
 
     }// OnCreate
 
@@ -789,17 +911,17 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         }
 
         // Proxy sensor:
-        if (event.sensor.getType() == Sensor.TYPE_PROXIMITY) {
-            if (event.values[0] >= -SENSOR_SENSITIVITY && event.values[0] <= SENSOR_SENSITIVITY) {
-                //near
-                //Toast.makeText(getApplicationContext(), "near", Toast.LENGTH_SHORT).show();
-                wakeLock.release();
-            } else {
-                //far
-                //Toast.makeText(getApplicationContext(), "far", Toast.LENGTH_SHORT).show();
-                wakeLock.acquire();
-            }
-        }
+        //WAKELOCK//if (event.sensor.getType() == Sensor.TYPE_PROXIMITY) {
+        //WAKELOCK//    if (event.values[0] >= -SENSOR_SENSITIVITY && event.values[0] <= SENSOR_SENSITIVITY) {
+        //WAKELOCK//        //near
+        //WAKELOCK//        //Toast.makeText(getApplicationContext(), "near", Toast.LENGTH_SHORT).show();
+        //WAKELOCK//        wakeLock.release();
+        //WAKELOCK//    } else {
+        //WAKELOCK//        //far
+        //WAKELOCK//        //Toast.makeText(getApplicationContext(), "far", Toast.LENGTH_SHORT).show();
+        //WAKELOCK//        wakeLock.acquire();
+        //WAKELOCK//    }
+        //WAKELOCK//}
     }
 
     @Override

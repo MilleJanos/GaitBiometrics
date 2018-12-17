@@ -369,6 +369,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
             public void onClick(View v) {
                 Log.d(TAG, ">>>RUN>>>saveToFirebaseButtonClickListener");
 
+                Util.progressDialog = new ProgressDialog(ModelUploaderActivity.this,ProgressDialog.STYLE_SPINNER);
                 Util.progressDialog.setTitle("Progress Dialog");
                 Util.progressDialog.setMessage("Generating feature and model");
                 Util.progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
@@ -442,9 +443,10 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
                     e.printStackTrace();
                 }
 
+
                 Date date = new Date();
                 lastModelDate  = DateFormat.format("yyyyMMdd_HHmmss", date.getTime());
-                
+
                 // TODO: if( az utolso 4 fuggveny hibatlanul lefutott ) ==> ROLLBACK
             }
         });
@@ -616,6 +618,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
     private void UploadModelToFireBaseStorage() throws MyFileRenameException {
         Log.d(TAG,">>>RUN>>>uploadModeltoFireBaseStorage()");
         Util.progressDialog.dismiss();
+        Util.progressDialog = new ProgressDialog(ModelUploaderActivity.this,ProgressDialog.STYLE_SPINNER);
         Util.progressDialog.setTitle("Model Generated");
         Util.progressDialog.setMessage("Uploading Model");
         Util.progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);

@@ -1,14 +1,20 @@
 package com.example.jancsi_pc.playingwithsensors.Utils;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.net.Uri;
+import android.net.sip.SipSession;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.example.jancsi_pc.playingwithsensors.DataCollectorActivity;
+import com.example.jancsi_pc.playingwithsensors.ModelUploaderActivity;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.StorageTask;
@@ -50,7 +56,7 @@ public class FirebaseUtil {
     */
     //endregion
     public static void UploadFileToFirebaseStorage(Activity activity, File file, StorageReference ref){
-        String TAG = "Util";
+        String TAG = "FirebaseUtil";
         Log.d(TAG,">>>RUN>>>UploadFileToFirebaseStorage()");
 
         fileUploadFunctionFinished = false;
@@ -119,7 +125,7 @@ public class FirebaseUtil {
      */
     //endregion
     public static void UploadObjectToFirebaseFirestore(Activity activity, UserRecordObject info, DocumentReference ref){
-        String TAG = "Util";
+        String TAG = "FirebaseUtil";
         Log.d(TAG,">>>RUN>>>UploadObjectToFirebaseFirestore()");
 
         objectUploadDunctionFinished = false;
@@ -142,6 +148,96 @@ public class FirebaseUtil {
             }
         });
         Log.d(TAG,"(<<<FINISH<<<)UploadObjectToFirebaseFirestore() - running task in background");
+    }
+
+
+    public static void DownloadFileFromFirebaseStorage(Activity activity, StorageReference downloadFromRef, File saveToThisFile){
+        String TAG = "FirebaseUtil";
+        Log.d(TAG,">>>RUN>>>DownloadFileFromFirebaseStorage()");
+
+        //Util.mRef = Util.mStorage.getReference().child( /*featureFolder*/ FirebaseUtil.STORAGE_FEATURES_KEY + "/" + Util.firebaseDummyFileName );
+
+        try {
+            downloadFromRef.getFile(saveToThisFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                    Log.d(TAG,"<<<FINISHED<<<(async)DownloadFileFromFirebaseStorage() - onSuccess");
+                    Log.i(TAG, "File feature found and downloaded to: Local PATH: " + saveToThisFile.getAbsolutePath());
+                    Toast.makeText(activity,"File downloaded.", Toast.LENGTH_LONG).show();
+
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Log.d(TAG,"<<<FINISHED<<<(async)DownloadFileFromFirebaseStorage() - onFailure");
+                    Log.i(TAG,"File not found or internet problems; -> return;");
+                    Toast.makeText(activity,"Download failed!", Toast.LENGTH_LONG).show();
+                    e.printStackTrace();
+                }
+            });
+        } catch (Exception e) {
+            Log.e(TAG, "Error downloading file!");
+            e.printStackTrace();
+            return;
+        }
+        Log.d(TAG,"(<<<FINISHED<<<)DownloadFileFromFirebaseStorage()");
+    }
+
+
+    public static void DownloadFileFromFirebaseStorage_AND_CheckUserInPercentage(Activity activity, StorageReference downloadFromRef, File saveToThisFile){
+        String TAG = "FirebaseUtil";
+        Log.d(TAG,">>>RUN>>>DownloadFileFromFirebaseStorage()_AND_CheckUserInPercentage");
+
+        //Util.mRef = Util.mStorage.getReference().child( /*featureFolder*/ FirebaseUtil.STORAGE_FEATURES_KEY + "/" + Util.firebaseDummyFileName );
+
+        try {
+            downloadFromRef.getFile(saveToThisFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                    Log.d(TAG,"<<<FINISHED<<<(async)DownloadFileFromFirebaseStorage_AND_CheckUserInPercentage() - onSuccess");
+                    Log.i(TAG, "File feature found and downloaded to: Local PATH: " + saveToThisFile.getAbsolutePath());
+                    Toast.makeText(activity,"File downloaded.", Toast.LENGTH_LONG).show();
+
+                    // Check user:
+                     double percentage = Util.CheckUserInPercentage(
+                            activity,
+                            Util.rawdata_user_path,
+                            Util.feature_user_path,
+                            Util.feature_dummy_path,
+                            saveToThisFile.getAbsolutePath(),
+                            Util.mAuth.getUid() );
+
+                     // Show result
+
+                     AlertDialog.Builder builder1 = new AlertDialog.Builder(activity);
+                     builder1.setTitle("Gait Validation");
+                     builder1.setMessage("Result: " + percentage );
+                     builder1.setCancelable(true);
+                     builder1.setNeutralButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                                 public void onClick(DialogInterface dialog1, int id) {
+                                     dialog1.cancel();
+                                 }
+                             });
+
+                     AlertDialog alert11 = builder1.create();
+                     alert11.show();
+
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Log.d(TAG,"<<<FINISHED<<<(async)DownloadFileFromFirebaseStorage_AND_CheckUserInPercentage() - onFailure");
+                    Log.i(TAG,"File not found or internet problems; -> return;");
+                    Toast.makeText(activity,"Download failed!", Toast.LENGTH_LONG).show();
+                    e.printStackTrace();
+                }
+            });
+        } catch (Exception e) {
+            Log.e(TAG, "Error downloading file!");
+            e.printStackTrace();
+            return;
+        }
+        Log.d(TAG,"(<<<FINISHED<<<)DownloadFileFromFirebaseStorage_AND_CheckUserInPercentage()");
     }
 
 

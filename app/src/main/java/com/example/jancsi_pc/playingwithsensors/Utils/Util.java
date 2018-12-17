@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import com.example.jancsi_pc.playingwithsensors.AuthenticationActivity;
 import com.example.jancsi_pc.playingwithsensors.DataCollectorActivity;
+import com.example.jancsi_pc.playingwithsensors.GaitValidationActivity;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -27,6 +28,7 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -34,6 +36,23 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import FeatureExtractorLibrary.Feature;
+import FeatureExtractorLibrary.FeatureExtractor;
+import FeatureExtractorLibrary.FeatureExtractorException;
+import FeatureExtractorLibrary.IUtil;
+import ro.sapientia.gaitbiom.GaitHelperFunctions;
+import ro.sapientia.gaitbiom.GaitModelBuilder;
+import ro.sapientia.gaitbiom.GaitVerification;
+import ro.sapientia.gaitbiom.IGaitModelBuilder;
+import ro.sapientia.gaitbiom.IGaitVerification;
+import weka.classifiers.Classifier;
+import weka.classifiers.trees.RandomForest;
+import weka.classifiers.trees.RandomTree;
+import weka.core.Attribute;
+import weka.core.Instances;
+import weka.core.SerializationHelper;
+import weka.core.converters.ConverterUtils;
 
 public class Util {
 
@@ -199,5 +218,84 @@ public class Util {
         return 0;
     }
 
+    public static double CheckUserInPercentage(Activity activity, String userRawDataFilePath, String userFeatureFilePath, String dummyFeatureFilePath, String userModelFilePath, String userId){
+
+        // region OLD STUFF
+        //       ArrayList<Feature> features = null;
+        //       try {
+        //           features = FeatureExtractor.extractFeaturesFromCsvFileToArrayListOfFeatures(userRawDataFilePath);
+        //       } catch (FeatureExtractorException ex) {
+        //           //Logger.getLogger(GaitVerification.class.getName()).log(Level.SEVERE, null, ex);
+        //           Toast.makeText(activity, "Feature extraction failed!", Toast.LENGTH_LONG).show();
+        //       }
+        //
+        //       FeatureExtractorLibrary.IUtil utility = new FeatureExtractorLibrary.Util();
+        //     // Feature -> Instance
+        //       Instances instances = null;
+        //
+        //       try {
+        //           //instances = GaitModelBuilder.loadDataset(/*ide add meg a model teljes pathjet*/); //utility.arrayListOfFeaturesToInstances(features);
+        //           instances = testLoadDataset(userModelFilePath, activity); //utility.arrayListOfFeaturesToInstances(features);
+        //       }
+        //       catch (Exception ex){
+        //           //Logger.getLogger(GaitVerification.class.getName()).log(Level.SEVERE, null, ex);
+        //           Toast.makeText(activity, "Instances failed!", Toast.LENGTH_LONG).show();
+        //       }
+        //endregion
+
+        double percentage = -1;
+
+        IGaitModelBuilder builder = new GaitModelBuilder();
+        Classifier classifier;
+        try {
+            classifier = (RandomForest) SerializationHelper.read(new FileInputStream(userModelFilePath)); //new RandomForest();
+           /* try {
+                classifier.buildClassifier(instances);
+            } catch (Exception ex) {
+                //Logger.getLogger(GaitHelperFunctions.class.getName()).log(Level.SEVERE, null, ex);
+                Toast.makeText(activity, "Classifier failed!", Toast.LENGTH_LONG).show();
+            }*/
+
+            GaitHelperFunctions.createFeaturesFileFromRawFile(
+                    userRawDataFilePath,
+                    userFeatureFilePath.substring(0,Util.feature_user_path.length()-(".arff").length()),
+                    userId);
+                                                // features_dummy + features_user
+            GaitHelperFunctions.mergeEquallyArffFiles(
+                    dummyFeatureFilePath,
+                    userFeatureFilePath);
+
+            ArrayList<Attribute> attributes = builder.getAttributes( userFeatureFilePath ); ///feature (mar letezo)
+
+            IGaitVerification verifier = new GaitVerification();
+            percentage = verifier.verifyUser(classifier, attributes, userRawDataFilePath); //user raw data
+
+        }catch (FileNotFoundException e){
+            Log.e(TAG,"*********File not found!");
+            e.printStackTrace();
+        }
+        catch (Exception e){
+            Log.e(TAG,"*********Error!");
+            e.printStackTrace();
+        }
+
+        return percentage;
+    }
+
+    /*private static Instances testLoadDataset(String path, Activity activity){
+        Instances dataset = null;
+        try {
+            //dataset = ConverterUtils.DataSource.read(path);
+            Classifier treeClassifier = (RandomForest) SerializationHelper.read(new FileInputStream(path));
+            if (dataset.classIndex() == -1) {
+                dataset.setClassIndex(dataset.numAttributes() - 1);
+            }
+        } catch (Exception ex) {
+            //Logger.getLogger(GaitModelBuilder.class.getName()).log(Level.SEVERE, null, ex);
+            Toast.makeText(activity, "testLoadDataset failed", Toast.LENGTH_LONG).show();
+        }
+
+        return dataset;
+    }*/
 
 }

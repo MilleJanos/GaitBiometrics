@@ -96,7 +96,7 @@ public class AuthenticationActivity extends AppCompatActivity {
     private Handler mHandler = new Handler();
 
     // Progress Dialog
-    ProgressDialog progressDialog;
+    // ProgressDialog Util.progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,7 +104,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_authentication);
         Log.d(TAG, ">>>RUN>>>onCreate()");
 
-        progressDialog = new ProgressDialog(AuthenticationActivity.this);
+        Util.progressDialog = new ProgressDialog(AuthenticationActivity.this);
 
         appNameTextView = findViewById(R.id.auth_appNameTextView);
         appNameTextView.setTextColor( R.string.app_name );
@@ -210,7 +210,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         Util.hideKeyboard(AuthenticationActivity.this);
 
         if( ! RequireInternetConnection() /*RequireEnabledInternetAndInternetConnection()*/ ){
-            progressDialog.dismiss();
+            Util.progressDialog.dismiss();
             return;
         }else{
             Util.hideKeyboard(AuthenticationActivity.this);
@@ -226,28 +226,28 @@ public class AuthenticationActivity extends AppCompatActivity {
         if( mEmail.equals("") ){
             emailEditText.setError("Wrong mEmail");
             emailEditText.requestFocus();
-            progressDialog.dismiss();
+            Util.progressDialog.dismiss();
             return;
         }
 
         if( mPassword.length() <= 6 ){
             passwordEditText.setError("At least 6 character!");
             passwordEditText.requestFocus();
-            progressDialog.dismiss();
+            Util.progressDialog.dismiss();
             return;
         }
 
         if(  mPassword.equals("") ){
             passwordEditText.setError("Must be filled!");
             passwordEditText.requestFocus();
-            progressDialog.dismiss();
+            Util.progressDialog.dismiss();
             return;
         }
 
         if( ! mPassword.equals(password2) ){
             passwordEditText2.setError("Passwords has to be the same!");
             passwordEditText2.requestFocus();
-            progressDialog.dismiss();
+            Util.progressDialog.dismiss();
             return;
         }
 
@@ -263,10 +263,10 @@ public class AuthenticationActivity extends AppCompatActivity {
                             sendVerificationEmail();
                             //Toast.makeText(AuthenticationActivity.this, getString(R.string.verifyMailbox),Toast.LENGTH_LONG).show();
                             Snackbar.make(findViewById(R.id.auth_main_layout),getString(R.string.verifyMailbox),Snackbar.LENGTH_LONG).show();
-                            progressDialog.dismiss();
+                            Util.progressDialog.dismiss();
                             finish();
                         } else {
-                            progressDialog.dismiss();
+                            Util.progressDialog.dismiss();
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "createUserWithEmail:failure", task.getException());
                             //Toast.makeText(AuthenticationActivity.this, getString(R.string.registerFailed),Toast.LENGTH_LONG).show();
@@ -288,7 +288,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                                             // after mEmail is sent just logout the user and finish this activity
                                             FirebaseAuth.getInstance().signOut();
                                             //startActivity(new Intent(AuthenticationActivity.this, DataCollectorActivity.class));
-                                            progressDialog.dismiss();
+                                            Util.progressDialog.dismiss();
                                             finish();
                                         }
                                         else
@@ -297,7 +297,7 @@ public class AuthenticationActivity extends AppCompatActivity {
 
                                             //restart this activity
                                             overridePendingTransition(0, 0);
-                                            progressDialog.dismiss();
+                                            Util.progressDialog.dismiss();
                                             finish();
                                             overridePendingTransition(0, 0);
                                             startActivity(getIntent());
@@ -317,7 +317,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         authButton.setEnabled(false);
 
         if( ! RequireInternetConnection() /*RequireEnabledInternetAndInternetConnection()*/ ){
-            progressDialog.dismiss();
+            Util.progressDialog.dismiss();
             return;
         }
 
@@ -327,6 +327,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         Log.d(TAG, "mEmail=\""+ mEmail +"\"");
 
         if( mEmail.equals("") ){
+            Util.progressDialog.dismiss();
             emailEditText.setError("Wrong mEmail");
             emailEditText.requestFocus();
             authButton.setEnabled(true);
@@ -334,6 +335,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         }
 
         if( mPassword.length() < 6 ){
+            Util.progressDialog.dismiss();
             passwordEditText.setError("At least 6 character!");
             passwordEditText.requestFocus();
             authButton.setEnabled(true);
@@ -341,6 +343,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         }
 
         if(  mPassword.equals("") ){
+            Util.progressDialog.dismiss();
             passwordEditText2.setError("Wrong Password!");
             passwordEditText2.requestFocus();
             authButton.setEnabled(true);
@@ -352,19 +355,18 @@ public class AuthenticationActivity extends AppCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
+                            Util.progressDialog.dismiss();
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithEmail:success");
                             //FirebaseUser user = Util.mAuth.getCurrentUser();
-                            //updateUI(user);
                             Util.userEmail = mEmail;
                             Util.isSignedIn = true;
                             authButton.setEnabled(true);
-                            progressDialog.dismiss();
 
                             CheckUserModel_and_small_stuff();// Wait to get the model or create new one, will do the finish() !
 
                         } else {
-                            progressDialog.dismiss();
+                            Util.progressDialog.dismiss();
                             authButton.setEnabled(true);
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithEmail:failure", task.getException());
@@ -420,11 +422,12 @@ public class AuthenticationActivity extends AppCompatActivity {
                     //Log.d(TAG, " isNetworkConnection = true");
                     mEmail = emailEditText.getText().toString();
 
-                    progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-                    progressDialog.setTitle("Authentication");
-                    progressDialog.setMessage("Checking email.");
-                    progressDialog.setCancelable(false);
-                    progressDialog.show();
+                    Util.progressDialog = new ProgressDialog(AuthenticationActivity.this,ProgressDialog.STYLE_SPINNER);
+                    Util.progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                    Util.progressDialog.setTitle("Authentication");
+                    Util.progressDialog.setMessage("Checking email.");
+                    Util.progressDialog.setCancelable(false);
+                    Util.progressDialog.show();
 
                     Log.d(TAG, "Waiting for fetchProvidersForEmail() ...");
                     if (!mEmail.equals("")) {
@@ -447,7 +450,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                                         prepareScreenUIFor_password();
                                         authButton.setEnabled(true);
                                         authButton.setEnabled(true);
-                                        progressDialog.dismiss();
+                                        Util.progressDialog.dismiss();
                                     } else {
                                         userExists=false;
                                         emailEditText.setError("Please fill the Email field with a registered email address!");
@@ -456,7 +459,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                                         Log.d(TAG, "Login user doesn't exist");
                                         //TODO Snackbar asking the user to register
                                         authButton.setEnabled(true);
-                                        progressDialog.dismiss();
+                                        Util.progressDialog.dismiss();
                                     }
                                 } else {
                                     Log.w(TAG, "User check failed", task.getException());
@@ -483,6 +486,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                     Util.hideKeyboard(AuthenticationActivity.this);
                     View view = findViewById(R.id.auth_main_layout);
                     Snackbar.make(view, "No internet connection!", Snackbar.LENGTH_SHORT).show();
+                    Util.progressDialog.dismiss();
                 }
             }
         });
@@ -636,13 +640,14 @@ public class AuthenticationActivity extends AppCompatActivity {
                 if( RequireInternetConnection() /*RequireEnabledInternetAndInternetConnection()*/ ) {            // This method gives feedback using Snackbar
                     mPassword = passwordEditText.getText().toString();
 
-                    progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-                    progressDialog.setTitle("Authentication");
-                    progressDialog.setMessage("Logging in.\nPlease wait.");
-                    progressDialog.setCancelable(false);
-                    progressDialog.show();
+                    Util.progressDialog = new ProgressDialog(AuthenticationActivity.this,ProgressDialog.STYLE_SPINNER);
+                    Util.progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                    Util.progressDialog.setTitle("Authentication");
+                    Util.progressDialog.setMessage("Logging in.\nPlease wait.");
+                    Util.progressDialog.setCancelable(false);
+                    Util.progressDialog.show();
 
-                    Login();        // will dismiss the progressDialog
+                    Login();        // will dismiss the Util.progressDialog
 
                 }else{
                     authButton.setEnabled(true);
@@ -787,36 +792,36 @@ public class AuthenticationActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if( emailEditText.getText().toString().trim().equals("") ){
                     emailEditText.setError("This field must be filled!");
-                    if(progressDialog.isShowing()){
-                        progressDialog.dismiss();
+                    if(Util.progressDialog.isShowing()){
+                        Util.progressDialog.dismiss();
                     }
                     return;
                 }
                 if( passwordEditText.getText().toString().trim().equals("") ){
                     passwordEditText.setError("This field must be filled!");
-                    if(progressDialog.isShowing()){
-                        progressDialog.dismiss();
+                    if(Util.progressDialog.isShowing()){
+                        Util.progressDialog.dismiss();
                     }
                     return;
                 }
                 if( passwordEditText.getText().toString().trim().length() < 6 ){
                     passwordEditText.setError("Passwords has to be at least 6 characters!");
-                    if(progressDialog.isShowing()){
-                        progressDialog.dismiss();
+                    if(Util.progressDialog.isShowing()){
+                        Util.progressDialog.dismiss();
                     }
                     return;
                 }
                 if( passwordEditText2.getText().toString().trim().equals("") ){
                     passwordEditText2.setError("This field must be filled!");
-                    if(progressDialog.isShowing()){
-                        progressDialog.dismiss();
+                    if(Util.progressDialog.isShowing()){
+                        Util.progressDialog.dismiss();
                     }
                     return;
                 }
                 if( ! passwordEditText.getText().toString().trim().equals( passwordEditText2.getText().toString().trim() ) ){
                     passwordEditText2.setError("The passwords must be the same!");
-                    if(progressDialog.isShowing()){
-                        progressDialog.dismiss();
+                    if(Util.progressDialog.isShowing()){
+                        Util.progressDialog.dismiss();
                     }
                     return;
                 }
@@ -827,11 +832,12 @@ public class AuthenticationActivity extends AppCompatActivity {
 
                     if ( RequireInternetConnection() /*RequireEnabledInternetAndInternetConnection()*/) {
 
-                        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-                        progressDialog.setTitle("Authentication");
-                        progressDialog.setMessage("Creating new user.\nPlease wait.");
-                        progressDialog.setCancelable(false);
-                        progressDialog.show();
+                        Util.progressDialog = new ProgressDialog(AuthenticationActivity.this,ProgressDialog.STYLE_SPINNER);
+                        Util.progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                        Util.progressDialog.setTitle("Authentication");
+                        Util.progressDialog.setMessage("Creating new user.\nPlease wait.");
+                        Util.progressDialog.setCancelable(false);
+                        Util.progressDialog.show();
 
                         // TODO: kicserelni a fetchProviderForEmail-t lecserelni: https://firebase.google.com/docs/auth/admin/manage-users#list_all_users
                         Util.mAuth.fetchProvidersForEmail(mEmail).addOnCompleteListener(new OnCompleteListener<ProviderQueryResult>() {
@@ -859,7 +865,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                                             Toast.LENGTH_SHORT).show();
                                     userExists = false;
                                     mPassword = passwordEditText.getText().toString().trim();
-                                    Register();     // will dismiss the progressDialog
+                                    Register();     // will dismiss the Util.progressDialog
                                 }
                                 authButton.setEnabled(true);
                             }
@@ -873,8 +879,8 @@ public class AuthenticationActivity extends AppCompatActivity {
                     }
 
                 }else{
-                    if(progressDialog.isShowing()){
-                        progressDialog.dismiss();
+                    if(Util.progressDialog.isShowing()){
+                        Util.progressDialog.dismiss();
                     }
                 }
                 /*if(userExists){
@@ -1212,6 +1218,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                     Log.i(TAG, "MODEL FOUND: Local File Path: " + localFile.getAbsolutePath());
                     Log.i(TAG,"<<<finish()<<<");
                     loadingTextView.setVisibility(View.VISIBLE);
+                    Util.progressDialog.dismiss();
                     finish();
                 }
             }).addOnFailureListener(new OnFailureListener() {
@@ -1224,13 +1231,14 @@ public class AuthenticationActivity extends AppCompatActivity {
                     Log.i(TAG,"<<<finish()<<<");
                     //e.printStackTrace();
                     loadingTextView.setVisibility(View.VISIBLE);
+                    Util.progressDialog.dismiss();
                     finish();
                 }
             }).addOnProgressListener(new OnProgressListener<FileDownloadTask.TaskSnapshot>() {
                 @Override
                 public void onProgress(FileDownloadTask.TaskSnapshot taskSnapshot) {
                     final double process = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
-                    //progressDialog.setMessage("Downloaded: " + (int) process + "%");
+                    //Util.progressDialog.setMessage("Downloaded: " + (int) process + "%");
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -1247,6 +1255,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                 }
             });*/
         } catch (Exception e) {
+            Util.progressDialog.dismiss();
             Util.hasUserModel = false;
             Util.isSetUserModel = true;
             Log.i(TAG,"### Util.hasUserModel = false;");
@@ -1257,6 +1266,7 @@ public class AuthenticationActivity extends AppCompatActivity {
 
         Log.d(TAG, "<<<FINISHED<<<CheckUserModel_and_small_stuff()");
     }
+
 
     @Override
     public void onBackPressed() {
