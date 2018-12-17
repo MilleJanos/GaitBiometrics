@@ -2,6 +2,7 @@ package com.example.jancsi_pc.playingwithsensors.Utils;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.net.Uri;
 import android.net.sip.SipSession;
@@ -211,7 +212,14 @@ public class FirebaseUtil {
 
                      AlertDialog.Builder builder1 = new AlertDialog.Builder(activity);
                      builder1.setTitle("Gait Validation");
-                     builder1.setMessage("Result: " + percentage );
+                     if( percentage != -1 ) {
+                         // 0.8511111111 * 100 = 85.011111111
+                         // ==> "85" ==> 85
+                         String resultStr = ((percentage*100)+"").substring(0,2);
+                         builder1.setMessage("Result: " + Integer.parseInt(resultStr) + "%" );
+                     }else{
+                         builder1.setMessage("Result: ERROR");
+                     }
                      builder1.setCancelable(true);
                      builder1.setNeutralButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                                  public void onClick(DialogInterface dialog1, int id) {

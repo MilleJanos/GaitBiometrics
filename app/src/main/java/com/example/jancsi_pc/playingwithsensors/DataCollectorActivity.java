@@ -551,6 +551,8 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                                         //FirebaseUtil.DownloadFileFromFirebaseStorage(DataCollectorActivity.this, ref, downloadedUserModelFile);
                                         FirebaseUtil.DownloadFileFromFirebaseStorage_AND_CheckUserInPercentage(DataCollectorActivity.this, ref, downloadedUserModelFile);
 
+                                        textViewStatus.setText("Press Start to start collecting raw data.");
+
                                         // Saving array into .CSV file (Local):
                                         if( Util.SaveAccArrayIntoCsvFile(accArray, rawdataUserFile) == 1 ){
                                             Toast.makeText(DataCollectorActivity.this,"Error saving raw data!",Toast.LENGTH_LONG).show();
