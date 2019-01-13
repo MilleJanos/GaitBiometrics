@@ -3,7 +3,6 @@ package com.example.jancsi_pc.playingwithsensors;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -23,22 +22,16 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.jancsi_pc.playingwithsensors.Utils.Util;
-import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.ProviderQueryResult;
-import com.google.firebase.storage.FileDownloadTask;
-import com.google.firebase.storage.OnProgressListener;
 
 import java.io.File;
 import java.util.Date;
@@ -186,6 +179,8 @@ public class AuthenticationActivity extends AppCompatActivity {
         Log.d(TAG, ">>>RUN>>>Register()");
         Util.hideKeyboard(AuthenticationActivity.this);
 
+        Util.validatedOnce = false;
+
         if( ! RequireInternetConnection() /*RequireEnabledInternetAndInternetConnection()*/ ){
             Util.progressDialog.dismiss();
             return;
@@ -287,6 +282,8 @@ public class AuthenticationActivity extends AppCompatActivity {
 
     private void Login(){
         Log.d(TAG, ">>>RUN>>>Login()");
+
+        Util.validatedOnce = false;
 
         authButton.setEnabled(false);
 
@@ -1103,7 +1100,9 @@ public class AuthenticationActivity extends AppCompatActivity {
         Log.d(TAG, "Util.mRef= " + Util.mRef);
         Log.d(TAG, "Util.mRef.toString()= "  + Util.mRef.toString() );
 
-        loadingTextView.setVisibility(View.INVISIBLE);
+
+        loadingTextView.setVisibility(View.VISIBLE);
+        loadingTextView.setText("Downloading Model");
         progressBar.setVisibility(View.VISIBLE);
 
         final File localFile;
@@ -1117,8 +1116,9 @@ public class AuthenticationActivity extends AppCompatActivity {
                 Log.i(TAG,"### Util.hasUserModel = true;");
                 Log.i(TAG, "MODEL FOUND: Local File Path: " + localFile.getAbsolutePath());
                 Log.i(TAG,"<<<finish()<<<");
-                loadingTextView.setVisibility(View.VISIBLE);
+                loadingTextView.setText("Downloaded");
                 Util.progressDialog.dismiss();
+                Util.mAuth = FirebaseAuth.getInstance();
                 finish();
             }).addOnFailureListener(e -> {
                 Util.hasUserModel = false;
@@ -1127,8 +1127,9 @@ public class AuthenticationActivity extends AppCompatActivity {
                 Log.i(TAG, "MODEL NOT FOUND: ERROR: getFile()");
                 Log.i(TAG,"<<<finish()<<<");
                 //e.printStackTrace();
-                loadingTextView.setVisibility(View.VISIBLE);
+                loadingTextView.setText("Downloaded");
                 Util.progressDialog.dismiss();
+                Util.mAuth = FirebaseAuth.getInstance();
                 finish();
             }).addOnProgressListener(taskSnapshot -> {
                 final double process = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
@@ -1206,8 +1207,8 @@ public class AuthenticationActivity extends AppCompatActivity {
 
         Date date = new Date();
         CharSequence s  = DateFormat.format("yyyyMMdd_HHmmss", date.getTime());
-        Util.preferencesEditor.putString(Util.LAST_LOGGED_IN_DATE_KEY, s.toString() );
-        Util.preferencesEditor.apply();
+        Util.mSharedPrefEditor.putString(Util.LAST_LOGGED_IN_DATE_KEY, s.toString() );
+        Util.mSharedPrefEditor.apply();
 
 
         super.onResume();

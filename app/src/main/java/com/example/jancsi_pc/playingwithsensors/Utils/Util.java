@@ -113,6 +113,9 @@ public class Util {
     public static boolean hasUserModel = false;
     public static boolean isSetUserModel = false;
 
+    // validation
+    public static boolean validatedOnce = false;
+
     public static void hideKeyboard(Activity activity){
         // If keyboard is shown then hide:
         InputMethodManager imm = (InputMethodManager) activity.getSystemService(AuthenticationActivity.INPUT_METHOD_SERVICE);
@@ -131,10 +134,9 @@ public class Util {
     public static FirebaseStorage mStorage = FirebaseStorage.getInstance();
 
     // Shared Preferences
-
     public static String sharedPrefFile = "sharedPref";  // "com.example/jancsi_pc.playingwithsensors";
-    public static SharedPreferences mPreferences ;// DataCollectorAct. onStart: getSharedPreferences(sharedPrefFile,MODE_PRIVATE);
-    public static SharedPreferences.Editor preferencesEditor;
+    public static SharedPreferences mSharedPref;// DataCollectorAct. onStart: getSharedPreferences(sharedPrefFile,MODE_PRIVATE);
+    public static SharedPreferences.Editor mSharedPrefEditor;
     public static final String LAST_LOGGED_IN_EMAIL_KEY = "lastloggedinemail";
     public static final String LAST_LOGGED_IN_ID_KEY = "lastloggedinid";
     public static final String LAST_LOGGED_IN_DATE_KEY = "lastloggedindate";
