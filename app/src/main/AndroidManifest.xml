@@ -56,7 +56,8 @@
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
 
-        <activity android:name=".GaitValidationActivity"></activity>
+        <activity android:name=".GaitValidationActivity" />
+        <activity android:name=".SettingsActivity"></activity>
     </application>
 
 </manifest>

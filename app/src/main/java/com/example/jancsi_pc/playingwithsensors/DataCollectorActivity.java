@@ -2,6 +2,8 @@ package com.example.jancsi_pc.playingwithsensors;
 
 import android.Manifest;
 import android.app.AlertDialog;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -14,16 +16,19 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.app.Fragment;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.text.format.DateFormat;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,7 +37,6 @@ import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepDetector;
 import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepListener;
 import com.example.jancsi_pc.playingwithsensors.Utils.Accelerometer;
 import com.example.jancsi_pc.playingwithsensors.Utils.FirebaseUtil;
-import com.example.jancsi_pc.playingwithsensors.Utils.MyFileRenameException;
 import com.example.jancsi_pc.playingwithsensors.Utils.UserRecordObject;
 import com.example.jancsi_pc.playingwithsensors.Utils.Util;
 import com.google.firebase.auth.FirebaseAuth;
@@ -55,7 +59,7 @@ import java.util.Date;
 import java.util.UUID;
 
 
-public class DataCollectorActivity extends AppCompatActivity implements SensorEventListener, StepListener{
+public class DataCollectorActivity extends AppCompatActivity implements SensorEventListener, StepListener, NavigationView.OnNavigationItemSelectedListener{
     private final String TAG = "DataCollectorActivity";
 
     private boolean NO_PYTHON_SERVER_YET = true;
@@ -90,6 +94,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     private TextView goToLoginTextView;
     private ImageView logoutImageView;
     private TextView reportErrorTextView;
+    private ImageView pythonServerImageView;
 
     Date mDate;
     private String mFileName;
@@ -131,6 +136,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     //WAKELOCK//private PowerManager.WakeLock wakeLock;
     //WAKELOCK//private int field = 0x00000020;
 
+    View attachedLayout;
 
     /*
      *
@@ -143,7 +149,41 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         setTheme(R.style.AppTheme);
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_data_collector);
+        setContentView(R.layout.activity_data_collector_nav);
+
+        attachedLayout = findViewById(R.id.datacollector_main_layout);
+
+        //
+        //
+        //
+
+        //setSupportActionBar(toolbar);
+        //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        //
+        //FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        //fab.setOnClickListener(new View.OnClickListener() {
+        //    @Override
+        //    public void onClick(View view) {
+        //        Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+        //                .setAction("Action", null).show();
+        //    }
+        //});
+        //
+        //DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        //ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+        //        this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        //drawer.addDrawerListener(toggle);
+        //toggle.syncState();
+
+        NavigationView navigationView =  findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+        navigationView.getMenu().getItem(0).setChecked(true);
+
+        //
+        //
+        //
+
+        findViewByIDs();
 
         Log.d(TAG, ">>>RUN>>>onCreate()");
 
@@ -217,29 +257,22 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
             finish();
         }
 
-        textViewStatus = findViewById(R.id.textViewStatus);
+
         textViewStatus.setText(R.string.startRecording);
 
-        startButton = findViewById(R.id.buttonStart);
-        stopButton  = findViewById(R.id.buttonStop);
-        sendToServerButton = findViewById(R.id.buttonSend);
-        saveToFirebaseButton = findViewById(R.id.saveToFirebaseButton);
-        loggedInUserEmailTextView = findViewById(R.id.showLoggedInUserEmailTextView);
 
-        logoutImageView = findViewById(R.id.logoutImageView);
+
+
 
         stopButton.setEnabled(false);
         sendToServerButton.setEnabled(false);
         saveToFirebaseButton.setEnabled(false);
 
-        accelerometerX = findViewById(R.id.textViewAX2);
-        accelerometerY = findViewById(R.id.textViewAY2);
-        accelerometerZ = findViewById(R.id.textViewAZ2);
 
-        //goToRegistrationTextView = findViewById(R.id.);
-        //goToLoginTextView = findViewById(R.id.goToLoginTextView);
 
-        reportErrorTextView = findViewById(R.id.errorReportTextView);
+
+
+
         reportErrorTextView.setOnClickListener(v -> {
             Log.d(TAG, ">>>RUN>>>reportErrorTextViewClickListener");
             Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto","abc@gmail.com", null));
@@ -260,10 +293,8 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         simpleStepDetector = new StepDetector();
         simpleStepDetector.registerListener(this);
 
-        debugSwitch = findViewById(R.id.debugSwitch);
-
         // HIDE ACCELEROMETER COORDINATES:
-        accelerometerTitleTextView = findViewById(R.id.textViewAccelerometer2);
+
         accelerometerTitleTextView.setVisibility(View.INVISIBLE);
         accelerometerX.setVisibility(View.INVISIBLE);
         accelerometerY.setVisibility(View.INVISIBLE);
@@ -283,7 +314,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         //WAKELOCK//wakeLock = powerManager.newWakeLock(field, getLocalClassName());
 
         if( NO_PYTHON_SERVER_YET ){
-            ImageView pythonServerImageView = findViewById(R.id.pythonServerImageView);
             sendToServerButton.setVisibility(View.INVISIBLE);
             pythonServerImageView.setVisibility((View.INVISIBLE));
         }
@@ -358,8 +388,8 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         stopButton.setOnClickListener(v -> {
             Log.d(TAG, ">>>RUN>>>stopButtonClickListener");
             mDate = new Date();
-            //Util.recordDateAndTimeFormatted  = DateFormat.format("yyyyMMdd_HHmmss", mDate.getTime());
-            Toast.makeText(DataCollectorActivity.this, Util.recordDateAndTimeFormatted, Toast.LENGTH_LONG).show();
+            Util.recordDateAndTimeFormatted  = DateFormat.format("yyyyMMdd_HHmmss", mDate.getTime());
+            //Toast.makeText(DataCollectorActivity.this, Util.recordDateAndTimeFormatted, Toast.LENGTH_LONG).show();
             isRecording = false;
             startButton.setEnabled(true);
             stopButton.setEnabled(false);
@@ -509,102 +539,12 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
             Util.isSignedIn = false;
             Util.screenMode = Util.ScreenModeEnum.EMAIL_MODE;
             Util.userEmail = "";
+            Util.validatedOnce = false;
             startActivity( new Intent(DataCollectorActivity.this,AuthenticationActivity.class) );
         });
 
-        // Test if user is imposter:
-
-        startButton.callOnClick();
-
-
-        AlertDialog.Builder builderInitial = new AlertDialog.Builder(this);
-        builderInitial.setTitle("Usage");
-        builderInitial.setMessage("Press OK then put the device in you pocket then after a walk press OK again");
-        builderInitial.setCancelable(true);
-        builderInitial.setNeutralButton(android.R.string.ok,
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialogInitial, int id) {
-                        dialogInitial.cancel();
-
-
-                        AlertDialog.Builder builder = new AlertDialog.Builder(DataCollectorActivity.this);
-                        builder.setTitle("Authentificate yourselfe");
-                        builder.setMessage("Walk then press OK.");
-                        builder.setCancelable(true);
-                        builder.setCancelable(false);
-                        builder.setNeutralButton(android.R.string.ok,
-                                new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int id) {
-                                        stopButton.callOnClick();
-                                        saveToFirebaseButton.setEnabled(false);
-
-                                        if (checkCallingOrSelfPermission("android.permission.WRITE_EXTERNAL_STORAGE") != PackageManager.PERMISSION_GRANTED) {
-                                            ActivityCompat.requestPermissions(DataCollectorActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, Util.REQUEST_CODE);
-                                        }
-
-                                        // Download user model from Firebase Storage:
-                                        String modelFileName = "model_" + Util.mAuth.getUid() + ".mdl";
-                                        StorageReference ref = Util.mStorage.getReference().child( FirebaseUtil.STORAGE_MODELS_KEY + "/" + modelFileName  );
-                                        File downloadedUserModelFile = new File(Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/downloadedmodel_" + mAuth.getUid() + ".mdl");
-                                        String downloadedUserModelFilePath = downloadedUserModelFile.getAbsolutePath();
-
-                                        //FirebaseUtil.DownloadFileFromFirebaseStorage(DataCollectorActivity.this, ref, downloadedUserModelFile);
-                                        FirebaseUtil.DownloadFileFromFirebaseStorage_AND_CheckUserInPercentage(DataCollectorActivity.this, ref, downloadedUserModelFile);
-
-                                        textViewStatus.setText("Press Start to start collecting raw data.");
-
-                                        // Saving array into .CSV file (Local):
-                                        if( Util.SaveAccArrayIntoCsvFile(accArray, rawdataUserFile) == 1 ){
-                                            Toast.makeText(DataCollectorActivity.this,"Error saving raw data!",Toast.LENGTH_LONG).show();
-                                        }
-                                        // String rawDataUserFilePath = rawdataUserFile.getAbsolutePath(); // == Util.rawdata_user_path
-
-                                        // User raw (VAN)
-                                        // Feature user (LESZ)
-                                        // Dummy feature (VAN)
-
-                                        // double percentage = Util.CheckUserInPercentage(
-                                        //         DataCollectorActivity.this,
-                                        //         Util.rawdata_user_path,
-                                        //         Util.feature_user_path,
-                                        //         Util.feature_dummy_path,
-                                        //         downloadedUserModelFilePath,
-                                        //         Util.mAuth.getUid() );
-                                        //
-                                        //               //dialog.cancel();
-                                        //
-                                        // AlertDialog.Builder builder1 = new AlertDialog.Builder(DataCollectorActivity.this);
-                                        // builder1.setTitle("Gait Validation");
-                                        // builder1.setMessage("Result: " + percentage );
-                                        // builder1.setCancelable(true);
-                                        // builder1.setNeutralButton(android.R.string.ok,
-                                        //         new DialogInterface.OnClickListener() {
-                                        //             public void onClick(DialogInterface dialog1, int id) {
-                                        //                 dialog1.cancel();
-                                        //             }
-                                        //         });
-                                        //
-                                        // AlertDialog alert11 = builder1.create();
-                                        // alert11.show();
-
-                                    }
-                                });
-
-                        AlertDialog alert = builder.create();
-                        alert.show();
-
-
-
-                    }
-                });
-
-        AlertDialog alertInitial = builderInitial.create();
-        alertInitial.show();
-
-
 
     }// OnCreate
-
 
     // step: 1,2,3 in FirebaseUtil
 
@@ -790,6 +730,153 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     }
 
 
+    private void ShowGaitResult(){
+        if( ! Util.validatedOnce ) {
+            //region GAIT VALIDATER
+            startButton.callOnClick();
+
+            Util.hideKeyboard(DataCollectorActivity.this);
+
+            AlertDialog.Builder builderInitial = new AlertDialog.Builder(this);
+            builderInitial.setTitle("Usage");
+            builderInitial.setMessage("Press OK then put the device in you pocket then after a walk press OK again");
+            builderInitial.setCancelable(false);
+            builderInitial.setPositiveButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    //builderInitial.dismiss();
+                }
+            });
+            builderInitial.setNeutralButton(android.R.string.ok,
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialogInitial, int id) {
+                            dialogInitial.cancel();
+
+
+                            AlertDialog.Builder builder = new AlertDialog.Builder(DataCollectorActivity.this);
+                            builder.setTitle("Authentificate yourselfe");
+                            builder.setMessage("Walk then press OK.");
+                            builder.setCancelable(false);
+                            builder.setNeutralButton(android.R.string.ok,
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int id) {
+                                            stopButton.callOnClick();
+                                            saveToFirebaseButton.setEnabled(false);
+
+                                            dialog.cancel();
+
+                                            Toast.makeText(DataCollectorActivity.this, "CALCULATING...", Toast.LENGTH_LONG).show();
+
+                                            /*LoadDial4Gener*/
+                                            Util.progressDialog = new ProgressDialog(DataCollectorActivity.this, ProgressDialog.STYLE_SPINNER);
+                                            /*LoadDial4Gener*/
+                                            Util.progressDialog.setTitle("Processing");
+                                            /*LoadDial4Gener*/
+                                            Util.progressDialog.setMessage("Calculating result...");
+                                            /*LoadDial4Gener*/
+                                            Util.progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                                            /*LoadDial4Gener*/
+                                            Util.progressDialog.setCancelable(true);
+                                            /*LoadDial4Gener*/
+                                            if (!Util.progressDialog.isShowing()) {
+                                                /*LoadDial4Gener*/
+                                                Util.progressDialog.show();
+                                                /*LoadDial4Gener*/
+                                            }
+                                            if (checkCallingOrSelfPermission("android.permission.WRITE_EXTERNAL_STORAGE") != PackageManager.PERMISSION_GRANTED) {
+                                                ActivityCompat.requestPermissions(DataCollectorActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, Util.REQUEST_CODE);
+                                            }
+
+                                            // Download user model from Firebase Storage:
+                                            String modelFileName = "model_" + Util.mAuth.getUid() + ".mdl";
+                                            StorageReference ref = Util.mStorage.getReference().child(FirebaseUtil.STORAGE_MODELS_KEY + "/" + modelFileName);
+                                            File downloadedUserModelFile = new File(Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/downloadedmodel_" + mAuth.getUid() + ".mdl");
+                                            String downloadedUserModelFilePath = downloadedUserModelFile.getAbsolutePath();
+
+                                            //FirebaseUtil.DownloadFileFromFirebaseStorage(DataCollectorActivity.this, ref, downloadedUserModelFile);
+                                            FirebaseUtil.DownloadFileFromFirebaseStorage_AND_CheckUserInPercentage(DataCollectorActivity.this, ref, downloadedUserModelFile);
+
+                                            textViewStatus.setText("Press Start to start collecting raw data.");
+
+                                            // Saving array into .CSV file (Local):
+                                            if (Util.SaveAccArrayIntoCsvFile(accArray, rawdataUserFile) == 1) {
+                                                Toast.makeText(DataCollectorActivity.this, "Error saving raw data!", Toast.LENGTH_LONG).show();
+                                            }
+
+                                            // String rawDataUserFilePath = rawdataUserFile.getAbsolutePath(); // == Util.rawdata_user_path
+
+                                            // User raw (VAN)
+                                            // Feature user (LESZ)
+                                            // Dummy feature (VAN)
+
+                                            // double percentage = Util.CheckUserInPercentage(
+                                            //         DataCollectorActivity.this,
+                                            //         Util.rawdata_user_path,
+                                            //         Util.feature_user_path,
+                                            //         Util.feature_dummy_path,
+                                            //         downloadedUserModelFilePath,
+                                            //         Util.mAuth.getUid() );
+                                            //
+                                            //               //dialog.cancel();
+                                            //
+                                            // AlertDialog.Builder builder1 = new AlertDialog.Builder(DataCollectorActivity.this);
+                                            // builder1.setTitle("Gait Validation");
+                                            // builder1.setMessage("Result: " + percentage );
+                                            // builder1.setCancelable(true);
+                                            // builder1.setNeutralButton(android.R.string.ok,
+                                            //         new DialogInterface.OnClickListener() {
+                                            //             public void onClick(DialogInterface dialog1, int id) {
+                                            //                 dialog1.cancel();
+                                            //             }
+                                            //         });
+                                            //
+                                            // AlertDialog alert11 = builder1.create();
+                                            // alert11.show();
+
+                                            /*LoadDial4Gener*/
+                                            if (Util.progressDialog.isShowing()) {
+                                                /*LoadDial4Gener*/
+                                                Util.progressDialog.dismiss();
+                                                /*LoadDial4Gener*/
+                                            }
+
+                                        }
+                                    });
+
+                            AlertDialog alert = builder.create();
+                            alert.show();
+
+                        }
+                    });
+
+            AlertDialog alertInitial = builderInitial.create();
+            alertInitial.show();
+
+            //endregion
+            Util.validatedOnce = true;
+        }
+    }
+
+    private void findViewByIDs(){
+        textViewStatus = findViewById(R.id.textViewStatus);
+        startButton = findViewById(R.id.buttonStart);
+        stopButton  = findViewById(R.id.buttonStop);
+        sendToServerButton = findViewById(R.id.buttonSend);
+        saveToFirebaseButton = findViewById(R.id.saveToFirebaseButton);
+        loggedInUserEmailTextView = findViewById(R.id.showLoggedInUserEmailTextView);
+        accelerometerX = findViewById(R.id.textViewAX2);
+        accelerometerY = findViewById(R.id.textViewAY2);
+        accelerometerZ = findViewById(R.id.textViewAZ2);
+        logoutImageView = findViewById(R.id.logoutImageView);
+        //goToRegistrationTextView = findViewById(R.id.);
+        //goToLoginTextView = findViewById(R.id.goToLoginTextView);
+        reportErrorTextView = findViewById(R.id.errorReportTextView);
+        debugSwitch = findViewById(R.id.debugSwitch);
+        accelerometerTitleTextView = findViewById(R.id.textViewAccelerometer2);
+        pythonServerImageView = findViewById(R.id.pythonServerImageView);
+        debugSwitch = findViewById(R.id.debugSwitch);
+    }
+
     @Override
     public void onStart() {
         Log.d(TAG, ">>>RUN>>>onStart()");
@@ -797,7 +884,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
         Util.deviceId = Settings.Secure.getString(DataCollectorActivity.this.getContentResolver(), Settings.Secure.ANDROID_ID);
 
-        Util.mPreferences = getSharedPreferences(Util.sharedPrefFile,MODE_PRIVATE);
+        Util.mSharedPref = getSharedPreferences(Util.sharedPrefFile,MODE_PRIVATE);
 
     }
 
@@ -817,16 +904,23 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
             Util.screenMode = Util.ScreenModeEnum.EMAIL_MODE;
             Intent intent = new Intent(DataCollectorActivity.this, AuthenticationActivity.class);
             startActivity(intent);
+        }else{
+            // Test if user is imposter:
+            // TODO DELETE THIS IF !
+            if( mAuth.getUid().equals("LnntbFQGpBeHx3RwMu42e2yOks32") ) {
+                ShowGaitResult();
+            }
         }
         loggedInUserEmailTextView.setText(Util.userEmail);
 
         sensorManager.registerListener(accelerometerEventListener, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
 
+
+
         // Admin Mode:
         if( Util.isAdminLoggedIn ){
             debugSwitch.setChecked(false);
             debugSwitch.setVisibility(View.VISIBLE);
-            debugSwitch = findViewById(R.id.debugSwitch);
             debugSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
                 if (isChecked) {
                     Util.debugMode = true;
@@ -865,10 +959,10 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         Log.d(TAG, ">>>RUN>>>onPause()");
         super.onPause();
 
-        Util.preferencesEditor = Util.mPreferences.edit();
-        Util.preferencesEditor.putString(Util.LAST_LOGGED_IN_EMAIL_KEY, Util.userEmail );
-        Util.preferencesEditor.putString(Util.LAST_LOGGED_IN_ID_KEY, mAuth.getUid() );
-        Util.preferencesEditor.apply();
+        Util.mSharedPrefEditor = Util.mSharedPref.edit();
+        Util.mSharedPrefEditor.putString(Util.LAST_LOGGED_IN_EMAIL_KEY, Util.userEmail );
+        Util.mSharedPrefEditor.putString(Util.LAST_LOGGED_IN_ID_KEY, mAuth.getUid() );
+        Util.mSharedPrefEditor.apply();
 
         sensorManager.unregisterListener(accelerometerEventListener);
     }
@@ -905,6 +999,34 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         Log.d(TAG, ">>>RUN>>>step()");
         //mp.start();
         DataCollectorActivity.stepNumber++;
+    }
+
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        // Handle navigation view item clicks here.
+        int id = item.getItemId();
+
+        if (id == R.id.nav_home) {
+            Snackbar.make(attachedLayout,"HOME",Snackbar.LENGTH_SHORT).show();
+        } else if (id == R.id.nav_profile) {
+            Snackbar.make(attachedLayout,"PROFILE",Snackbar.LENGTH_SHORT).show();
+        } else if (id == R.id.nav_collection) {
+            Snackbar.make(attachedLayout,"COLLECTION",Snackbar.LENGTH_SHORT).show();
+        } else if (id == R.id.nav_settings) {
+            // Snackbar.make(attachedLayout,"SETTINGS",Snackbar.LENGTH_SHORT).show();
+
+
+
+        } else if (id == R.id.nav_logout) {
+            Snackbar.make(attachedLayout,"LOGOUT",Snackbar.LENGTH_SHORT).show();
+        } else if (id == R.id.nav_exit) {
+            Snackbar.make(attachedLayout,"EXIT APP",Snackbar.LENGTH_SHORT).show();
+        }
+
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
     }
 
 

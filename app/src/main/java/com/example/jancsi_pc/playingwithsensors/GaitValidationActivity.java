@@ -327,12 +327,12 @@ public class GaitValidationActivity extends AppCompatActivity implements SensorE
         Log.d(TAG, ">>>RUN>>>onStart()");
         super.onStart();
 
-        Util.mPreferences = getSharedPreferences(Util.sharedPrefFile,MODE_PRIVATE);
+        Util.mSharedPref = getSharedPreferences(Util.sharedPrefFile,MODE_PRIVATE);
 
         //if (savedInstanceState != null){
-            offlineLastModelEmail = Util.mPreferences.getString(Util.LAST_MODEL_EMAIL_KEY,"");
-            offlineLastModelId = Util.mPreferences.getString(Util.LAST_MODEL_ID_KEY,"");
-            offlineLastModelDate = Util.mPreferences.getString(Util.LAST_MODEL_ID_KEY,"");
+            offlineLastModelEmail = Util.mSharedPref.getString(Util.LAST_MODEL_EMAIL_KEY,"");
+            offlineLastModelId = Util.mSharedPref.getString(Util.LAST_MODEL_ID_KEY,"");
+            offlineLastModelDate = Util.mSharedPref.getString(Util.LAST_MODEL_ID_KEY,"");
         //}
     }
 

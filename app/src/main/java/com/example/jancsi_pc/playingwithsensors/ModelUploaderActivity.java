@@ -10,14 +10,12 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -30,28 +28,18 @@ import com.example.jancsi_pc.playingwithsensors.Utils.FirebaseUtil;
 import com.example.jancsi_pc.playingwithsensors.Utils.MyFileRenameException;
 import com.example.jancsi_pc.playingwithsensors.Utils.UserRecordObject;
 import com.example.jancsi_pc.playingwithsensors.Utils.Util;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
-
-import ro.sapientia.gaitbiom.GaitHelperFunctions;
-import ro.sapientia.gaitbiom.GaitModelBuilder;
-import ro.sapientia.gaitbiom.IGaitModelBuilder;
-import weka.classifiers.Classifier;
 
 // import ro.sapientia.gaitbiom.GaitModelBuilder;
 // import ro.sapientia.gaitbiom.IGaitModelBuilder;
@@ -111,7 +99,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
     private File modelUserFile;     // only the path exists !
 
     // for shared pres
-    private CharSequence lastModelDate;
+    private CharSequence lastModelDate = "";
 
     // Progress:
     //private ProgressDialog Util.progressDialog;
@@ -135,7 +123,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
 
         Util.progressDialog = new ProgressDialog(ModelUploaderActivity.this);
 
-        /*
+        /**
          *
          *   Internal files Path:
          *
@@ -213,7 +201,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
             }
         }
 
-        /*
+        /**
          *
          *   Firebase Init
          *
@@ -221,7 +209,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
         mFirestore = FirebaseStorage.getInstance();
         mStorageReference = mFirestore.getReference();
 
-        /*
+        /**
          *
          *   Sensor
          *
@@ -302,7 +290,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
             }
         };
 
-        /*
+        /**
          *
          *   Start recording
          *
@@ -324,7 +312,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
             //textViewStatus.setText("Recording ...");
         });
 
-        /*
+        /**
          *
          *   Stop recording
          *
@@ -346,7 +334,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
             textViewStatus.setText(("Recorded: " + recordCount + " datapoints and " + stepNumber +" step cycles."));
         });
 
-        /*
+        /**
          *
          *   Sending to FireBase
          *   from Start to End
@@ -363,13 +351,11 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
                 Util.progressDialog.show();
 
                 try {
-                    //region Explanation
-                    /*
-                        We have to upload the files withDate then after upload
-                        the files has to be renamed withoutDate to make sure
-                        there will be no copy in the internal storage.
+                    /**
+                     * We have to upload the files withDate then after upload
+                     * the files has to be renamed withoutDate to make sure
+                     * there will be no copy in the internal storage.
                      */
-                    //endregion
                     //RENAME//if( ! renameIternalFiles_to_withDate() ){ //return false if an error occured     // will be renamed back after uploads
                     //RENAME//    throw new MyFileRenameException("Error renaming file to \"..._<date>_<time>...\"");
                     //RENAME//}
@@ -415,7 +401,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
                 //     throw new MyFileRenameException("Error renaming file to \"..._<date>_<time>...\"");
                 // }
 
-                /*
+                /**
                  * Model generating:
                  */
 
@@ -439,16 +425,15 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
         });
 
 
-        /*
-         *
-         *  Logout user:
-         *
+        /**
+         * Logout user:
          */
         logoutImageView.setOnClickListener(v -> {
             mAuth.signOut();
             Util.isSignedIn = false;
             Util.screenMode = Util.ScreenModeEnum.EMAIL_MODE;
             Util.userEmail = "";
+            Util.validatedOnce = false;
             finish();
         });
 
@@ -456,23 +441,20 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
 
     // step: 2,3 in FirebaseUtil
 
-    // step: 4
-    //region HELP
-    /*
-        DownloadDummyDataFromFireBaseStorage_and_GenerateModel()
-            | This method downloads the
-            | dummy user data (.arff) from Firebase
-            | Storage
-
-        ModelGenerating()
-            | Generates the model
-            | for the current signed in user.
-
-        UploadModelToFireBaseStorage()
-            | Uploads the generated model
-            | to FireBase Storage.
-    */
-    //endregion
+    /**
+     * DownloadDummyDataFromFireBaseStorage_and_GenerateModel()
+     *             | This method downloads the
+     *             | dummy user data (.arff) from Firebase
+     *             | Storage
+     *
+     *         ModelGenerating()
+     *             | Generates the model
+     *             | for the current signed in user.
+     *
+     *         UploadModelToFireBaseStorage()
+     *             | Uploads the generated model
+     *             | to FireBase Storage.
+     */
     private void DownloadDummyDataFromFireBaseStorage_and_GenerateModel() {
         Log.d(TAG,">>>RUN>>>DownloadDummyDataFromFireBaseStorage_and_GenerateModel()");
         // Dowloading Dummy Feature from FireBase Storage:
@@ -507,6 +489,10 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
     }
     private void ModelBuilder() throws MyFileRenameException {
         Log.d(TAG,">>RUN>>>ContinueModelGenerating()");
+
+        // TODO FIX CREATE MODEL:
+        Toast.makeText(ModelUploaderActivity.this,"- under development -",Toast.LENGTH_SHORT).show();
+        /*
 
         //region *
         Log.i(TAG," |IN| String Util.rawdata_user_path [size:"+ new File(Util.rawdata_user_path).length() +"]= "   + Util.rawdata_user_path );
@@ -571,7 +557,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
         UploadModelToFireBaseStorage();
         Util.progressDialog.dismiss();
 
-
+        */
     }
     private void UploadModelToFireBaseStorage() {
         Log.d(TAG,">>>RUN>>>uploadModeltoFireBaseStorage()");
@@ -627,16 +613,15 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
         finish();
     }
 
-    //region HELP
-    /*
-        renameIternalFiles_withDate()
-                | Before upload add "_<date>_<time>" to the end of the file (and path)
-                | ( After reload rename it back! )
-                | return:
-                |   true - No errors
-                |   false - Error
-    */
-    //endregion
+    /**
+     * renameIternalFiles_withDate()
+     *                 | Before upload add "_<date>_<time>" to the end of the file (and path)
+     *                 | ( After reload rename it back! )
+     *                 | return:
+     *                 |   true - No errors
+     *                 |   false - Error
+     * @return
+     */
     private boolean renameIternalFiles_to_withDate(){
         Log.d(TAG,">>RUN>>renameIternalFiles_to_withDate()");
         File f = null;
@@ -663,16 +648,15 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
         return true;
     }
 
-    //region HELP
-    /*
-        renameIternalFiles_withDate()
-                | ( Before upload add "_<date>_<time>" to the end of the file (and path) )
-                | After reload rename it back!
-                | return:
-                |   true - No errors
-                |   false - Error
-    */
-    //endregion
+    /**
+     * renameIternalFiles_withDate()
+     *                 | ( Before upload add "_<date>_<time>" to the end of the file (and path) )
+     *                 | After reload rename it back!
+     *                 | return:
+     *                 |   true - No errors
+     *                 |   false - Error
+     * @return
+     */
     private boolean renameIternalFiles_to_withoutDate(){
         Log.d(TAG,">>RUN>>renameIternalFiles_to_withoutDate()");
         File f = null;
@@ -699,14 +683,13 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
         return true;
     }
 
-    //region HELP
-    /*
-        accArrayToString()
-            | ArrayList<Accelerometer> accArray ==> String str
-            |
-            | output format:   "timestamp,x,y,z,currentStepCount,timestamp,x,y,z,currentStepCount,timestamp,x,y,z,timestamp,currentStepCount, ... ,end"
+    /**
+     * accArrayToString()
+     *             | ArrayList<Accelerometer> accArray ==> String str
+     *             |
+     *             | output format:   "timestamp,x,y,z,currentStepCount,timestamp,x,y,z,currentStepCount,timestamp,x,y,z,timestamp,currentStepCount, ... ,end"
+     * @return
      */
-    //endregion
     public String accArrayToString(){
         Log.d(TAG, ">>>RUN>>>accArrayToString()");
         StringBuilder sb = new StringBuilder();
@@ -785,7 +768,6 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
 
     }
 
-
     @Override
     protected void onPause() {
         Log.d(TAG, ">>>RUN>>>onPause()");
@@ -793,10 +775,10 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
         Log.d(TAG, "SAVE to Shared Pref" + lastModelDate.toString() );
         Log.d(TAG, "SAVE to Shared Pref" + Util.userEmail );
         Log.d(TAG, "SAVE to Shared Pref" + mAuth.getUid() );
-        Util.preferencesEditor.putString(Util.LAST_MODEL_DATE_KEY, lastModelDate.toString() );
-        Util.preferencesEditor.putString(Util.LAST_MODEL_EMAIL_KEY, Util.userEmail );
-        Util.preferencesEditor.putString(Util.LAST_MODEL_ID_KEY, mAuth.getUid() );
-        Util.preferencesEditor.apply();
+        Util.mSharedPrefEditor.putString(Util.LAST_MODEL_DATE_KEY, lastModelDate.toString() );
+        Util.mSharedPrefEditor.putString(Util.LAST_MODEL_EMAIL_KEY, Util.userEmail );
+        Util.mSharedPrefEditor.putString(Util.LAST_MODEL_ID_KEY, mAuth.getUid() );
+        Util.mSharedPrefEditor.apply();
 
         sensorManager.unregisterListener(accelerometerEventListener);
     }
