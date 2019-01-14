@@ -1,6 +1,7 @@
 package com.example.jancsi_pc.playingwithsensors;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -148,6 +149,24 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         Log.d(TAG, ">>>RUN>>>onCreate()");
 
         Util.progressDialog = new ProgressDialog(DataCollectorActivity.this);
+
+        //########################################################
+        //########################################################
+        //########################################################
+
+        Button openUserProfileButton = findViewById(R.id.openUserProfileButton);
+        openUserProfileButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(DataCollectorActivity.this, UserProfileActivity.class);
+                startActivity(intent);
+            }
+        });
+
+
+        //########################################################
+        //########################################################
+        //########################################################
 
         // hide keyboard if needed:
         try {
