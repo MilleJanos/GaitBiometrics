@@ -354,6 +354,11 @@ public class Util {
         return false;
     }
 
+    /**
+     * Tests the internet connection
+     * @param activity
+     * @return true if there is internet connection and false if not.
+     */
     // B
     private static boolean RequireInternetConnection(Activity activity) {
         Log.d(TAG, ">>>RUN>>>RequireInternetConnection()");
@@ -390,6 +395,11 @@ public class Util {
         return isConnected;
     }
 
+    /**
+     * Tests the WiFi module
+     * @param context
+     * @return true if the FiWi module is on and false if not.
+     */
     // A
     private static boolean CheckWiFiNetwork(Context context) {
         Log.d(TAG, ">>>RUN>>>CheckWiFiNetwork()");

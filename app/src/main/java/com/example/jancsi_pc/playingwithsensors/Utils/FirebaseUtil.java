@@ -63,6 +63,8 @@ public class FirebaseUtil {
      * @param activity the activity context where the method will display progress messages
      * @param file     the File that will be uploaded
      * @param ref      the StorageReference where the file will be uploaded
+     *
+     * @author Mille Janos
      */
     public static void UploadFileToFirebaseStorage(Activity activity, File file, StorageReference ref) {
         String TAG = "FirebaseUtil";
@@ -127,6 +129,8 @@ public class FirebaseUtil {
      * @param activity the activity context where the method will display progress messages
      * @param info     the object that describes the required JSON object
      * @param ref      the StorageReference where the file will be uploaded
+     *
+     * @author Mille Janos
      */
     public static void UploadObjectToFirebaseFirestore(Activity activity, UserRecordObject info, DocumentReference ref) {
         String TAG = "FirebaseUtil";
@@ -154,6 +158,8 @@ public class FirebaseUtil {
      * @param activity        the activity context where the method will display progress messaged
      * @param downloadFromRef the StorageReference where the file will be downloaded from
      * @param saveToThisFile  the file that will contain the downloaded data
+     *
+     * @author Mille Janos
      */
     public static void DownloadFileFromFirebaseStorage(Activity activity, StorageReference downloadFromRef, File saveToThisFile) {
         String TAG = "FirebaseUtil";
@@ -194,6 +200,8 @@ public class FirebaseUtil {
      * @param activity        the activity context where the method will display progress messages
      * @param downloadFromRef the StorageReference where the file will be downloaded from
      * @param saveToThisFile  the file that will contain the downloaded data
+     *
+     * @author Mille Janos
      */
     public static void DownloadFileFromFirebaseStorage_AND_CheckUserInPercentage(Activity activity, StorageReference downloadFromRef, File saveToThisFile) {
         String TAG = "FirebaseUtil";
