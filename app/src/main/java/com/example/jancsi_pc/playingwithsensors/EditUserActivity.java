@@ -7,12 +7,18 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import com.example.jancsi_pc.playingwithsensors.Utils.Util;
+
+import java.io.File;
 
 public class EditUserActivity extends AppCompatActivity {
 
@@ -22,6 +28,8 @@ public class EditUserActivity extends AppCompatActivity {
     private Button cancelButton;
 
     private String imagepath=null;
+
+    private String TAG = "EditUserActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,8 +87,10 @@ public class EditUserActivity extends AppCompatActivity {
                 editUserImageBig.setImageBitmap(bitmap);
             }*/
 
-            //TODO upload
-
+            //final File file = new File(Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/lastuserimage.jpg");
+            //File auxFile = new File(selectedImageUri.getPath());
+            //assertEquals(file.getAbsolutePath(), auxFile.getAbsolutePath());
+            Log.e(TAG, "selectedImageUri = " + selectedImageUri);
         }
     }
     public String getPath(Uri uri) {

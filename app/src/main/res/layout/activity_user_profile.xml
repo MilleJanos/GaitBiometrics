@@ -53,16 +53,6 @@
                 android:fontFamily="@font/aldrich"
                 android:textSize="21sp"/>
             <TextView
-                android:id="@+id/numberOfSteps"
-                android:layout_marginTop="10dp"
-                android:layout_gravity="center_horizontal"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="numberOfSteps"
-                android:textColor="@color/colorPrimaryLighter"
-                android:fontFamily="@font/aldrich"
-                android:textSize="21sp"/>
-            <TextView
                 android:id="@+id/numberOfSessions"
                 android:layout_marginTop="10dp"
                 android:layout_gravity="center_horizontal"
