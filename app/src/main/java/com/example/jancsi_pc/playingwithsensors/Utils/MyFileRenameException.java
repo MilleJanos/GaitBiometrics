@@ -4,12 +4,12 @@ public class MyFileRenameException extends Exception {
 
     private static String mLastMessage;
 
-    public MyFileRenameException(String message){
+    public MyFileRenameException(String message) {
         super(message);
         mLastMessage = message;
     }
 
-    public String getLastErrorMessage(){
+    public String getLastErrorMessage() {
         return mLastMessage;
     }
 

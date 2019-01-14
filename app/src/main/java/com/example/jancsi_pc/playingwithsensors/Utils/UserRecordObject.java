@@ -7,7 +7,7 @@ import com.google.firebase.firestore.IgnoreExtraProperties;
 public class UserRecordObject {
 
     public String date;             // if you make changes make
-    public String fileId;           // sore that FirebaseUtil
+    public String fileId;           // sure that FirebaseUtil
     public String downloadUrl;      // is updated too !
 
     public UserRecordObject(String date, String fileId, String downloadUrl) {
