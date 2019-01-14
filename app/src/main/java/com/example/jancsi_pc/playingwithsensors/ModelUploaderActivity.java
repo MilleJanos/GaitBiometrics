@@ -453,6 +453,8 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
      * UploadModelToFireBaseStorage()
      * | Uploads the generated model
      * | to FireBase Storage.
+     *
+     * @author Mille Janos
      */
     private void DownloadDummyDataFromFireBaseStorage_and_GenerateModel() {
         Log.d(TAG, ">>>RUN>>>DownloadDummyDataFromFireBaseStorage_and_GenerateModel()");
@@ -487,6 +489,11 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
         }
     }
 
+    /**
+     * Builds the model using the ModelBuilder library.
+     *
+     * @author Mille Janos
+     */
     private void ModelBuilder() {
         Log.d(TAG, ">>RUN>>>ContinueModelGenerating()");
 
@@ -560,6 +567,11 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
         */
     }
 
+    /**
+     * Uploads the model to Firebase storage.
+     *
+     * @author Mille Janos
+     */
     private void UploadModelToFireBaseStorage() {
         Log.d(TAG, ">>>RUN>>>uploadModeltoFireBaseStorage()");
         Util.progressDialog.dismiss();
@@ -623,6 +635,8 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
      * |   false - Error
      *
      * @return true if the operation finishes successfully
+     *
+     * @author Mille Janos
      */
     private boolean renameIternalFiles_to_withDate() {
         Log.d(TAG, ">>RUN>>renameIternalFiles_to_withDate()");
@@ -659,6 +673,8 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
      * |   false - Error
      *
      * @return true if the operation finishes successfully
+     *
+     * @author Mille Janos
      */
     private boolean renameIternalFiles_to_withoutDate() {
         Log.d(TAG, ">>RUN>>renameIternalFiles_to_withoutDate()");
@@ -693,6 +709,8 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
      * | output format:   "timestamp,x,y,z,currentStepCount,timestamp,x,y,z,currentStepCount,timestamp,x,y,z,timestamp,currentStepCount, ... ,end"
      *
      * @return the custom string representation of accArray
+     *
+     * @author Mille Janos
      */
     public String accArrayToString() {
         Log.d(TAG, ">>>RUN>>>accArrayToString()");
@@ -803,6 +821,10 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
         }
     }
 
+    /**
+     * Increases the stepNumber variable by 1.
+     * @param timeNs
+     */
     @Override
     public void step(long timeNs) {
         Log.d(TAG, ">>>RUN>>>step()");

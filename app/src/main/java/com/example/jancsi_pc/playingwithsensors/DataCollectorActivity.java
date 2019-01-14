@@ -106,7 +106,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     // For Step Detecting:
     private StepDetector simpleStepDetector;
 
-
     // Firebase:
     private FirebaseStorage mFirestore;            // used to upload files
     private StorageReference mStorageReference;  // to storage
@@ -539,6 +538,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
     // step: 1,2,3 in FirebaseUtil
 
+
     //region HELP
     /*
         renameIternalFiles_withDate()
@@ -549,6 +549,12 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                 |   false - Error
     */
     //endregion
+    /**
+     * Renames the files used by the app to contain the date.
+     * @return true if the renaming run successful and false if not.
+     *
+     * @author Mille Janos
+     */
     private boolean renameIternalFiles_to_withDate() {
         Log.d(TAG, ">>RUN>>renameIternalFiles_to_withDate()");
         File f = null;
@@ -577,6 +583,12 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                 |   false - Error
     */
     //endregion
+    /**
+     * Renames the files used by the app to not contain the date.
+     * @return true if the renaming run successful and false if not.
+     *
+     * @author Mille Janos
+     */
     private boolean renameIternalFiles_to_withoutDate() {
         Log.d(TAG, ">>RUN>>renameIternalFiles_to_withoutDate()");
         File f = null;
@@ -596,6 +608,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         return true;
     }
 
+
     //region HELP
     /*
     ArrayList<Accelerometer> accArray ==> String str
@@ -603,6 +616,12 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     output format:   "timestamp,x,y,z,currentStepCount,timestamp,x,y,z,currentStepCount,timestamp,x,y,z,timestamp,currentStepCount, ... ,end"
     */
     //endregion
+    /**
+     * Converts array of Accelerometers to string.
+     * @return the converted string.
+     *
+     * @author Mille Janos
+     */
     public String accArrayToString() {
         Log.d(TAG, ">>>RUN>>>accArrayToString()");
         StringBuilder sb = new StringBuilder();
@@ -632,6 +651,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         return sb.toString();
     }
 
+
     //region HELP
     /*
       Same as accArrayToString just grouped in N groups
@@ -639,6 +659,13 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
       adds "end" to the end of the package-chain
     */
     //endregion
+    /**
+     *  Converts the local array of Accelerometers (accArray) into strings using
+     *  RECORDS_PER_PACKAGE_LIMIT constant to limit the string size.
+     *  The string list will be saved into accArrayStringGroups local variable.
+     *
+     *  @author Mille Janos
+     */
     public void accArrayGroupArrayToString() {
         Log.d(TAG, ">>>RUN>>>accArrayGroupArrayToString()");
         accArrayStringGroups.clear();
@@ -676,6 +703,13 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         }
     }
 
+    /**
+     * Sets up the Ip and the Port using local variables.
+     * For Ip: String wifiModuleIp
+     * For Port: int wifiModulePort
+     *
+     * @author Mille Janos
+     */
     public void getIPandPort() {
         Log.d(TAG, ">>>RUN>>>getIPandPort()");
         String iPandPort = IP_ADDRESS;
@@ -687,6 +721,12 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         Log.d("getIPandPort", "Port: " + wifiModulePort);
     }
 
+    /**
+     * This class is used to send package set by getIPandPort() method.
+     * Sends the content of the local CMD string variable.
+     *
+     * @author Mille Janos
+     */
     // <String, String, TCPClient>            // TODO: Modify if needed
     public static class Socket_AsyncTask extends AsyncTask<Void, Void, Void> {
         Socket socket;
@@ -722,6 +762,11 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     }
 
 
+    /**
+     * Gait validation for current logged in user using AlertDialogs.
+     *
+     * @author Mille Janos
+     */
     private void ShowGaitResult() {
         if (!Util.validatedOnce) {
             //region GAIT VALIDATER
@@ -845,6 +890,11 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         }
     }
 
+    /**
+     * Finds the views used by this context.
+     *
+     * @author Mille Janos
+     */
     private void findViewByIDs() {
         textViewStatus = findViewById(R.id.textViewStatus);
         startButton = findViewById(R.id.buttonStart);
@@ -894,6 +944,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
             //navigationMenuEmail.setText( Util.userEmail );
             // Test if user is imposter:
             // TODO DELETE THIS IF !
+            // TODO something
             if (mAuth.getUid().equals("LnntbFQGpBeHx3RwMu42e2yOks32")) {
                 ShowGaitResult();
             }
@@ -939,7 +990,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         }
     }
 
-
     @Override
     protected void onPause() {
         Log.d(TAG, ">>>RUN>>>onPause()");
@@ -981,6 +1031,10 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         //WAKELOCK//}
     }
 
+    /**
+     * Increases the stepNumber variable by 1.
+     * @param timeNs
+     */
     @Override
     public void step(long timeNs) {
         Log.d(TAG, ">>>RUN>>>step()");
