@@ -2,12 +2,8 @@ package com.example.jancsi_pc.playingwithsensors;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -36,6 +32,9 @@ import com.google.firebase.auth.ProviderQueryResult;
 import java.io.File;
 import java.util.Date;
 
+/**
+ * Activity that handle the user authentication: log-in, register, forgot password
+ */
 public class AuthenticationActivity extends AppCompatActivity {
 
     private final long ONE_MEGABYTE = 1024 * 1024;
@@ -184,7 +183,7 @@ public class AuthenticationActivity extends AppCompatActivity {
 
         Util.validatedOnce = false;
 
-        if (!RequireInternetConnection() /*RequireEnabledInternetAndInternetConnection()*/) {
+        if (!Util.RequireEnabledInternetAndInternetConnection(this) /*RequireEnabledInternetAndInternetConnection()*/) {
             Util.progressDialog.dismiss();
             return;
         } else {
@@ -288,7 +287,7 @@ public class AuthenticationActivity extends AppCompatActivity {
 
         authButton.setEnabled(false);
 
-        if (!RequireInternetConnection() /*RequireEnabledInternetAndInternetConnection()*/) {
+        if (!Util.RequireEnabledInternetAndInternetConnection(this) /*RequireEnabledInternetAndInternetConnection()*/) {
             Util.progressDialog.dismiss();
             return;
         }
@@ -382,7 +381,7 @@ public class AuthenticationActivity extends AppCompatActivity {
             Log.d(TAG, ">>>RUN>>>authButtonClickListener");
             authButton.setEnabled(false);
 
-            if (RequireInternetConnection() /*RequireEnabledInternetAndInternetConnection()*/) {            // This method gives feedback using Snackbar
+            if (Util.RequireEnabledInternetAndInternetConnection(this) /*RequireEnabledInternetAndInternetConnection()*/) {            // This method gives feedback using Snackbar
                 //Log.d(TAG, " isNetworkEnabled = true");
                 //Log.d(TAG, " isNetworkConnection = true");
                 mEmail = emailEditText.getText().toString();
@@ -587,7 +586,7 @@ public class AuthenticationActivity extends AppCompatActivity {
 
             // Finishing Login
             Log.d(TAG, ">>>RUN>>>authButtonClickListener");
-            if (RequireInternetConnection() /*RequireEnabledInternetAndInternetConnection()*/) {            // This method gives feedback using Snackbar
+            if (Util.RequireEnabledInternetAndInternetConnection(this) /*RequireEnabledInternetAndInternetConnection()*/) {            // This method gives feedback using Snackbar
                 mPassword = passwordEditText.getText().toString();
 
                 Util.progressDialog = new ProgressDialog(AuthenticationActivity.this, ProgressDialog.STYLE_SPINNER);
@@ -753,7 +752,7 @@ public class AuthenticationActivity extends AppCompatActivity {
             mEmail = emailEditText.getText().toString();
             if (!mEmail.equals("")) {
 
-                if (RequireInternetConnection() /*RequireEnabledInternetAndInternetConnection()*/) {
+                if (Util.RequireEnabledInternetAndInternetConnection(this) /*RequireEnabledInternetAndInternetConnection()*/) {
 
                     Util.progressDialog = new ProgressDialog(AuthenticationActivity.this, ProgressDialog.STYLE_SPINNER);
                     Util.progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
@@ -831,7 +830,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         forgotPassTextView.setVisibility(View.INVISIBLE);
         forgotPassTextView.setOnClickListener(v -> {
             Log.d(TAG, ">>>RUN>>>forgotPassTextViewClickListener");
-            if (RequireInternetConnection() /*RequireEnabledInternetAndInternetConnection()*/) {
+            if (Util.RequireEnabledInternetAndInternetConnection(this) /*RequireEnabledInternetAndInternetConnection()*/) {
 
                 resetPassword();
 
@@ -872,125 +871,6 @@ public class AuthenticationActivity extends AppCompatActivity {
      *
      */
 
-    // A + B and feedback with Snackbar to the user
-    private boolean RequireEnabledInternetAndInternetConnection() {
-        Log.d(TAG, ">>>RUN>>>RequireEnabledInternetAndInternetConnection()");
-        Util.hideKeyboard(AuthenticationActivity.this);
-
-        //Asking the user to enable WiFi:
-        boolean isNetworkEnabled = CheckWiFiNetwork();
-
-        //Asking for connection:
-        boolean isNetworkConnection = RequireInternetConnection();
-
-        if (!isNetworkEnabled) {
-            //authButton.setError("Please enable internet connection!");
-            Log.d("TAG", " isNetworkEnabled = false");
-            View mainLayoutView = findViewById(R.id.auth_main_layout);
-            Snackbar.make(mainLayoutView, "Please enable internet connection!", Snackbar.LENGTH_SHORT).show();
-        } else {
-            if (!isNetworkConnection) {
-                //authButton.setError("No internet connection detected!");
-                Log.d(TAG, " isNetworkConnection = false");
-                View view = findViewById(R.id.auth_main_layout);
-                Snackbar.make(view, "No internet connection detected!", Snackbar.LENGTH_SHORT).show();
-            } else {
-                Log.d(TAG, "RequireEnabledInternetAndInternetConnection() --> true");
-                return true;
-            }
-        }
-        Log.d(TAG, "RequireEnabledInternetAndInternetConnection() --> false");
-        return false;
-    }
-
-    // B
-    private boolean RequireInternetConnection() {
-        Log.d(TAG, ">>>RUN>>>RequireInternetConnection()");
-        ConnectivityManager cm = (ConnectivityManager) AuthenticationActivity.this.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        boolean isConnected = activeNetwork != null && activeNetwork.isConnected();
-        // While there is no connection, force the user to connect
-        /*while( ! isConnected ){
-
-            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(AuthenticationActivity.this);
-
-            // set title
-            alertDialogBuilder.setTitle("No internet detected");
-
-            // set dialog message
-            alertDialogBuilder
-                    .setMessage("Make you shore you are connected to the internet")
-                    .setCancelable(false)
-                    .setPositiveButton("Retry", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            //Nothing (Retry)
-                        }
-                    })
-                    .setNegativeButton("Exit", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            Util.isFinished = true;
-                            finish(); //close the App
-                        }
-                    });
-            isConnected = activeNetwork != null && activeNetwork.isConnected();
-
-            return false;
-        }*/
-        if (isConnected) {
-            Log.d(TAG, "RequireInternetConnection() --> true");
-            return true;
-        }
-        // else:
-        Log.d(TAG, "RequireInternetConnection() --> false");
-        return false;
-    }
-
-    // A
-    private boolean CheckWiFiNetwork() {
-        Log.d(TAG, ">>>RUN>>>CheckWiFiNetwork()");
-
-        final WifiManager mWifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-
-        if (!mWifiManager.isWifiEnabled()) {
-            /*
-            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(AuthenticationActivity.this);
-
-            // set title
-            alertDialogBuilder.setTitle("Wifi Settings");
-
-            // set dialog message
-            alertDialogBuilder
-                    .setMessage("Do you want to enable WIFI ?")
-                    .setCancelable(false)
-                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            // enable wifi
-                            mWifiManager.setWifiEnabled(true);
-
-                        }
-                    })
-                    .setNegativeButton("Exit", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            //disable wifi
-                            //mWifiManager.setWifiEnabled(false);
-                            Util.isFinished = true;
-                            finish(); //close the App
-                        }
-                    });
-
-            // create alert dialog
-            AlertDialog alertDialog = alertDialogBuilder.create();
-
-            // show it
-            alertDialog.show();
-            */
-            Log.d(TAG, "CheckWiFiNetwork() --> false");
-            return false;
-        }
-        // else:
-        Log.d(TAG, "CheckWiFiNetwork() --> true");
-        return true;
-    }
 
     /*
      *

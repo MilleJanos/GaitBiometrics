@@ -37,6 +37,9 @@ import weka.classifiers.trees.RandomForest;
 import weka.core.Attribute;
 import weka.core.SerializationHelper;
 
+/**
+ * Utility class containing more often used methods
+ */
 public class Util {
 
     //public static Util Util = new Util();
@@ -48,7 +51,12 @@ public class Util {
 
     private static final String TAG = "Util";
 
-    public static double samplingFrequency(ArrayList<Accelerometer> data) {
+    /**
+     * Function that calculates the sampling frequency of the accelerometer
+     * @param data list containing the Accelerometer data the frequency will be calculated from
+     * @return sampling frequency value
+     */
+    public static double samplingFrequency(List<Accelerometer> data) {
         double period = 0;
         for (int i = 1; i < data.size(); ++i) {
             period += data.get(i).getTimeStamp() - data.get(i - 1).getTimeStamp();
@@ -59,6 +67,7 @@ public class Util {
         return 1 / period;
     }
 
+    /*alternative to first function
     public static double samplingFrequency2(ArrayList<Accelerometer> data) {
         double period;
         period = data.get(data.size() - 1).getTimeStamp() - data.get(0).getTimeStamp();
@@ -66,7 +75,7 @@ public class Util {
         period /= 1000000000;
         Log.i(TAG, "samplingFrequency2: " + 1 / period);
         return 1 / period;
-    }
+    }*/
 
     // logged in user
     public static String userEmail = "";
@@ -112,6 +121,10 @@ public class Util {
     // validation
     public static boolean validatedOnce = false;
 
+    /**
+     * Method that hides the keyboard in the given activity
+     * @param activity the activity context where the method will hide the keyboard
+     */
     public static void hideKeyboard(Activity activity) {
         // If keyboard is shown then hide:
         InputMethodManager imm = (InputMethodManager) activity.getSystemService(AuthenticationActivity.INPUT_METHOD_SERVICE);
@@ -160,13 +173,13 @@ public class Util {
     };
 
     //region HELP
-    /*
-            | This method saves the accArray<Accelerometer> list
-            | into file including header.
-            | Return value:
-            |   0 - No error
-            |   1 - error
-    */
+    /**
+     * This method saves the accArray<Accelerometer> list into file including header.
+     * @param accArray array that contains the data that will be writtem to the file
+     * @param file descriptor of the file all the writing will be made into
+     * @return 0 if there is no error
+     *         1 if there occurred an error
+     */
     //endregion
     public static short SaveAccArrayIntoCsvFile(ArrayList<Accelerometer> accArray, File file) {
         String TAG = "Util";
@@ -209,6 +222,16 @@ public class Util {
         return 0;
     }
 
+    /**
+     * Runs the classifier for the given parameters and calculates the match percentage of it's result
+     * @param activity the activity context where the method will display progress messages
+     * @param userRawDataFilePath String path of the user's ray_data_file
+     * @param userFeatureFilePath String path of the user's features_file
+     * @param dummyFeatureFilePath String path of the dummy's features_file
+     * @param userModelFilePath String path of the user's model_file
+     * @param userId user's ID
+     * @return the resulting percentage
+     */
     public static double CheckUserInPercentage(Activity activity, String userRawDataFilePath, String userFeatureFilePath, String dummyFeatureFilePath, String userModelFilePath, String userId) {
 
         // region OLD STUFF
@@ -297,6 +320,12 @@ public class Util {
      */
 
     // A + B and feedback with Snackbar to the user
+
+    /**
+     * Checks if the device has an active network connection.
+     * @param activity the activity context where the method will display progress messages
+     * @return true the device has an active network connection
+     */
     public static boolean RequireEnabledInternetAndInternetConnection(Activity activity) {
         Log.d(TAG, ">>>RUN>>>RequireEnabledInternetAndInternetConnection()");
         Util.hideKeyboard(activity);
