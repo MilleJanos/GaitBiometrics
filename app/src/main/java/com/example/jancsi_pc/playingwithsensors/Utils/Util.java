@@ -143,6 +143,8 @@ public class Util {
     public static final String LAST_MODEL_EMAIL_KEY = "lastmodelemailkey";
     public static final String LAST_MODEL_ID_KEY = "lastmodelidkey";
     public static final String LAST_MODEL_DATE_KEY = "lastmodeldatekey";
+    public static final String SETTING_DEBUG_MODE_KEY = "debugmode";
+
 
     // progressDialog
     public static ProgressDialog progressDialog;

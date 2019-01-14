@@ -45,7 +45,8 @@ import java.util.UUID;
 // import ro.sapientia.gaitbiom.IGaitModelBuilder;
 
 
-public class ModelUploaderActivity extends AppCompatActivity implements SensorEventListener, StepListener{
+public class
+ModelUploaderActivity extends AppCompatActivity implements SensorEventListener, StepListener{
     private final String TAG = "ModelUploaderActivity";
 
     private SensorManager sensorManager;
@@ -105,7 +106,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
     //private ProgressDialog Util.progressDialog;
 
     //Debug mode:
-    Switch debugSwitch;
+    // Switch debugSwitch;
 
     /*
      *
@@ -235,7 +236,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
         stopButton.setEnabled(false);
         saveToFirebaseButton.setEnabled(false);
 
-        debugSwitch = findViewById(R.id.debugSwitch);
+        // debugSwitch = findViewById(R.id.debugSwitch);
 
 
         final DecimalFormat df = new DecimalFormat("0");
@@ -736,24 +737,26 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
             finish();
         }
 
-        // Admin Mode:
-        if( Util.isAdminLoggedIn ){
-            debugSwitch.setChecked(false);
-            debugSwitch.setVisibility(View.VISIBLE);
-            debugSwitch = findViewById(R.id.debugSwitch);
-            debugSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if (isChecked) {
-                    Util.debugMode = true;
-                    Log.i(TAG, "Debug Mode -> ON");
-                } else {
-                    Util.debugMode = false;
-                    Log.i(TAG, "Debug Mode -> OFF");
-                }
-            });
-        }else{
-            debugSwitch.setChecked(false);
-            debugSwitch.setVisibility(View.INVISIBLE);
-        }
+        //MOVED TO SETTINGS
+        //
+        // // Admin Mode:
+        // if( Util.isAdminLoggedIn ){
+        //     debugSwitch.setChecked(false);
+        //     debugSwitch.setVisibility(View.VISIBLE);
+        //     debugSwitch = findViewById(R.id.debugSwitch);
+        //     debugSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+        //         if (isChecked) {
+        //             Util.debugMode = true;
+        //             Log.i(TAG, "Debug Mode -> ON");
+        //         } else {
+        //             Util.debugMode = false;
+        //             Log.i(TAG, "Debug Mode -> OFF");
+        //         }
+        //     });
+        // }else{
+        //     debugSwitch.setChecked(false);
+        //     debugSwitch.setVisibility(View.INVISIBLE);
+        // }
 
         // Check if user is signed in (non-null) and update UI accordingly.
         if (!Util.isSignedIn) {

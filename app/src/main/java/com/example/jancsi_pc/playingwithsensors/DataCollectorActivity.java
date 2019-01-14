@@ -89,12 +89,12 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     private TextView accelerometerX;
     private TextView accelerometerY;
     private TextView accelerometerZ;
-    private TextView loggedInUserEmailTextView;
     private TextView goToRegistrationTextView;
     private TextView goToLoginTextView;
-    private ImageView logoutImageView;
     private TextView reportErrorTextView;
     private ImageView pythonServerImageView;
+    private TextView navigationMenuUserName;
+    private TextView navigationMenuEmail;
 
     Date mDate;
     private String mFileName;
@@ -124,7 +124,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     //private ProgressDialog progressDialog;
 
     // Debug Mode:
-    private Switch debugSwitch;
+    // private Switch debugSwitch;
 
     // Proxy sensor:
     private SensorManager mSensorManager;
@@ -151,7 +151,8 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_data_collector_nav);
 
-        attachedLayout = findViewById(R.id.datacollector_main_layout);
+        findViewByIDs();
+
 
         //
         //
@@ -179,11 +180,17 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         navigationView.setNavigationItemSelectedListener(this);
         navigationView.getMenu().getItem(0).setChecked(true);
 
+        navigationMenuUserName = findViewById(R.id.nav_header_name);
+        navigationMenuEmail = findViewById(R.id.nav_header_email);
+
+        // in Resume:
+        //navigationMenuUserName.setText("---");
+        //navigationMenuEmail.setText( Util.userEmail );
+
         //
         //
         //
 
-        findViewByIDs();
 
         Log.d(TAG, ">>>RUN>>>onCreate()");
 
@@ -257,21 +264,11 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
             finish();
         }
 
-
         textViewStatus.setText(R.string.startRecording);
-
-
-
-
 
         stopButton.setEnabled(false);
         sendToServerButton.setEnabled(false);
         saveToFirebaseButton.setEnabled(false);
-
-
-
-
-
 
         reportErrorTextView.setOnClickListener(v -> {
             Log.d(TAG, ">>>RUN>>>reportErrorTextViewClickListener");
@@ -526,21 +523,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
 
 
-        });
-
-
-        /*
-         *
-         *  Logout user:
-         *
-         */
-        logoutImageView.setOnClickListener(v -> {
-            mAuth.signOut();
-            Util.isSignedIn = false;
-            Util.screenMode = Util.ScreenModeEnum.EMAIL_MODE;
-            Util.userEmail = "";
-            Util.validatedOnce = false;
-            startActivity( new Intent(DataCollectorActivity.this,AuthenticationActivity.class) );
         });
 
 
@@ -863,29 +845,24 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         stopButton  = findViewById(R.id.buttonStop);
         sendToServerButton = findViewById(R.id.buttonSend);
         saveToFirebaseButton = findViewById(R.id.saveToFirebaseButton);
-        loggedInUserEmailTextView = findViewById(R.id.showLoggedInUserEmailTextView);
         accelerometerX = findViewById(R.id.textViewAX2);
         accelerometerY = findViewById(R.id.textViewAY2);
         accelerometerZ = findViewById(R.id.textViewAZ2);
-        logoutImageView = findViewById(R.id.logoutImageView);
         //goToRegistrationTextView = findViewById(R.id.);
         //goToLoginTextView = findViewById(R.id.goToLoginTextView);
         reportErrorTextView = findViewById(R.id.errorReportTextView);
-        debugSwitch = findViewById(R.id.debugSwitch);
         accelerometerTitleTextView = findViewById(R.id.textViewAccelerometer2);
         pythonServerImageView = findViewById(R.id.pythonServerImageView);
-        debugSwitch = findViewById(R.id.debugSwitch);
+
+        attachedLayout = findViewById(R.id.datacollector_main_layout);
+
     }
 
     @Override
     public void onStart() {
         Log.d(TAG, ">>>RUN>>>onStart()");
         super.onStart();
-
         Util.deviceId = Settings.Secure.getString(DataCollectorActivity.this.getContentResolver(), Settings.Secure.ANDROID_ID);
-
-        Util.mSharedPref = getSharedPreferences(Util.sharedPrefFile,MODE_PRIVATE);
-
     }
 
     @Override
@@ -893,6 +870,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         Log.d(TAG, ">>>RUN>>>onResume()");
         super.onResume();
 
+        // If close all Activityes
         if (Util.isFinished) {
             Log.d(TAG, " isFinished() = true");
             //Util.isFinished = false;    // TODO: VIGYAZZ MERT ITT MEGSZAKITJA A LANCOLT KILEPEST, MIVEL EZ AZ UTOLSO ACTIVITY A STACKBEN, ugy(e nelkul) ujrainditaskor is kikapcsolt
@@ -905,35 +883,37 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
             Intent intent = new Intent(DataCollectorActivity.this, AuthenticationActivity.class);
             startActivity(intent);
         }else{
+            // Set email and username on Slide Menu
+            //navigationMenuUserName.setText("---");
+            //navigationMenuEmail.setText( Util.userEmail );
             // Test if user is imposter:
             // TODO DELETE THIS IF !
             if( mAuth.getUid().equals("LnntbFQGpBeHx3RwMu42e2yOks32") ) {
                 ShowGaitResult();
             }
         }
-        loggedInUserEmailTextView.setText(Util.userEmail);
 
         sensorManager.registerListener(accelerometerEventListener, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
 
-
-
-        // Admin Mode:
-        if( Util.isAdminLoggedIn ){
-            debugSwitch.setChecked(false);
-            debugSwitch.setVisibility(View.VISIBLE);
-            debugSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if (isChecked) {
-                    Util.debugMode = true;
-                    Log.i(TAG, "Debug Mode -> ON");
-                } else {
-                    Util.debugMode = false;
-                    Log.i(TAG, "Debug Mode -> OFF");
-                }
-            });
-        }else{
-            debugSwitch.setChecked(false);
-            debugSwitch.setVisibility(View.INVISIBLE);
-        }
+        //MOVED TO SETTINGS
+        //
+        // // Admin Mode:
+        // if( Util.isAdminLoggedIn ){
+        //     debugSwitch.setChecked(false);
+        //     debugSwitch.setVisibility(View.VISIBLE);
+        //     debugSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+        //         if (isChecked) {
+        //             Util.debugMode = true;
+        //             Log.i(TAG, "Debug Mode -> ON");
+        //         } else {
+        //             Util.debugMode = false;
+        //             Log.i(TAG, "Debug Mode -> OFF");
+        //         }
+        //     });
+        // }else{
+        //     debugSwitch.setChecked(false);
+        //     debugSwitch.setVisibility(View.INVISIBLE);
+        // }
 
         // Show on screen model status
         if(Util.isSetUserModel) {
@@ -959,6 +939,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         Log.d(TAG, ">>>RUN>>>onPause()");
         super.onPause();
 
+        Util.mSharedPref = getSharedPreferences(Util.sharedPrefFile,MODE_PRIVATE);
         Util.mSharedPrefEditor = Util.mSharedPref.edit();
         Util.mSharedPrefEditor.putString(Util.LAST_LOGGED_IN_EMAIL_KEY, Util.userEmail );
         Util.mSharedPrefEditor.putString(Util.LAST_LOGGED_IN_ID_KEY, mAuth.getUid() );
@@ -1011,17 +992,25 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
             Snackbar.make(attachedLayout,"HOME",Snackbar.LENGTH_SHORT).show();
         } else if (id == R.id.nav_profile) {
             Snackbar.make(attachedLayout,"PROFILE",Snackbar.LENGTH_SHORT).show();
+            //TODO: --< TIMI >--
         } else if (id == R.id.nav_collection) {
             Snackbar.make(attachedLayout,"COLLECTION",Snackbar.LENGTH_SHORT).show();
         } else if (id == R.id.nav_settings) {
-            // Snackbar.make(attachedLayout,"SETTINGS",Snackbar.LENGTH_SHORT).show();
-
-
-
+            //Snackbar.make(attachedLayout,"SETTINGS",Snackbar.LENGTH_SHORT).show();
+            Intent intent = new Intent(DataCollectorActivity.this,SettingsActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_logout) {
-            Snackbar.make(attachedLayout,"LOGOUT",Snackbar.LENGTH_SHORT).show();
+            //Snackbar.make(attachedLayout,"LOGOUT",Snackbar.LENGTH_SHORT).show();
+            mAuth.signOut();
+            Util.isSignedIn = false;
+            Util.screenMode = Util.ScreenModeEnum.EMAIL_MODE;
+            Util.userEmail = "";
+            Util.validatedOnce = false;
+            startActivity( new Intent(DataCollectorActivity.this,AuthenticationActivity.class) );
         } else if (id == R.id.nav_exit) {
-            Snackbar.make(attachedLayout,"EXIT APP",Snackbar.LENGTH_SHORT).show();
+            //Snackbar.make(attachedLayout,"EXIT APP",Snackbar.LENGTH_SHORT).show();
+            Util.isFinished = true;
+            finish();
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);

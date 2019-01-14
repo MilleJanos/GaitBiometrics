@@ -22,16 +22,24 @@
         android:id="@+id/imageView"/>
 
     <TextView
+        android:id="@+id/nav_header_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingTop="@dimen/nav_header_vertical_spacing"
-        android:text="@string/nav_header_title"
+        android:text="Anonymus"
+        android:fontFamily="@font/aldrich"
+        android:textColor="@color/colorBlack"
+        android:textStyle="bold"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"/>
 
     <TextView
-        android:layout_width="wrap_content"
+        android:id="@+id/nav_header_email"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Subtitlee"
-        android:id="@+id/textView"/>
+        android:paddingTop="@dimen/nav_header_vertical_spacing"
+        android:text="email"
+        android:fontFamily="@font/aldrich"
+        android:textColor="@color/colorBlue"
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"/>
 
 </LinearLayout>
