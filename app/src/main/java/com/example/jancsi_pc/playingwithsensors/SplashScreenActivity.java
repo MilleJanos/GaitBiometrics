@@ -15,7 +15,7 @@ import com.example.jancsi_pc.playingwithsensors.Utils.Util;
 
 public class SplashScreenActivity extends AppCompatActivity {
 
-    private String TAG = "SpleshScreenActivity";
+    private static final String TAG = "SpleshScreenActivity";
     private ImageView imageView;
     private TextView textView;
 
@@ -29,13 +29,13 @@ public class SplashScreenActivity extends AppCompatActivity {
         textView.setAnimation(myAnimation);
         imageView.setAnimation(myAnimation);
         final Intent intent = new Intent(this, DataCollectorActivity.class);
-        Thread timer = new Thread(){
-            public void run(){
-                try{
+        Thread timer = new Thread() {
+            public void run() {
+                try {
                     sleep(1000);
-                }catch(InterruptedException e){
+                } catch (InterruptedException e) {
                     e.printStackTrace();
-                }finally{
+                } finally {
                     startActivity(intent);
                     finish();
                 }

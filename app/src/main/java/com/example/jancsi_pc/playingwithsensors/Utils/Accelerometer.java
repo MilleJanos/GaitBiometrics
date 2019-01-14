@@ -35,9 +35,13 @@ public class Accelerometer {
         return z;
     }
 
-    public long getTimeStamp(){ return this.timestamp; }
+    public long getTimeStamp() {
+        return this.timestamp;
+    }
 
-    public int getStep() { return step; }
+    public int getStep() {
+        return step;
+    }
 
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
@@ -61,6 +65,6 @@ public class Accelerometer {
 
     @Override
     public String toString() {
-        return timestamp +","+ x +","+ y +","+ z + "," + step;
+        return timestamp + "," + x + "," + y + "," + z + "," + step;
     }
 }

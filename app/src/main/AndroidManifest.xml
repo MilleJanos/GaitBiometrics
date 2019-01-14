@@ -51,6 +51,9 @@
         <activity
             android:name=".ModelUploaderActivity"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".ListDataFromFirebaseActivity"
+            android:screenOrientation="portrait" />
 
         <meta-data
             android:name="preloaded_fonts"
