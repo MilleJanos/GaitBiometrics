@@ -5,6 +5,11 @@ import android.view.View;
 import com.google.firebase.firestore.IgnoreExtraProperties;
 
 
+/**
+ * This class is used to store Users data in Firebase firestore.
+ *
+ * @author Fulop Timea
+ */
 @IgnoreExtraProperties
 public class UserDataObject extends UserObject{
 

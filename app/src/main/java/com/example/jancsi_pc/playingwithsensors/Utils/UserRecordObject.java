@@ -2,7 +2,11 @@ package com.example.jancsi_pc.playingwithsensors.Utils;
 
 import com.google.firebase.firestore.IgnoreExtraProperties;
 
-
+/**
+ * This class is used to store Users recorded data in Firebase firestore.
+ *
+ * @author Mille Janos
+ */
 @IgnoreExtraProperties
 public class UserRecordObject {
 
