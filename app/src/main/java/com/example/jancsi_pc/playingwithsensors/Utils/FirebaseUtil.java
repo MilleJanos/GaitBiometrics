@@ -25,7 +25,8 @@ import java.util.ArrayList;
 
 public class FirebaseUtil {
 
-    private FirebaseUtil(){}
+    private FirebaseUtil() {
+    }
 
     // FireStore (Beta database)
     public static final String USER_RECORDS_OLD_KEY = "user_records";
@@ -38,6 +39,11 @@ public class FirebaseUtil {
     public static final String FILE_ID_KEY = "fileId";              // often in UserRecordObject
     public static final String DOWNLOAD_URL_KEY = "downloadUrl";    // class
 
+    public static final String USER_DATA_KEY = "user_data";
+    /* <user_id> */
+    public static final String USER_DATE_KEY = "date";                   // they will be used more
+    public static final String USER_FILE_ID_KEY = "fileId";              // often in UserRecordObject
+    public static final String USER_DOWNLOAD_URL_KEY = "downloadUrl";    // class
 
     // Storage (Files)
     public static final String STORAGE_FEATURES_KEY = "features";
@@ -49,16 +55,15 @@ public class FirebaseUtil {
     public static final String STORAGE_MODELS_DEBUG_KEY = "models_debug";
 
     public static boolean fileUploadFunctionFinished = false;
-    public static boolean objectUploadDunctionFinished = false;
+    public static boolean objectUploadFunctionFinished = false;
 
-    //region HELP
     /**
      * This method uploads the file to FireBase Storage where the refrence is set.
+     *
      * @param activity the activity context where the method will display progress messages
-     * @param file the File that will be uploaded
-     * @param ref the StorageReference where the file will be uploaded
+     * @param file     the File that will be uploaded
+     * @param ref      the StorageReference where the file will be uploaded
      */
-    //endregion
     public static void UploadFileToFirebaseStorage(Activity activity, File file, StorageReference ref) {
         String TAG = "FirebaseUtil";
         Log.d(TAG, ">>>RUN>>>UploadFileToFirebaseStorage()");
@@ -116,39 +121,39 @@ public class FirebaseUtil {
 
     }
 
-    //region HELP
     /**
      * This method uploads the UserRecordObject object(JSON) into Firebase FireStore.
+     *
      * @param activity the activity context where the method will display progress messages
-     * @param info the object that describes the required JSON object
-     * @param ref the StorageReference where the file will be uploaded
+     * @param info     the object that describes the required JSON object
+     * @param ref      the StorageReference where the file will be uploaded
      */
-    //endregion
     public static void UploadObjectToFirebaseFirestore(Activity activity, UserRecordObject info, DocumentReference ref) {
         String TAG = "FirebaseUtil";
         Log.d(TAG, ">>>RUN>>>UploadObjectToFirebaseFirestore()");
 
-        objectUploadDunctionFinished = false;
+        objectUploadFunctionFinished = false;
 
         ref.set(info).addOnSuccessListener(aVoid -> {
             Util.progressDialog.dismiss();
             Toast.makeText(activity, "Object uploaded.", Toast.LENGTH_LONG).show();
             Log.d(TAG, "<<<FINISH(async)<<<UploadObjectToFirebaseFirestore() - onSuccess");
-            objectUploadDunctionFinished = true;
+            objectUploadFunctionFinished = true;
         }).addOnFailureListener(e -> {
             Util.progressDialog.dismiss();
             Toast.makeText(activity, "Object upload failed!", Toast.LENGTH_LONG).show();
             Log.d(TAG, "<<<FINISH(async)<<<UploadObjectToFirebaseFirestore() - onFailure");
-            objectUploadDunctionFinished = true;
+            objectUploadFunctionFinished = true;
         });
         Log.d(TAG, "(<<<FINISH<<<)UploadObjectToFirebaseFirestore() - running task in background");
     }
 
     /**
      * This method downloads a file from Firebase FireStore.
-     * @param activity the activity context where the method will display progress messaged
+     *
+     * @param activity        the activity context where the method will display progress messaged
      * @param downloadFromRef the StorageReference where the file will be downloaded from
-     * @param saveToThisFile the file that will contain the downloaded data
+     * @param saveToThisFile  the file that will contain the downloaded data
      */
     public static void DownloadFileFromFirebaseStorage(Activity activity, StorageReference downloadFromRef, File saveToThisFile) {
         String TAG = "FirebaseUtil";
@@ -185,9 +190,10 @@ public class FirebaseUtil {
     /**
      * This method downloads a file from Firebase FireStore and runs the GaitModelBuilder to display
      * the classifiers result in percents.
-     * @param activity the activity context where the method will display progress messages
+     *
+     * @param activity        the activity context where the method will display progress messages
      * @param downloadFromRef the StorageReference where the file will be downloaded from
-     * @param saveToThisFile the file that will contain the downloaded data
+     * @param saveToThisFile  the file that will contain the downloaded data
      */
     public static void DownloadFileFromFirebaseStorage_AND_CheckUserInPercentage(Activity activity, StorageReference downloadFromRef, File saveToThisFile) {
         String TAG = "FirebaseUtil";
@@ -282,7 +288,7 @@ public class FirebaseUtil {
                         Log.d("updateStatsInFirestore:", task.getResult().toString());
                         //getting existing records
                         UserStatsObject statsObject = task.getResult().toObject(UserStatsObject.class);
-                        if(statsObject == null){
+                        if (statsObject == null) {
                             return;
                         }
                         Log.d("RESULTED OBJECT:", statsObject.toString());
@@ -322,10 +328,10 @@ public class FirebaseUtil {
      *
      * @param userId the ID of the user whose data needs to be returned
      * @return a FirebaseUserData object containing the resulting data,
-     *          or null if the user does not exist
+     * or null if the user does not exist
      * @author Krisztian-Miklos Nemeth
      */
-    public static FirebaseUserData queryUserData(String userId){  //TODO test properly
+    public static FirebaseUserData queryUserData(String userId) {  //TODO test properly
         //invoking a function already implemented in kotlin :D
         return ListDataFromFirebaseActivity.Companion.queryOneUsersDataFromFireStore(userId);
     }
