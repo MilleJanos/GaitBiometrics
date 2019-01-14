@@ -3,6 +3,8 @@ package com.example.jancsi_pc.playingwithsensors.Utils;
 /**
  * Accelerometer is the class that contains the raw data collected from the
  * sensor and is used to pass ArrayLists to the FeatureExtractor.
+ *
+ * @author Mille Janos
  */
 public class Accelerometer {
     /*

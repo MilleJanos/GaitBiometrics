@@ -1,5 +1,11 @@
 package com.example.jancsi_pc.playingwithsensors.Utils;
 
+
+/**
+ * This class is used to help storing in Firebase firestore.
+ *
+ * @author Mille Janos
+ */
 public class UserObject {
 
     private String date;             // if you make changes make
