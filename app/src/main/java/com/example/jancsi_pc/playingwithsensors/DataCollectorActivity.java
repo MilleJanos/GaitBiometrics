@@ -55,7 +55,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
 
-
+/**
+ * Activity that handles collecting the data sample of the user's walking and ....
+ */
 public class DataCollectorActivity extends AppCompatActivity implements SensorEventListener, StepListener, NavigationView.OnNavigationItemSelectedListener {
     private static final String TAG = "DataCollectorActivity";
 
@@ -418,7 +420,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         sendToServerButton.setOnClickListener(v -> {
             Log.d(TAG, ">>>RUN>>>sendButtonClickListener");
             sendToServerButton.setEnabled(false);
-            Toast.makeText(DataCollectorActivity.this, "freq1: " + Util.samplingFrequency(accArray) + "freq2: " + Util.samplingFrequency2(accArray), Toast.LENGTH_LONG).show();
+            Toast.makeText(DataCollectorActivity.this, "freq1: " + Util.samplingFrequency(accArray), Toast.LENGTH_LONG).show();
             //TODO check if connected to wifi before attempting to send
             //extract features first TODO
             //ArrayList<byte[]> byteList = new FeatureExtractor(accArray).getByteList();

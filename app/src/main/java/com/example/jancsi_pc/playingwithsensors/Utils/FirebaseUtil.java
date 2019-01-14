@@ -25,6 +25,8 @@ import java.util.ArrayList;
 
 public class FirebaseUtil {
 
+    private FirebaseUtil(){}
+
     // FireStore (Beta database)
     public static final String USER_RECORDS_OLD_KEY = "user_records";
     public static final String USER_RECORDS_NEW_KEY = "user_records_2";
@@ -50,10 +52,12 @@ public class FirebaseUtil {
     public static boolean objectUploadDunctionFinished = false;
 
     //region HELP
-    /*
-            | This method uploads the file
-            | to FireBase Storage where the refrence is set.
-    */
+    /**
+     * This method uploads the file to FireBase Storage where the refrence is set.
+     * @param activity the activity context where the method will display progress messages
+     * @param file the File that will be uploaded
+     * @param ref the StorageReference where the file will be uploaded
+     */
     //endregion
     public static void UploadFileToFirebaseStorage(Activity activity, File file, StorageReference ref) {
         String TAG = "FirebaseUtil";
@@ -75,24 +79,18 @@ public class FirebaseUtil {
              */
 
             task = ref.putFile(path)
-                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                            //progressDialog.dismiss();
-                            Util.progressDialog.dismiss();
-                            Toast.makeText(activity, "File uploaded.", Toast.LENGTH_LONG).show();
-                            Log.d(TAG, "<<<FINISH(async)<<<UploadFileToFirebaseStorage - onSuccess");
-                            fileUploadFunctionFinished = true;
-                        }
+                    .addOnSuccessListener(taskSnapshot -> {
+                        //progressDialog.dismiss();
+                        Util.progressDialog.dismiss();
+                        Toast.makeText(activity, "File uploaded.", Toast.LENGTH_LONG).show();
+                        Log.d(TAG, "<<<FINISH(async)<<<UploadFileToFirebaseStorage - onSuccess");
+                        fileUploadFunctionFinished = true;
                     })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Util.progressDialog.dismiss();
-                            Toast.makeText(activity, "File upload Failed!", Toast.LENGTH_LONG).show();
-                            Log.d(TAG, "<<<FINISH(async)<<<UploadFileToFirebaseStorage - onFailure");
-                            fileUploadFunctionFinished = true;
-                        }
+                    .addOnFailureListener(e -> {
+                        Util.progressDialog.dismiss();
+                        Toast.makeText(activity, "File upload Failed!", Toast.LENGTH_LONG).show();
+                        Log.d(TAG, "<<<FINISH(async)<<<UploadFileToFirebaseStorage - onFailure");
+                        fileUploadFunctionFinished = true;
                     })
                     .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
                         @Override
@@ -119,9 +117,11 @@ public class FirebaseUtil {
     }
 
     //region HELP
-    /*
-            | This method uploads the UserRecordObject
-            | object(JSON) into Firebase FireStore.
+    /**
+     * This method uploads the UserRecordObject object(JSON) into Firebase FireStore.
+     * @param activity the activity context where the method will display progress messages
+     * @param info the object that describes the required JSON object
+     * @param ref the StorageReference where the file will be uploaded
      */
     //endregion
     public static void UploadObjectToFirebaseFirestore(Activity activity, UserRecordObject info, DocumentReference ref) {
@@ -130,27 +130,26 @@ public class FirebaseUtil {
 
         objectUploadDunctionFinished = false;
 
-        ref.set(info).addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                Util.progressDialog.dismiss();
-                Toast.makeText(activity, "Object uploaded.", Toast.LENGTH_LONG).show();
-                Log.d(TAG, "<<<FINISH(async)<<<UploadObjectToFirebaseFirestore() - onSuccess");
-                objectUploadDunctionFinished = true;
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Util.progressDialog.dismiss();
-                Toast.makeText(activity, "Object upload failed!", Toast.LENGTH_LONG).show();
-                Log.d(TAG, "<<<FINISH(async)<<<UploadObjectToFirebaseFirestore() - onFailure");
-                objectUploadDunctionFinished = true;
-            }
+        ref.set(info).addOnSuccessListener(aVoid -> {
+            Util.progressDialog.dismiss();
+            Toast.makeText(activity, "Object uploaded.", Toast.LENGTH_LONG).show();
+            Log.d(TAG, "<<<FINISH(async)<<<UploadObjectToFirebaseFirestore() - onSuccess");
+            objectUploadDunctionFinished = true;
+        }).addOnFailureListener(e -> {
+            Util.progressDialog.dismiss();
+            Toast.makeText(activity, "Object upload failed!", Toast.LENGTH_LONG).show();
+            Log.d(TAG, "<<<FINISH(async)<<<UploadObjectToFirebaseFirestore() - onFailure");
+            objectUploadDunctionFinished = true;
         });
         Log.d(TAG, "(<<<FINISH<<<)UploadObjectToFirebaseFirestore() - running task in background");
     }
 
-
+    /**
+     * This method downloads a file from Firebase FireStore.
+     * @param activity the activity context where the method will display progress messaged
+     * @param downloadFromRef the StorageReference where the file will be downloaded from
+     * @param saveToThisFile the file that will contain the downloaded data
+     */
     public static void DownloadFileFromFirebaseStorage(Activity activity, StorageReference downloadFromRef, File saveToThisFile) {
         String TAG = "FirebaseUtil";
         Log.d(TAG, ">>>RUN>>>DownloadFileFromFirebaseStorage()");
@@ -183,7 +182,13 @@ public class FirebaseUtil {
         Log.d(TAG, "(<<<FINISHED<<<)DownloadFileFromFirebaseStorage()");
     }
 
-
+    /**
+     * This method downloads a file from Firebase FireStore and runs the GaitModelBuilder to display
+     * the classifiers result in percents.
+     * @param activity the activity context where the method will display progress messages
+     * @param downloadFromRef the StorageReference where the file will be downloaded from
+     * @param saveToThisFile the file that will contain the downloaded data
+     */
     public static void DownloadFileFromFirebaseStorage_AND_CheckUserInPercentage(Activity activity, StorageReference downloadFromRef, File saveToThisFile) {
         String TAG = "FirebaseUtil";
         Log.d(TAG, ">>>RUN>>>DownloadFileFromFirebaseStorage()_AND_CheckUserInPercentage");

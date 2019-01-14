@@ -19,8 +19,8 @@ import java.util.concurrent.CountDownLatch
  * @author Nemeth Krisztian-Miklos
  */
 class ListDataFromFirebaseActivity : AppCompatActivity() {
-    private lateinit var mAdapter : ListDataAdapter
-    private lateinit var mRecyclerView : RecyclerView
+    private lateinit var mAdapter: ListDataAdapter
+    private lateinit var mRecyclerView: RecyclerView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,7 +36,7 @@ class ListDataFromFirebaseActivity : AppCompatActivity() {
         //creating recycleView
         mRecyclerView = rv_list_data
         mRecyclerView.setHasFixedSize(true) //better performance
-        mRecyclerView.layoutManager = LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false)
+        mRecyclerView.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         mAdapter = ListDataAdapter(data, this)
         mRecyclerView.adapter = mAdapter
         mRecyclerView.addItemDecoration(ItemDividerDecoration(this))
@@ -54,26 +54,25 @@ class ListDataFromFirebaseActivity : AppCompatActivity() {
          *          or null if the user does not exist
          * @author Krisztian-Miklos Nemeth
          */
-        public fun queryOneUsersDataFromFireStore(userId : String):FirebaseUserData?{
-            Log.d(TAG,"queryUserDataFromFirebase")
+        public fun queryOneUsersDataFromFireStore(userId: String): FirebaseUserData? {
+            Log.d(TAG, "queryUserDataFromFirebase")
             var doc = FirebaseFirestore.getInstance().collection(FirebaseUtil.FIRESTORE_STATS_NODE).document(userId)
-            var data : FirebaseUserData? = null
+            var data: FirebaseUserData? = null
             var done = CountDownLatch(1)
             doc.get()
                     .addOnSuccessListener { document ->
                         //Log.d(TAG,"Result: " + result.documents.toString())
-                        if(document!=null){
+                        if (document != null) {
                             Log.d(TAG, document.id + " => " + document.data)
-                            var obj = FirebaseUserData(document.get("email").toString(),document.id,
-                                    document.get("devices").toString().replace("[","",false).replace("]","",false),
+                            var obj = FirebaseUserData(document.get("email").toString(), document.id,
+                                    document.get("devices").toString().replace("[", "", false).replace("]", "", false),
                                     document.get("sessions").toString().toInt(),
                                     document.get("steps").toString().toInt(),
                                     document.get("files").toString().toInt())
                             //Log.d(TAG,obj.toString())
-                            data=obj
-                        }
-                        else{
-                            Log.d(TAG,"No such document")
+                            data = obj
+                        } else {
+                            Log.d(TAG, "No such document")
                             throw Exception("No such document in firebase")
                         }
                         done.countDown()
@@ -87,32 +86,32 @@ class ListDataFromFirebaseActivity : AppCompatActivity() {
         }
     }
 
-    private fun queryUserDataFromFireStore():ArrayList<FirebaseUserData>{
-        Log.d(TAG,"queryUserDataFromFirebase")
+    private fun queryUserDataFromFireStore(): ArrayList<FirebaseUserData> {
+        Log.d(TAG, "queryUserDataFromFirebase")
         var col = FirebaseFirestore.getInstance().collection(FirebaseUtil.FIRESTORE_STATS_NODE)
         var data = arrayListOf<FirebaseUserData>()
 
         col.get()
-            .addOnSuccessListener { result ->
-                //Log.d(TAG,"Result: " + result.documents.toString())
-                for (document in result) {
-                    //Log.d(TAG, document.id + " => " + document.data)
-                    var obj = FirebaseUserData(document.get("email").toString(),document.id,
-                            document.get("devices").toString().replace("[","",false).replace("]","",false),
-                            document.get("sessions").toString().toInt(),
-                            document.get("steps").toString().toInt(),
-                            document.get("files").toString().toInt())
-                    //Log.d(TAG,obj.toString())
-                    data.add(obj)
+                .addOnSuccessListener { result ->
+                    //Log.d(TAG,"Result: " + result.documents.toString())
+                    for (document in result) {
+                        //Log.d(TAG, document.id + " => " + document.data)
+                        var obj = FirebaseUserData(document.get("email").toString(), document.id,
+                                document.get("devices").toString().replace("[", "", false).replace("]", "", false),
+                                document.get("sessions").toString().toInt(),
+                                document.get("steps").toString().toInt(),
+                                document.get("files").toString().toInt())
+                        //Log.d(TAG,obj.toString())
+                        data.add(obj)
+                    }
+                    mAdapter.changeItems(data)
+                    mRecyclerView.adapter = mAdapter
+                    (mRecyclerView.adapter as ListDataAdapter).notifyDataSetChanged()
+                    //Log.d(TAG,"NotifiedDatasetChanged")
                 }
-                mAdapter.changeItems(data)
-                mRecyclerView.adapter = mAdapter
-                (mRecyclerView.adapter as ListDataAdapter).notifyDataSetChanged()
-                //Log.d(TAG,"NotifiedDatasetChanged")
-            }
-            .addOnFailureListener { exception ->
-                Log.d(TAG, "Error getting documents: ", exception)
-            }
+                .addOnFailureListener { exception ->
+                    Log.d(TAG, "Error getting documents: ", exception)
+                }
 
         return data
     }
