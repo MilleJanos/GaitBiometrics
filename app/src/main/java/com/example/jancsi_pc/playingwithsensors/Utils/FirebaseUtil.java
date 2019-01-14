@@ -38,6 +38,11 @@ public class FirebaseUtil {
     public static final String FILE_ID_KEY = "fileId";              // often in UserRecordObject
     public static final String DOWNLOAD_URL_KEY = "downloadUrl";    // class
 
+    public static final String USER_DATA_KEY = "user_data";
+        /* <user_id> */
+            public static final String USER_DATE_KEY = "date";                   // they will be used more
+            public static final String USER_FILE_ID_KEY = "fileId";              // often in UserRecordObject
+            public static final String USER_DOWNLOAD_URL_KEY = "downloadUrl";    // class
 
     // Storage (Files)
     public static final String STORAGE_FEATURES_KEY = "features";
@@ -49,16 +54,14 @@ public class FirebaseUtil {
     public static final String STORAGE_MODELS_DEBUG_KEY = "models_debug";
 
     public static boolean fileUploadFunctionFinished = false;
-    public static boolean objectUploadDunctionFinished = false;
+    public static boolean objectUploadFunctionFinished = false;
 
-    //region HELP
     /**
      * This method uploads the file to FireBase Storage where the refrence is set.
      * @param activity the activity context where the method will display progress messages
      * @param file the File that will be uploaded
      * @param ref the StorageReference where the file will be uploaded
      */
-    //endregion
     public static void UploadFileToFirebaseStorage(Activity activity, File file, StorageReference ref) {
         String TAG = "FirebaseUtil";
         Log.d(TAG, ">>>RUN>>>UploadFileToFirebaseStorage()");
@@ -116,30 +119,28 @@ public class FirebaseUtil {
 
     }
 
-    //region HELP
     /**
      * This method uploads the UserRecordObject object(JSON) into Firebase FireStore.
      * @param activity the activity context where the method will display progress messages
      * @param info the object that describes the required JSON object
      * @param ref the StorageReference where the file will be uploaded
      */
-    //endregion
     public static void UploadObjectToFirebaseFirestore(Activity activity, UserRecordObject info, DocumentReference ref) {
         String TAG = "FirebaseUtil";
         Log.d(TAG, ">>>RUN>>>UploadObjectToFirebaseFirestore()");
 
-        objectUploadDunctionFinished = false;
+        objectUploadFunctionFinished = false;
 
         ref.set(info).addOnSuccessListener(aVoid -> {
             Util.progressDialog.dismiss();
             Toast.makeText(activity, "Object uploaded.", Toast.LENGTH_LONG).show();
             Log.d(TAG, "<<<FINISH(async)<<<UploadObjectToFirebaseFirestore() - onSuccess");
-            objectUploadDunctionFinished = true;
+            objectUploadFunctionFinished = true;
         }).addOnFailureListener(e -> {
             Util.progressDialog.dismiss();
             Toast.makeText(activity, "Object upload failed!", Toast.LENGTH_LONG).show();
             Log.d(TAG, "<<<FINISH(async)<<<UploadObjectToFirebaseFirestore() - onFailure");
-            objectUploadDunctionFinished = true;
+            objectUploadFunctionFinished = true;
         });
         Log.d(TAG, "(<<<FINISH<<<)UploadObjectToFirebaseFirestore() - running task in background");
     }

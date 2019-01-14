@@ -1,6 +1,7 @@
 package com.example.jancsi_pc.playingwithsensors;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -193,6 +194,16 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         Log.d(TAG, ">>>RUN>>>onCreate()");
 
         Util.progressDialog = new ProgressDialog(DataCollectorActivity.this);
+
+        //########################################################
+        //########################################################
+        //########################################################
+
+
+
+        //########################################################
+        //########################################################
+        //########################################################
 
         // hide keyboard if needed:
         try {
@@ -986,8 +997,9 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         if (id == R.id.nav_home) {
             Snackbar.make(attachedLayout, "HOME", Snackbar.LENGTH_SHORT).show();
         } else if (id == R.id.nav_profile) {
-            Snackbar.make(attachedLayout, "PROFILE", Snackbar.LENGTH_SHORT).show();
-            //TODO: --< TIMI >--
+            //Snackbar.make(attachedLayout, "PROFILE", Snackbar.LENGTH_SHORT).show();
+            Intent intent = new Intent(DataCollectorActivity.this, UserProfileActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_collection) {
             Snackbar.make(attachedLayout, "COLLECTION", Snackbar.LENGTH_SHORT).show();
             Log.d(TAG, "onNavigationItemSelected: Launching ListDataFromFirebaseActivity");

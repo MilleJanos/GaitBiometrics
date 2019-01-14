@@ -61,6 +61,8 @@
 
         <activity android:name=".GaitValidationActivity" />
         <activity android:name=".SettingsActivity"></activity>
+        <activity android:name=".UserProfileActivity"/>
+        <activity android:name=".EditUserActivity"/>
     </application>
 
 </manifest>
