@@ -27,10 +27,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-import FeatureExtractorLibrary.Feature;
-import FeatureExtractorLibrary.FeatureExtractor;
-import FeatureExtractorLibrary.FeatureExtractorException;
-import FeatureExtractorLibrary.IUtil;
 import ro.sapientia.gaitbiom.GaitHelperFunctions;
 import ro.sapientia.gaitbiom.GaitModelBuilder;
 import ro.sapientia.gaitbiom.GaitVerification;
@@ -38,41 +34,38 @@ import ro.sapientia.gaitbiom.IGaitModelBuilder;
 import ro.sapientia.gaitbiom.IGaitVerification;
 import weka.classifiers.Classifier;
 import weka.classifiers.trees.RandomForest;
-import weka.classifiers.trees.RandomTree;
 import weka.core.Attribute;
-import weka.core.Instances;
 import weka.core.SerializationHelper;
-import weka.core.converters.ConverterUtils;
 
 public class Util {
 
     //public static Util Util = new Util();
 
     // Singleton
-    private Util(){
+    private Util() {
 
     }
 
     private static final String TAG = "Util";
 
-    public static double samplingFrequency(ArrayList<Accelerometer> data){
+    public static double samplingFrequency(ArrayList<Accelerometer> data) {
         double period = 0;
-        for(int i=1;i<data.size();++i){
-            period+=data.get(i).getTimeStamp()-data.get(i-1).getTimeStamp();
+        for (int i = 1; i < data.size(); ++i) {
+            period += data.get(i).getTimeStamp() - data.get(i - 1).getTimeStamp();
         }
-        period/=(data.size()-1);
-        period/=1000000000;
-        Log.i(TAG, "samplingFrequency: "+1/period);
-        return 1/period;
+        period /= (data.size() - 1);
+        period /= 1000000000;
+        Log.i(TAG, "samplingFrequency: " + 1 / period);
+        return 1 / period;
     }
 
-    public static double samplingFrequency2(ArrayList<Accelerometer> data){
-        double period = 0;
-        period=data.get(data.size()-1).getTimeStamp()-data.get(0).getTimeStamp();
-        period/=(data.size()-1);
-        period/=1000000000;
-        Log.i(TAG, "samplingFrequency2: "+1/period);
-        return 1/period;
+    public static double samplingFrequency2(ArrayList<Accelerometer> data) {
+        double period;
+        period = data.get(data.size() - 1).getTimeStamp() - data.get(0).getTimeStamp();
+        period /= (data.size() - 1);
+        period /= 1000000000;
+        Log.i(TAG, "samplingFrequency2: " + 1 / period);
+        return 1 / period;
     }
 
     // logged in user
@@ -81,7 +74,10 @@ public class Util {
     public static String deviceId = "";
 
     // login/register
-    public enum ScreenModeEnum { EMAIL_MODE, PASSWORD_MODE, REGISTER_MODE }
+    public enum ScreenModeEnum {
+        EMAIL_MODE, PASSWORD_MODE, REGISTER_MODE
+    }
+
     public static ScreenModeEnum screenMode;
 
     // stored internal files location
@@ -113,7 +109,10 @@ public class Util {
     public static boolean hasUserModel = false;
     public static boolean isSetUserModel = false;
 
-    public static void hideKeyboard(Activity activity){
+    // validation
+    public static boolean validatedOnce = false;
+
+    public static void hideKeyboard(Activity activity) {
         // If keyboard is shown then hide:
         InputMethodManager imm = (InputMethodManager) activity.getSystemService(AuthenticationActivity.INPUT_METHOD_SERVICE);
         // Find the currently focused view, so we can grab the correct window token from it.
@@ -131,16 +130,17 @@ public class Util {
     public static FirebaseStorage mStorage = FirebaseStorage.getInstance();
 
     // Shared Preferences
-
     public static String sharedPrefFile = "sharedPref";  // "com.example/jancsi_pc.playingwithsensors";
-    public static SharedPreferences mPreferences ;// DataCollectorAct. onStart: getSharedPreferences(sharedPrefFile,MODE_PRIVATE);
-    public static SharedPreferences.Editor preferencesEditor;
+    public static SharedPreferences mSharedPref;// DataCollectorAct. onStart: getSharedPreferences(sharedPrefFile,MODE_PRIVATE);
+    public static SharedPreferences.Editor mSharedPrefEditor;
     public static final String LAST_LOGGED_IN_EMAIL_KEY = "lastloggedinemail";
     public static final String LAST_LOGGED_IN_ID_KEY = "lastloggedinid";
     public static final String LAST_LOGGED_IN_DATE_KEY = "lastloggedindate";
     public static final String LAST_MODEL_EMAIL_KEY = "lastmodelemailkey";
     public static final String LAST_MODEL_ID_KEY = "lastmodelidkey";
     public static final String LAST_MODEL_DATE_KEY = "lastmodeldatekey";
+    public static final String SETTING_DEBUG_MODE_KEY = "debugmode";
+
 
     // progressDialog
     public static ProgressDialog progressDialog;
@@ -156,7 +156,8 @@ public class Util {
             add("margitantal68@gmail.com");
             add("millejanos31@gmail.com");
             add("wolterwill31@gmail.com");
-        }};
+        }
+    };
 
     //region HELP
     /*
@@ -167,14 +168,14 @@ public class Util {
             |   1 - error
     */
     //endregion
-    public static short SaveAccArrayIntoCsvFile(ArrayList<Accelerometer> accArray, File file){
+    public static short SaveAccArrayIntoCsvFile(ArrayList<Accelerometer> accArray, File file) {
         String TAG = "Util";
-        Log.d(TAG,">>>RUN>>>savingAccArrayIntoCSV()");
+        Log.d(TAG, ">>>RUN>>>savingAccArrayIntoCSV()");
 
-        if( ! file.exists() ){
+        if (!file.exists()) {
             try {
                 file.createNewFile();
-            }catch (IOException e){
+            } catch (IOException e) {
                 Log.e(TAG, "IOException: file.createNewFile()");
                 e.printStackTrace();
                 return 1;
@@ -186,12 +187,12 @@ public class Util {
             PrintWriter pw = new PrintWriter(fos);
 
             // Header:
-            if(Util.rawDataHasHeader) {
+            if (Util.rawDataHasHeader) {
                 pw.println(Util.rawDataHeaderStr);
             }
 
-            for( Accelerometer a : accArray){
-                pw.println( a.toString() );
+            for (Accelerometer a : accArray) {
+                pw.println(a.toString());
             }
             pw.flush();
             pw.close();
@@ -204,11 +205,11 @@ public class Util {
             e.printStackTrace();
             return 1;
         }
-        Log.d(TAG,"<<<FINISH<<<savingAccArrayIntoCSV()");
+        Log.d(TAG, "<<<FINISH<<<savingAccArrayIntoCSV()");
         return 0;
     }
 
-    public static double CheckUserInPercentage(Activity activity, String userRawDataFilePath, String userFeatureFilePath, String dummyFeatureFilePath, String userModelFilePath, String userId){
+    public static double CheckUserInPercentage(Activity activity, String userRawDataFilePath, String userFeatureFilePath, String dummyFeatureFilePath, String userModelFilePath, String userId) {
 
         // region OLD STUFF
         //       ArrayList<Feature> features = null;
@@ -248,24 +249,23 @@ public class Util {
 
             GaitHelperFunctions.createFeaturesFileFromRawFile(
                     userRawDataFilePath,
-                    userFeatureFilePath.substring(0,Util.feature_user_path.length()-(".arff").length()),
+                    userFeatureFilePath.substring(0, Util.feature_user_path.length() - (".arff").length()),
                     userId);
-                                                // features_dummy + features_user
+            // features_dummy + features_user
             GaitHelperFunctions.mergeEquallyArffFiles(
                     dummyFeatureFilePath,
                     userFeatureFilePath);
 
-            ArrayList<Attribute> attributes = builder.getAttributes( userFeatureFilePath ); ///feature (mar letezo)
+            ArrayList<Attribute> attributes = builder.getAttributes(userFeatureFilePath); ///feature (mar letezo)
 
             IGaitVerification verifier = new GaitVerification();
             percentage = verifier.verifyUser(classifier, attributes, userRawDataFilePath); //user raw data
 
-        }catch (FileNotFoundException e){
-            Log.e(TAG,"*********File not found!");
+        } catch (FileNotFoundException e) {
+            Log.e(TAG, "*********File not found!");
             e.printStackTrace();
-        }
-        catch (Exception e){
-            Log.e(TAG,"*********Error!");
+        } catch (Exception e) {
+            Log.e(TAG, "*********Error!");
             e.printStackTrace();
         }
 
@@ -324,6 +324,7 @@ public class Util {
         }
         return false;
     }
+
     // B
     private static boolean RequireInternetConnection(Activity activity) {
         Log.d(TAG, ">>>RUN>>>RequireInternetConnection()");
@@ -359,13 +360,14 @@ public class Util {
         }*/
         return isConnected;
     }
+
     // A
     private static boolean CheckWiFiNetwork(Context context) {
         Log.d(TAG, ">>>RUN>>>CheckWiFiNetwork()");
 
         final WifiManager mWifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 
-        if( ! mWifiManager.isWifiEnabled() ) {
+        if (!mWifiManager.isWifiEnabled()) {
             /*
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(AuthenticationActivity.this);
 

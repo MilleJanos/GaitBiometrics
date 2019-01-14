@@ -42,9 +42,9 @@ public class GaitValidationActivity extends AppCompatActivity implements SensorE
     private boolean isRecording = false;
     private ArrayList<Accelerometer> accArray = new ArrayList<>();
     private long recordCount = 0;
-    public static int stepNumber=0;
-    public static final int MAX_STEP_NUMBER=10;
-    public static final int MIN_STEP_NUMBER=5;
+    public static int stepNumber = 0;
+    public static final int MAX_STEP_NUMBER = 10;
+    public static final int MIN_STEP_NUMBER = 5;
     private TextView textViewStatus;
     private TextView loggedInUserEmailTextView;
     private ImageView logoutImageView;
@@ -61,7 +61,7 @@ public class GaitValidationActivity extends AppCompatActivity implements SensorE
 
     // from shared pref;
     String offlineLastModelEmail;
-    String offlineLastModelId ;
+    String offlineLastModelId;
     String offlineLastModelDate;
 
     /*
@@ -83,11 +83,9 @@ public class GaitValidationActivity extends AppCompatActivity implements SensorE
         //
 
 
-
-
-        Log.i(TAG,"offlineLastModelEmail: " + offlineLastModelEmail);
-        Log.i(TAG,"offlineLastModelId: " + offlineLastModelId);
-        Log.i(TAG,"offlineLastModelDate: " + offlineLastModelDate);
+        Log.i(TAG, "offlineLastModelEmail: " + offlineLastModelEmail);
+        Log.i(TAG, "offlineLastModelId: " + offlineLastModelId);
+        Log.i(TAG, "offlineLastModelDate: " + offlineLastModelDate);
 
         //
         // Internal files Path:
@@ -97,12 +95,11 @@ public class GaitValidationActivity extends AppCompatActivity implements SensorE
         // Create folder if not exists:
         File myInternalFilesRoot;
 
-        myInternalFilesRoot = new File( Util.internalFilesRoot.getAbsolutePath() /*+ customDIR*/ );
-        if(!myInternalFilesRoot.exists()) {
+        myInternalFilesRoot = new File(Util.internalFilesRoot.getAbsolutePath() /*+ customDIR*/);
+        if (!myInternalFilesRoot.exists()) {
             myInternalFilesRoot.mkdirs();
-            Log.i(TAG,"Path not exists (" + myInternalFilesRoot.getAbsolutePath() + ") --> .mkdirs()");
+            Log.i(TAG, "Path not exists (" + myInternalFilesRoot.getAbsolutePath() + ") --> .mkdirs()");
         }
-
 
 
         //region
@@ -115,32 +112,32 @@ public class GaitValidationActivity extends AppCompatActivity implements SensorE
                 rawdata_<userId>.csv        rawdata_<userId>_<date>_<time>.csv
         */
         //endregion
-        Util.feature_dummy_path = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/feature_dummy.arff" ;
-        Util.rawdata_user_path  = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/rawdata_" + offlineLastModelId + ".csv";
-        Util.feature_user_path  = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/feature_" + offlineLastModelId + ".arff";  // The date and time will be added before uploading the files
+        Util.feature_dummy_path = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/feature_dummy.arff";
+        Util.rawdata_user_path = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/rawdata_" + offlineLastModelId + ".csv";
+        Util.feature_user_path = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/feature_" + offlineLastModelId + ".arff";  // The date and time will be added before uploading the files
         //Util.model_user_path    = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/gaitverif_"   + mAuth.getUid() + ".mdl";
         //region Print this 4 paths
-        Log.i(TAG,"PATH: Util.feature_dummy_path = " + Util.feature_dummy_path );
-        Log.i(TAG,"PATH: Util.rawdata_user_path  = " + Util.rawdata_user_path  );
-        Log.i(TAG,"PATH: Util.feature_user_path  = " + Util.feature_user_path  );
+        Log.i(TAG, "PATH: Util.feature_dummy_path = " + Util.feature_dummy_path);
+        Log.i(TAG, "PATH: Util.rawdata_user_path  = " + Util.rawdata_user_path);
+        Log.i(TAG, "PATH: Util.feature_user_path  = " + Util.feature_user_path);
         //Log.i(TAG,"PATH: Util.model_user_path    = " + Util.model_user_path);
         //endregion
 
         // internal files as File type:
-        featureDummyFile = new File( Util.feature_dummy_path );
-        rawdataUserFile  = new File( Util.rawdata_user_path );
-        featureUserFile  = new File( Util.feature_user_path );
+        featureDummyFile = new File(Util.feature_dummy_path);
+        rawdataUserFile = new File(Util.rawdata_user_path);
+        featureUserFile = new File(Util.feature_user_path);
         //modelUserFile    = new File( Util.model_user_path );
 
 
-        if(!featureDummyFile.exists()){
-            Log.e(TAG,"File is missing: " + Util.feature_dummy_path);
+        if (!featureDummyFile.exists()) {
+            Log.e(TAG, "File is missing: " + Util.feature_dummy_path);
         }
-        if(!rawdataUserFile.exists()){
-            Log.e(TAG,"File is missing: " + Util.rawdata_user_path);
+        if (!rawdataUserFile.exists()) {
+            Log.e(TAG, "File is missing: " + Util.rawdata_user_path);
         }
-        if(!featureUserFile.exists()){
-            Log.e(TAG,"File is missing: " + Util.feature_user_path);
+        if (!featureUserFile.exists()) {
+            Log.e(TAG, "File is missing: " + Util.feature_user_path);
         }
         /*
         if(!modelUserFile.exists()){
@@ -153,7 +150,7 @@ public class GaitValidationActivity extends AppCompatActivity implements SensorE
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
-        if( accelerometerSensor == null ){
+        if (accelerometerSensor == null) {
             Toast.makeText(this, "The device has no Accelerometer !", Toast.LENGTH_SHORT).show();
             finish();
         }
@@ -165,7 +162,7 @@ public class GaitValidationActivity extends AppCompatActivity implements SensorE
         textViewStatus.setText(R.string.startRecording);
 
         startButton = findViewById(R.id.gaitverif_buttonStart);
-        stopButton  = findViewById(R.id.gaitverif_buttonStop);
+        stopButton = findViewById(R.id.gaitverif_buttonStop);
         gaitVerificationButton = findViewById(R.id.gaitverif_verifyButton);
         stopButton.setEnabled(false);
 
@@ -183,7 +180,7 @@ public class GaitValidationActivity extends AppCompatActivity implements SensorE
         reportErrorTextView = findViewById(R.id.errorReportTextView);
         reportErrorTextView.setOnClickListener(v -> {
             Log.d(TAG, ">>>RUN>>>reportErrorTextViewClickListener");
-            Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto","abc@gmail.com", null));
+            Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto", "abc@gmail.com", null));
             emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Problem with authentication.");
             emailIntent.putExtra(Intent.EXTRA_TEXT, "");
             emailIntent.putExtra(Intent.EXTRA_EMAIL, "");
@@ -214,6 +211,7 @@ public class GaitValidationActivity extends AppCompatActivity implements SensorE
                     textViewStatus.setText(("Recording: " + stepNumber + " steps made."));
                 }
             }
+
             @Override
             public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
@@ -249,7 +247,7 @@ public class GaitValidationActivity extends AppCompatActivity implements SensorE
 
         stopButton.setOnClickListener(v -> {
             Log.d(TAG, ">>>RUN>>>stopButtonClickListener");
-            Util.recordDateAndTimeFormatted  = DateFormat.format("yyyyMMdd_HHmmss", mDate.getTime());
+            Util.recordDateAndTimeFormatted = DateFormat.format("yyyyMMdd_HHmmss", mDate.getTime());
             isRecording = false;
             startButton.setEnabled(true);
             stopButton.setEnabled(false);
@@ -259,8 +257,8 @@ public class GaitValidationActivity extends AppCompatActivity implements SensorE
             textViewStatus.setText(R.string.calculating);
             CMD = accArrayToString();
             CMD += ",end";
-            Log.d(TAG,"CMD Generated.");
-            textViewStatus.setText(("Recorded: " + recordCount + " datapoints and " + stepNumber +" step cycles."));
+            Log.d(TAG, "CMD Generated.");
+            textViewStatus.setText(("Recorded: " + recordCount + " datapoints and " + stepNumber + " step cycles."));
         });
 
         /*
@@ -286,11 +284,11 @@ public class GaitValidationActivity extends AppCompatActivity implements SensorE
             | output format:   "timestamp,x,y,z,currentStepCount,timestamp,x,y,z,currentStepCount,timestamp,x,y,z,timestamp,currentStepCount, ... ,end"
      */
     //endregion
-    public String accArrayToString(){
+    public String accArrayToString() {
         Log.d(TAG, ">>>RUN>>>accArrayToString()");
         StringBuilder sb = new StringBuilder();
         int i;
-        for( i=0; i< accArray.size()-1; ++i ){
+        for (i = 0; i < accArray.size() - 1; ++i) {
             sb.append(accArray.get(i).getTimeStamp())
                     .append(",")
                     .append(accArray.get(i).getX())
@@ -323,16 +321,16 @@ public class GaitValidationActivity extends AppCompatActivity implements SensorE
     }
 
     @Override
-    protected  void onStart(){
+    protected void onStart() {
         Log.d(TAG, ">>>RUN>>>onStart()");
         super.onStart();
 
-        Util.mPreferences = getSharedPreferences(Util.sharedPrefFile,MODE_PRIVATE);
+        Util.mSharedPref = getSharedPreferences(Util.sharedPrefFile, MODE_PRIVATE);
 
         //if (savedInstanceState != null){
-            offlineLastModelEmail = Util.mPreferences.getString(Util.LAST_MODEL_EMAIL_KEY,"");
-            offlineLastModelId = Util.mPreferences.getString(Util.LAST_MODEL_ID_KEY,"");
-            offlineLastModelDate = Util.mPreferences.getString(Util.LAST_MODEL_ID_KEY,"");
+        offlineLastModelEmail = Util.mSharedPref.getString(Util.LAST_MODEL_EMAIL_KEY, "");
+        offlineLastModelId = Util.mSharedPref.getString(Util.LAST_MODEL_ID_KEY, "");
+        offlineLastModelDate = Util.mSharedPref.getString(Util.LAST_MODEL_ID_KEY, "");
         //}
     }
 

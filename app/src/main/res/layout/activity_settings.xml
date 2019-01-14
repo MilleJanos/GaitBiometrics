@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/green_background_lighter_50"
+    tools:context=".SettingsActivity">
+
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="64dp"
+        android:layout_marginEnd="8dp"
+        android:fontFamily="@font/aldrich"
+        android:text="Settings"
+
+        android:textAlignment="center"
+        android:textColor="@color/colorBlack"
+        android:textSize="25dp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.502"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="8dp"
+        android:padding="2dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView2">
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
+            android:text="Debug mode"
+            android:textAlignment="center"
+            android:textColor="@color/colorBlack" />
+
+        <Switch
+            android:id="@+id/settingsDebugSwitch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            tools:layout_editor_absoluteX="235dp"
+            tools:layout_editor_absoluteY="178dp" />
+
+    </LinearLayout>
+
+
+
+    <Button
+        android:id="@+id/settingsSaveButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="28dp"
+        android:layout_marginBottom="36dp"
+        android:fontFamily="@font/aldrich"
+        android:text="Save"
+        android:textAllCaps="false"
+        android:textColor="@color/colorBlack"
+        android:textSize="20dp"
+        android:background="@drawable/button_selector"
+        android:shadowRadius="@android:integer/config_longAnimTime"
+        android:textAlignment="center"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline4" />
+
+    <Button
+        android:id="@+id/settingsLoadButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="36dp"
+        android:layout_marginBottom="84dp"
+        android:background="@drawable/button_selector"
+        android:fontFamily="@font/aldrich"
+        android:shadowRadius="@android:integer/config_longAnimTime"
+        android:text="Load"
+        android:textAlignment="center"
+        android:textAllCaps="false"
+        android:textColor="@color/colorBlack"
+        android:textSize="20dp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/settingsSaveButton"
+        app:layout_constraintEnd_toStartOf="@+id/guideline4" />
+
+    <Button
+        android:id="@+id/settingsCancelButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="28dp"
+        android:layout_marginBottom="36dp"
+        android:background="@drawable/button_selector"
+        android:fontFamily="@font/aldrich"
+        android:shadowRadius="@android:integer/config_longAnimTime"
+        android:text="Cancel"
+        android:textAlignment="center"
+        android:textAllCaps="false"
+        android:textColor="@color/colorBlack"
+        android:textSize="20dp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/guideline4" />
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guideline4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5" />
+
+</android.support.constraint.ConstraintLayout>
