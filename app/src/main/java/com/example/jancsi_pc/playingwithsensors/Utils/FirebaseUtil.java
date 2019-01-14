@@ -26,7 +26,6 @@ import java.net.URL;
 
 public class FirebaseUtil {
 
-    // FireStore (Beta database)
     public static final String USER_RECORDS_OLD_KEY = "user_records";
     public static final String USER_RECORDS_NEW_KEY = "user_records_2";
     public static final String USER_RECORDS_DEBUG_KEY = "user_records_debug";
@@ -35,8 +34,13 @@ public class FirebaseUtil {
                 /* <random_id> */
                     public static final String DATE_KEY = "date";                   // they will be used more
                     public static final String FILE_ID_KEY = "fileId";              // often in UserRecordObject
-                    public static final String DOWNLOAD_URL_KEY = "downloadUrl";    // class
+                    public static final String DOWNLOAD_URL_KEY = "downloadUrl";    // class //TODO
 
+    public static final String USER_DATA_KEY = "user_data";
+        /* <user_id> */
+            public static final String USER_DATE_KEY = "date";                   // they will be used more
+            public static final String USER_FILE_ID_KEY = "fileId";              // often in UserRecordObject
+            public static final String USER_DOWNLOAD_URL_KEY = "downloadUrl";    // class
 
     // Storage (Files)
     public static final String STORAGE_FEATURES_KEY = "features";
@@ -48,7 +52,7 @@ public class FirebaseUtil {
     public static final String STORAGE_MODELS_DEBUG_KEY = "models_debug";
 
     public static boolean fileUploadFunctionFinished = false;
-    public static boolean objectUploadDunctionFinished = false;
+    public static boolean objectUploadFunctionFinished = false;
 
     //region HELP
     /*
@@ -125,11 +129,11 @@ public class FirebaseUtil {
             | object(JSON) into Firebase FireStore.
      */
     //endregion
-    public static void UploadObjectToFirebaseFirestore(Activity activity, UserRecordObject info, DocumentReference ref){
+    public static void UploadObjectToFirebaseFirestore(Activity activity, UserObject info, DocumentReference ref){
         String TAG = "FirebaseUtil";
         Log.d(TAG,">>>RUN>>>UploadObjectToFirebaseFirestore()");
 
-        objectUploadDunctionFinished = false;
+        objectUploadFunctionFinished = false;
 
         ref.set(info).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
@@ -137,7 +141,7 @@ public class FirebaseUtil {
                 Util.progressDialog.dismiss();
                 Toast.makeText(activity, "Object uploaded.",Toast.LENGTH_LONG).show();
                 Log.d(TAG,"<<<FINISH(async)<<<UploadObjectToFirebaseFirestore() - onSuccess");
-                objectUploadDunctionFinished = true;
+                objectUploadFunctionFinished = true;
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -145,7 +149,7 @@ public class FirebaseUtil {
                 Util.progressDialog.dismiss();
                 Toast.makeText(activity, "Object upload failed!",Toast.LENGTH_LONG).show();
                 Log.d(TAG,"<<<FINISH(async)<<<UploadObjectToFirebaseFirestore() - onFailure");
-                objectUploadDunctionFinished = true;
+                objectUploadFunctionFinished = true;
             }
         });
         Log.d(TAG,"(<<<FINISH<<<)UploadObjectToFirebaseFirestore() - running task in background");
