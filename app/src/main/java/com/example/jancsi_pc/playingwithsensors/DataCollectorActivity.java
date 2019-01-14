@@ -197,14 +197,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         //########################################################
         //########################################################
 
-        Button openUserProfileButton = findViewById(R.id.openUserProfileButton);
-        openUserProfileButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(DataCollectorActivity.this, UserProfileActivity.class);
-                startActivity(intent);
-            }
-        });
 
 
         //########################################################
@@ -1003,8 +995,9 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         if (id == R.id.nav_home) {
             Snackbar.make(attachedLayout, "HOME", Snackbar.LENGTH_SHORT).show();
         } else if (id == R.id.nav_profile) {
-            Snackbar.make(attachedLayout, "PROFILE", Snackbar.LENGTH_SHORT).show();
-            //TODO: --< TIMI >--
+            //Snackbar.make(attachedLayout, "PROFILE", Snackbar.LENGTH_SHORT).show();
+            Intent intent = new Intent(DataCollectorActivity.this, UserProfileActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_collection) {
             Snackbar.make(attachedLayout, "COLLECTION", Snackbar.LENGTH_SHORT).show();
             Log.d(TAG, "onNavigationItemSelected: Launching ListDataFromFirebaseActivity");

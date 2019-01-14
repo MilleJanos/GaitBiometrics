@@ -11,7 +11,6 @@ public class UserProfileActivity extends AppCompatActivity {
 
     private TextView userNameTextView;
     private TextView userEmailTextView;
-    private TextView numberOfStepsTextView;
     private TextView numberOfSessionsTextView;
     private TextView numberOfRecordsTextView;
     private Button editUserProfileButton;
@@ -23,7 +22,6 @@ public class UserProfileActivity extends AppCompatActivity {
 
         userNameTextView = findViewById(R.id.userName);
         userEmailTextView = findViewById(R.id.userEmail);
-        numberOfStepsTextView = findViewById(R.id.numberOfSteps);
         numberOfSessionsTextView = findViewById(R.id.numberOfSessions);
         numberOfRecordsTextView = findViewById(R.id.numberOfRecords);
         editUserProfileButton = findViewById(R.id.editUserProfileButton);
