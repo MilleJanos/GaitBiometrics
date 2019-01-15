@@ -47,7 +47,6 @@ public class SettingsActivity extends AppCompatActivity {
             }
         });
 
-        //TODO: DELETE THIS DEBUG(LOAD) BUTTON
         Button settingsLoadButton = findViewById(R.id.settingsLoadButton);
         settingsLoadButton.setVisibility(View.GONE);
         settingsLoadButton.setOnClickListener(v -> {

@@ -23,6 +23,10 @@ import com.google.firebase.storage.UploadTask;
 import java.io.File;
 import java.util.ArrayList;
 
+/**
+ * This class contains the Util variables and methods for firebase transactions.
+ */
+
 public class FirebaseUtil {
 
     private FirebaseUtil() {
@@ -267,7 +271,6 @@ public class FirebaseUtil {
     }
 
 
-    // TODO ! save here all !
 
 
     /**
@@ -285,7 +288,7 @@ public class FirebaseUtil {
      *              incremented to the previous value
      * @author Krisztian-Miklos Nemeth
      */
-    public static void updateStatsInFirestore(int steps) {  //TODO test properly
+    public static void updateStatsInFirestore(int steps) {
         //query record
         DocumentReference docRef = FirebaseFirestore.getInstance()
                 .collection(FIRESTORE_STATS_NODE + "/")
@@ -324,7 +327,7 @@ public class FirebaseUtil {
      * @param email the current user's email address
      * @author Krisztian-Miklos Nemeth
      */
-    public static void createStatsInFirestore(String email) {  //TODO test properly
+    public static void createStatsInFirestore(String email) {
         FirebaseFirestore.getInstance()
                 .collection(FIRESTORE_STATS_NODE + "/")
                 .document(Util.mAuth.getUid())
@@ -339,7 +342,7 @@ public class FirebaseUtil {
      * or null if the user does not exist
      * @author Krisztian-Miklos Nemeth
      */
-    public static FirebaseUserData queryUserData(String userId) {  //TODO test properly
+    public static FirebaseUserData queryUserData(String userId) {
         //invoking a function already implemented in kotlin :D
         return ListDataFromFirebaseActivity.Companion.queryOneUsersDataFromFireStore(userId);
     }

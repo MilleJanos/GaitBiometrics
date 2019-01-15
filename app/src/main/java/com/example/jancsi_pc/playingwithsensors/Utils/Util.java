@@ -42,8 +42,6 @@ import weka.core.SerializationHelper;
  */
 public class Util {
 
-    //public static Util Util = new Util();
-
     // Singleton
     private Util() {
 
@@ -66,16 +64,6 @@ public class Util {
         Log.i(TAG, "samplingFrequency: " + 1 / period);
         return 1 / period;
     }
-
-    /*alternative to first function
-    public static double samplingFrequency2(ArrayList<Accelerometer> data) {
-        double period;
-        period = data.get(data.size() - 1).getTimeStamp() - data.get(0).getTimeStamp();
-        period /= (data.size() - 1);
-        period /= 1000000000;
-        Log.i(TAG, "samplingFrequency2: " + 1 / period);
-        return 1 / period;
-    }*/
 
     // logged in user
     public static String userEmail = "";
@@ -108,8 +96,6 @@ public class Util {
     // download this dummy for generating
     public static String firebaseDummyFileName = "features_rRHyStiEKkN4Cq5rVSxlpvrCwA72.arff";
 
-    // show errors for user
-    public static String intoTextViewString = "";
 
     // used to finish all activities:
     public static boolean isFinished = false;
@@ -295,23 +281,6 @@ public class Util {
         return percentage;
     }
 
-    /*private static Instances testLoadDataset(String path, Activity activity){
-        Instances dataset = null;
-        try {
-            //dataset = ConverterUtils.DataSource.read(path);
-            Classifier treeClassifier = (RandomForest) SerializationHelper.read(new FileInputStream(path));
-            if (dataset.classIndex() == -1) {
-                dataset.setClassIndex(dataset.numAttributes() - 1);
-            }
-        } catch (Exception ex) {
-            //Logger.getLogger(GaitModelBuilder.class.getName()).log(Level.SEVERE, null, ex);
-            Toast.makeText(activity, "testLoadDataset failed", Toast.LENGTH_LONG).show();
-        }
-
-        return dataset;
-    }*/
-
-
 
     /*
      *
@@ -365,33 +334,6 @@ public class Util {
         ConnectivityManager cm = (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         boolean isConnected = activeNetwork != null && activeNetwork.isConnected();
-        // While there is no connection, force the user to connect
-        /*while( ! isConnected ){
-
-            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(AuthenticationActivity.this);
-
-            // set title
-            alertDialogBuilder.setTitle("No internet detected");
-
-            // set dialog message
-            alertDialogBuilder
-                    .setMessage("Make you shore you are connected to the internet")
-                    .setCancelable(false)
-                    .setPositiveButton("Retry", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            //Nothing (Retry)
-                        }
-                    })
-                    .setNegativeButton("Exit", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            Util.isFinished = true;
-                            finish(); //close the App
-                        }
-                    });
-            isConnected = activeNetwork != null && activeNetwork.isConnected();
-
-            return false;
-        }*/
         return isConnected;
     }
 
@@ -407,38 +349,6 @@ public class Util {
         final WifiManager mWifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 
         if (!mWifiManager.isWifiEnabled()) {
-            /*
-            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(AuthenticationActivity.this);
-
-            // set title
-            alertDialogBuilder.setTitle("Wifi Settings");
-
-            // set dialog message
-            alertDialogBuilder
-                    .setMessage("Do you want to enable WIFI ?")
-                    .setCancelable(false)
-                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            // enable wifi
-                            mWifiManager.setWifiEnabled(true);
-
-                        }
-                    })
-                    .setNegativeButton("Exit", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            //disable wifi
-                            //mWifiManager.setWifiEnabled(false);
-                            Util.isFinished = true;
-                            finish(); //close the App
-                        }
-                    });
-
-            // create alert dialog
-            AlertDialog alertDialog = alertDialogBuilder.create();
-
-            // show it
-            alertDialog.show();
-            */
             return false;
         }
         // else:

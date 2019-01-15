@@ -52,9 +52,6 @@ public class EditUserActivity extends AppCompatActivity {
         editUserImageBig.setOnClickListener(uploadImageOnClickListener);
         editUserImageSmall.setOnClickListener(uploadImageOnClickListener);
 
-        //TODO download name, email, steps, sessions, records
-
-        //TODO set name, email, steps, sessions, records
 
     }
 

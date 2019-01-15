@@ -34,9 +34,6 @@ public class UserProfileActivity extends AppCompatActivity {
             }
         });
 
-        //TODO download name, email, steps, sessions, records
-
-        //TODO set name, email, steps, sessions, records
 
     }
 }

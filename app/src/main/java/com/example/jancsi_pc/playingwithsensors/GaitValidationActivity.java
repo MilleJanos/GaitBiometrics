@@ -270,7 +270,6 @@ public class GaitValidationActivity extends AppCompatActivity implements SensorE
 
         gaitVerificationButton.setOnClickListener(v -> {
             Log.d(TAG, ">>>RUN>>>gaitVerificationButtonClickListener");
-            //TODO so
         });
 
 
