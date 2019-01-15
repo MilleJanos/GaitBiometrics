@@ -388,6 +388,18 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                     ActivityCompat.requestPermissions(DataCollectorActivity.this, new String[]{Manifest.permission.INTERNET}, Util.REQUEST_CODE);
                 }
 
+                // Get debug value from shared pref
+                String debugModeStr = Util.mSharedPref.getString(Util.SETTING_DEBUG_MODE_KEY, null);
+                if (debugModeStr == null) {                                 // If was not set yet(in shared pref)
+                    Log.i(TAG, "debugModeStr= " + null);
+                    Util.debugMode = false;
+                } else {
+                    Log.i(TAG, "debugModeStr= " + "\"" + debugModeStr + "\"");
+                    int debugModeInt = Integer.parseInt(debugModeStr);
+                    Log.i(TAG, "debugModeInt= " + debugModeInt);
+                    Util.debugMode = debugModeInt == 1;
+                }
+
                 // Change Debug DIR
                 String fileStorageName;
                 String collectionName;
@@ -416,7 +428,10 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                         .document(mAuth.getUid() + "")
                         .collection(Util.deviceId)
                         .document(randomId);
+                // Upload Object To Firebase Firestore:
                 FirebaseUtil.UploadObjectToFirebaseFirestore(DataCollectorActivity.this, info, mDocRef);
+
+                // Update User Statistics in Firebase Firestore:
                 FirebaseUtil.updateStatsInFirestore(stepNumber);
 
             } catch (Exception e) {
@@ -662,7 +677,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     private void ShowGaitResult() {
         if (!Util.validatedOnce) {
             //region GAIT VALIDATER
-            startButton.callOnClick();
 
             Util.hideKeyboard(DataCollectorActivity.this);
 
@@ -680,6 +694,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                     (dialogInitial, id) -> {
                         dialogInitial.cancel();
 
+                        startButton.callOnClick();
 
                         AlertDialog.Builder builder = new AlertDialog.Builder(DataCollectorActivity.this);
                         builder.setTitle("Authentificate yourselfe");
@@ -720,8 +735,11 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                                     File downloadedUserModelFile = new File(Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/downloadedmodel_" + mAuth.getUid() + ".mdl");
                                     String downloadedUserModelFilePath = downloadedUserModelFile.getAbsolutePath();
 
-                                    //FirebaseUtil.DownloadFileFromFirebaseStorage(DataCollectorActivity.this, ref, downloadedUserModelFile);
+                                    /*
+                                     * This will show the result
+                                     */
                                     FirebaseUtil.DownloadFileFromFirebaseStorage_AND_CheckUserInPercentage(DataCollectorActivity.this, ref, downloadedUserModelFile);
+
 
                                     textViewStatus.setText(R.string.press_start_to_collect);
 
@@ -729,36 +747,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                                     if (Util.SaveAccArrayIntoCsvFile(accArray, rawdataUserFile) == 1) {
                                         Toast.makeText(DataCollectorActivity.this, "Error saving raw data!", Toast.LENGTH_LONG).show();
                                     }
-
-                                    // String rawDataUserFilePath = rawdataUserFile.getAbsolutePath(); // == Util.rawdata_user_path
-
-                                    // User raw (VAN)
-                                    // Feature user (LESZ)
-                                    // Dummy feature (VAN)
-
-                                    // double percentage = Util.CheckUserInPercentage(
-                                    //         DataCollectorActivity.this,
-                                    //         Util.rawdata_user_path,
-                                    //         Util.feature_user_path,
-                                    //         Util.feature_dummy_path,
-                                    //         downloadedUserModelFilePath,
-                                    //         Util.mAuth.getUid() );
-                                    //
-                                    //               //dialog.cancel();
-                                    //
-                                    // AlertDialog.Builder builder1 = new AlertDialog.Builder(DataCollectorActivity.this);
-                                    // builder1.setTitle("Gait Validation");
-                                    // builder1.setMessage("Result: " + percentage );
-                                    // builder1.setCancelable(true);
-                                    // builder1.setNeutralButton(android.R.string.ok,
-                                    //         new DialogInterface.OnClickListener() {
-                                    //             public void onClick(DialogInterface dialog1, int id) {
-                                    //                 dialog1.cancel();
-                                    //             }
-                                    //         });
-                                    //
-                                    // AlertDialog alert11 = builder1.create();
-                                    // alert11.show();
 
                                     /*LoadDial4Gener*/
                                     if (Util.progressDialog.isShowing()) {
@@ -901,16 +889,21 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_home) {
+        /*if (id == R.id.nav_home) {
             Snackbar.make(attachedLayout, "HOME", Snackbar.LENGTH_SHORT).show();
-        } else if (id == R.id.nav_profile) {
+        } else */
+        if (id == R.id.nav_profile) {
             Intent intent = new Intent(DataCollectorActivity.this, UserProfileActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_collection) {
-            Snackbar.make(attachedLayout, "COLLECTION", Snackbar.LENGTH_SHORT).show();
-            Log.d(TAG, "onNavigationItemSelected: Launching ListDataFromFirebaseActivity");
-            Intent intent = new Intent(DataCollectorActivity.this, ListDataFromFirebaseActivity.class);
-            startActivity(intent);
+            //Snackbar.make(attachedLayout, "COLLECTION", Snackbar.LENGTH_SHORT).show();
+            if( Util.isAdminLoggedIn ){
+                Log.d(TAG, "onNavigationItemSelected: Launching ListDataFromFirebaseActivity");
+                Intent intent = new Intent(DataCollectorActivity.this, ListDataFromFirebaseActivity.class);
+                startActivity(intent);
+            }else {
+                Snackbar.make(findViewById(R.id.datacollector_main_layout), "Only Administrators can access!", Snackbar.LENGTH_SHORT).show();
+            }
         } else if (id == R.id.nav_settings) {
             Intent intent = new Intent(DataCollectorActivity.this, SettingsActivity.class);
             startActivity(intent);

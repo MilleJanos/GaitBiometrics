@@ -13,10 +13,18 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.example.jancsi_pc.playingwithsensors.Utils.FirebaseUtil;
+import com.example.jancsi_pc.playingwithsensors.Utils.UserDataObject;
 import com.example.jancsi_pc.playingwithsensors.Utils.Util;
+import com.google.android.gms.auth.api.signin.internal.Storage;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -24,6 +32,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URI;
+import java.util.Date;
 
 /**
  * This Activity is responsible in editing the user`s personal data
@@ -33,10 +43,14 @@ import java.io.IOException;
 
 public class EditUserActivity extends AppCompatActivity {
 
-    private ImageView editUserImageBig;
+    private static ImageView editUserImageBig;
     private ImageView editUserImageSmall;
 
+    private static EditText userNameEditText;
+
     private Button cancelButton;
+    private Button saveButton;
+    private Button backButton;
 
     private String imagepath=null;
 
@@ -47,13 +61,39 @@ public class EditUserActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_user_profile);
 
-        cancelButton =findViewById(R.id.cancel_edit_button);
+        userNameEditText = findViewById(R.id.user_name_edit_text);
 
+        backButton = findViewById(R.id.edit_profile_backButton);
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
+
+        cancelButton =findViewById(R.id.cancel_edit_button);
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(EditUserActivity.this, UserProfileActivity.class);
-                startActivity(intent);
+                //Intent intent = new Intent(EditUserActivity.this, UserProfileActivity.class);
+                //startActivity(intent);
+                finish();
+            }
+        });
+
+        saveButton = findViewById(R.id.submit_edit_button);
+        saveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String username = userNameEditText.getText().toString();
+                Date date = new Date();
+                UserDataObject udo = new UserDataObject(date.toString(),"-1","null", username);
+                DocumentReference ref = FirebaseFirestore.getInstance()
+                        .collection(FirebaseUtil.USER_DATA_KEY + "/")
+                        .document(Util.mAuth.getUid() + "");
+                Log.e(TAG,"DocumentReference ref = " + ref.toString() );
+                FirebaseUtil.UploadObjectToFirebaseFirestore(EditUserActivity.this, udo, ref);
+                finish();
             }
         });
 
@@ -62,7 +102,6 @@ public class EditUserActivity extends AppCompatActivity {
 
         editUserImageBig.setOnClickListener(uploadImageOnClickListener);
         editUserImageSmall.setOnClickListener(uploadImageOnClickListener);
-
 
     }
 
@@ -102,9 +141,23 @@ public class EditUserActivity extends AppCompatActivity {
 
 
             String destinationFilename = Util.internalFilesRoot.getAbsolutePath() + "/" + Util.customDIR + "last_user_profile_image.jpg";
-            Log.i(TAG,"destinationFilename= " + destinationFilename );
-            SaveUriToFile(selectedImageUri,destinationFilename);
+            Log.i(TAG,"destinationFilename = " + destinationFilename );
+            Log.i(TAG,"selectedImageUri.getPath() = " + selectedImageUri.getPath() );
+            Log.i(TAG,"selectedImageUri.toString()  = " + selectedImageUri.toString() );
+            //SaveUriToFile(selectedImageUri,destinationFilename);
 
+
+            try {
+                File file = new File(new URI(selectedImageUri.getPath()));
+
+                FirebaseStorage storage = Util.mStorage;
+                StorageReference ref  = storage.getReference();
+                ref = ref.child( "TEST" + "/");
+
+                FirebaseUtil.UploadFileToFirebaseStorage(EditUserActivity.this, file, ref);
+            }catch (Exception e){
+                Log.e(TAG,"***ERROR CREATING FILE FROM URI");
+            }
         }
     }
     public String getPath(Uri uri) {
@@ -143,6 +196,38 @@ public class EditUserActivity extends AppCompatActivity {
             }
         }
         Log.i(TAG,"<<<FINISHED<<<SaveUriToFile");
+    }
+
+    /**
+     *  This method download the data of the user from Firebase Firestore
+     */
+    public void DownloadUserDataFromFirebase(){
+        // Name:
+
+
+        DocumentReference ref = FirebaseFirestore.getInstance()
+                .collection(  FirebaseUtil.USER_DATA_KEY + "/")
+                .document(Util.mAuth.getUid() + "");
+        FirebaseUtil.DownloadUserDataObjectFromFirebaseFirestore_AND_SetTheResult(EditUserActivity.this, ref, 1);   // 1 = from EditUserActivity
+        // Image:
+
+        // Stats
+    }
+
+    /**
+     * This method updates the User Interface.
+     */
+    public static void UpdateUserDataObject(){
+        userNameEditText.setText( Util.mUserDataObject_Temp.userName);
+        userNameEditText.setEnabled(true);
+    }
+
+    @Override
+    protected void onStart(){
+        super.onStart();
+        userNameEditText.setEnabled(false);
+        userNameEditText.setText("Loading...");
+        DownloadUserDataFromFirebase();
     }
 
 }

@@ -92,7 +92,7 @@ public class SettingsActivity extends AppCompatActivity {
     /**
      * Loads the app settings from shared preferences
      */
-    private void LoadSettings() {
+    public void LoadSettings() {
         /*
          * Get fresh shared preferences
          */

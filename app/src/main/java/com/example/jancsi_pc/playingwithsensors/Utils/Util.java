@@ -158,6 +158,9 @@ public class Util {
         }
     };
 
+    // Temp variable to help return from Firebase Util function's async part:
+    public static UserDataObject mUserDataObject_Temp = new UserDataObject();
+
     //region HELP
     /**
      * This method saves the accArray<Accelerometer> list into file including header.
@@ -354,4 +357,5 @@ public class Util {
         // else:
         return true;
     }
+
 }

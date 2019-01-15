@@ -31,7 +31,7 @@
         android:text="Accelerometer:"
         android:textColor="@color/colorBlack"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.18"
+        app:layout_constraintHorizontal_bias="0.032"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/datacollector_titleTextView" />
 
@@ -45,7 +45,7 @@
         android:textColor="@color/colorBlack"
         app:layout_constraintBottom_toTopOf="@+id/textViewAY2"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.503"
+        app:layout_constraintHorizontal_bias="0.172"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewAccelerometer2" />
 
@@ -59,6 +59,7 @@
         android:textColor="@color/colorBlack"
         app:layout_constraintBottom_toTopOf="@+id/textViewAZ2"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.171"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewAX2" />
 
@@ -71,6 +72,7 @@
         android:text="Z: -z.zz-"
         android:textColor="@color/colorBlack"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.171"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textViewAY2" />
 
@@ -158,17 +160,18 @@
         android:id="@+id/textViewStatus"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
-        android:text="-current status-"
-        android:gravity="center"
         android:fontFamily="@font/aldrich"
+        android:gravity="center"
+        android:text="-current status-"
         android:textColor="@color/colorBlue5"
-        app:layout_constraintBottom_toTopOf="@+id/guideline3"
+        app:layout_constraintBottom_toTopOf="@+id/buttonStart"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textViewAZ2" />
+        app:layout_constraintTop_toBottomOf="@+id/datacollector_titleTextView" />
 
     <android.support.constraint.Guideline
         android:id="@+id/guideline2"
@@ -229,6 +232,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
+        android:layout_marginTop="100dp"
         android:layout_marginEnd="8dp"
         android:fontFamily="@font/aldrich"
         android:text="Data Collector"
@@ -238,7 +242,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.502"
         app:layout_constraintStart_toStartOf="parent"
-        tools:layout_editor_absoluteY="97dp" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/errorReportTextView"

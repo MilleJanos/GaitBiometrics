@@ -6,6 +6,13 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+
+import com.example.jancsi_pc.playingwithsensors.Utils.FirebaseUtil;
+import com.example.jancsi_pc.playingwithsensors.Utils.UserDataObject;
+import com.example.jancsi_pc.playingwithsensors.Utils.Util;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+
 /**
  * This Activity show the data of the user downloaded from Firebase
  *
@@ -13,21 +20,34 @@ import android.widget.TextView;
  */
 public class UserProfileActivity extends AppCompatActivity {
 
-    private TextView userNameTextView;
-    private TextView userEmailTextView;
-    private TextView numberOfSessionsTextView;
-    private TextView numberOfRecordsTextView;
-    private Button editUserProfileButton;
+    private static UserDataObject userDataObject = null;
+
+    private static TextView userNameTextView;
+    private static TextView userEmailTextView;
+    private static TextView numberOfSessionsTextView;
+    private static TextView numberOfRecordsTextView;
+    private static Button editUserProfileButton;
+    private static Button backButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_profile);
 
+        backButton = findViewById(R.id.user_profile_backButton);
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
         userNameTextView = findViewById(R.id.userName);
         userEmailTextView = findViewById(R.id.userEmail);
+        userEmailTextView.setText( "Email: " + Util.userEmail );
         numberOfSessionsTextView = findViewById(R.id.numberOfSessions);
+        numberOfSessionsTextView.setText( "Number of sesions: " + 0 );
         numberOfRecordsTextView = findViewById(R.id.numberOfRecords);
+        numberOfRecordsTextView.setText( "Number of records: " + 0 );
         editUserProfileButton = findViewById(R.id.editUserProfileButton);
 
         editUserProfileButton.setOnClickListener(new View.OnClickListener() {
@@ -37,7 +57,45 @@ public class UserProfileActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-
-
     }
+
+    /**
+     *  This method download the data of the user from Firebase Firestore
+     */
+    public void DownloadUserDataFromFirebase(){
+        // Name:
+
+
+        DocumentReference ref = FirebaseFirestore.getInstance()
+                .collection(  FirebaseUtil.USER_DATA_KEY + "/")
+                .document(Util.mAuth.getUid() + "");
+        FirebaseUtil.DownloadUserDataObjectFromFirebaseFirestore_AND_SetTheResult(UserProfileActivity.this, ref, 0); // 0 = from UserProfileActivity
+        // Image:
+
+        // Stats:
+    }
+
+    /**
+     * This method updates the User Interface.
+     */
+    public static void UpdateUserDataObject(){
+        userDataObject = Util.mUserDataObject_Temp;
+        userNameTextView.setText( userDataObject.userName );
+        userNameTextView.setEnabled(true);
+    }
+
+    @Override
+    protected void onStart(){
+        super.onStart();
+        DownloadUserDataFromFirebase();
+    }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+        userNameTextView.setEnabled(false);
+        userNameTextView.setText("Loading...");
+        DownloadUserDataFromFirebase();
+    }
+
 }

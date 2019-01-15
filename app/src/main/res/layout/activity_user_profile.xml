@@ -14,6 +14,19 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical">
+            <Button
+                android:id="@+id/user_profile_backButton"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginTop="16dp"
+                android:textAlignment="center"
+                android:background="?android:attr/actionModeCloseDrawable"
+                android:textColor="@color/common_google_signin_btn_text_dark_pressed"
+                android:textSize="8sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
             <ImageView
                 android:layout_marginTop="45dp"
                 android:layout_gravity="center_horizontal"

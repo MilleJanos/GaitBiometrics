@@ -1,17 +1,21 @@
 package com.example.jancsi_pc.playingwithsensors.Utils;
 
 
+import com.google.firebase.firestore.IgnoreExtraProperties;
+
 /**
  * This class is used to help storing in Firebase firestore.
  *
  * @author Mille Janos
  */
+@IgnoreExtraProperties
 public class UserObject {
 
-    private String date;             // if you make changes make
-    private String fileId;           // sore that FirebaseUtil
-    private String downloadUrl;      // is updated too !
+    public String date;             // if you make changes make
+    public String fileId;           // sore that FirebaseUtil
+    public String downloadUrl;      // is updated too !
 
+    public UserObject(){ }
 
     public UserObject(String date, String fileId, String downloadUrl) {
         this.date = date;
