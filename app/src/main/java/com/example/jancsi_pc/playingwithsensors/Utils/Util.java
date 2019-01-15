@@ -139,6 +139,7 @@ public class Util {
     public static final String LAST_MODEL_ID_KEY = "lastmodelidkey";
     public static final String LAST_MODEL_DATE_KEY = "lastmodeldatekey";
     public static final String SETTING_DEBUG_MODE_KEY = "debugmode";
+    public static final String LAST_LOGGED_IN_USER_NAME_KEY = "lastloggedinusername";
 
 
     // progressDialog

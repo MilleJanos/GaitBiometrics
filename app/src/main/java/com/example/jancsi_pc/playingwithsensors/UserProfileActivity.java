@@ -57,6 +57,9 @@ public class UserProfileActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        Util.mSharedPref = getSharedPreferences(Util.sharedPrefFile, MODE_PRIVATE);
+        Util.mSharedPrefEditor = Util.mSharedPref.edit();
     }
 
     /**
@@ -82,6 +85,12 @@ public class UserProfileActivity extends AppCompatActivity {
         userDataObject = Util.mUserDataObject_Temp;
         userNameTextView.setText( userDataObject.userName );
         userNameTextView.setEnabled(true);
+        //
+        // Set username into Shared Pref
+        //
+        Util.mSharedPrefEditor.putString(Util.LAST_LOGGED_IN_USER_NAME_KEY, (Util.userEmail ));
+        // Set more options goes here !
+        Util.mSharedPrefEditor.apply();
     }
 
     @Override
@@ -96,6 +105,9 @@ public class UserProfileActivity extends AppCompatActivity {
         userNameTextView.setEnabled(false);
         userNameTextView.setText("Loading...");
         DownloadUserDataFromFirebase();
+
+
     }
 
 }
+
