@@ -33,7 +33,7 @@ import java.io.File;
 import java.util.Date;
 
 /**
- * Activity that handle the user authentication: log-in, register, forgot password
+ * Activity that handle the user authentication: log-in, register, forgot password.
  */
 public class AuthenticationActivity extends AppCompatActivity {
 
@@ -172,11 +172,12 @@ public class AuthenticationActivity extends AppCompatActivity {
             }
         }
 
-        emailEditText.setText(mEmail);//TODO REMOVE BEFORE RELEASE
-
-        emailEditText.setText("millejanos31@gmail.com"); //TODO remove
     } // OnCreate
 
+    /**
+     * This method makes the registration using the email and
+     * password local variables
+     */
     private void Register() {
         Log.d(TAG, ">>>RUN>>>Register()");
         Util.hideKeyboard(AuthenticationActivity.this);
@@ -192,7 +193,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         }
 
         mEmail = emailEditText.getText().toString();
-        mPassword = passwordEditText.getText().toString().trim(); //TODO ENCODE PASSWORD
+        mPassword = passwordEditText.getText().toString().trim();
         password2 = passwordEditText2.getText().toString().trim();
 
         Log.d(TAG, "\nmEmail=\"" + mEmail + "\"");
@@ -280,6 +281,10 @@ public class AuthenticationActivity extends AppCompatActivity {
         Log.d(TAG, "<<<FINISH<<<Register()");
     }
 
+    /**
+     * This method makes the login using the email and
+     * password local variables
+     */
     private void Login() {
         Log.d(TAG, ">>>RUN>>>Login()");
 
@@ -293,7 +298,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         }
 
         mEmail = emailEditText.getText().toString();
-        mPassword = passwordEditText.getText().toString(); //TODO ENCODE PASSWORD
+        mPassword = passwordEditText.getText().toString();
 
         Log.d(TAG, "mEmail=\"" + mEmail + "\"");
 
@@ -347,8 +352,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                     // ...
                 });
         Log.d(TAG, "<<<FINISHED<<<Login()");
-        //Intent intent = new Intent(this, ListDataFromFirebaseActivity.class); //TODO: remove
-        //startActivity(intent);
+
     }
 
     /*
@@ -358,6 +362,9 @@ public class AuthenticationActivity extends AppCompatActivity {
      */
 
 
+    /**
+     * This method prepares the User Interface for Login(email only) view.
+     */
     private void prepareScreenUIFor_email() {
         Log.d(TAG, ">>>RUN>>>prepareScreenUIFor_email()");
         titleTextView.setText(R.string.login);
@@ -395,7 +402,6 @@ public class AuthenticationActivity extends AppCompatActivity {
 
                 Log.d(TAG, "Waiting for fetchProvidersForEmail() ...");
                 if (!mEmail.equals("")) {
-                    // TODO: kicserelni a fetchProviderForEmail-t lecserelni: https://firebase.google.com/docs/auth/admin/manage-users#list_all_users
                     Util.mAuth.fetchProvidersForEmail(mEmail).addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
                             Log.d(TAG, "Checking to see if user exists in firebase or not");
@@ -419,7 +425,6 @@ public class AuthenticationActivity extends AppCompatActivity {
                                 emailEditText.requestFocus();
                                 authButton.setEnabled(true);
                                 Log.d(TAG, "Login user doesn't exist");
-                                //TODO Snackbar asking the user to register
                                 authButton.setEnabled(true);
                                 Util.progressDialog.dismiss();
                             }
@@ -553,6 +558,9 @@ public class AuthenticationActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * This method prepares the User Interface for Login(password only) view.
+     */
     private void prepareScreenUIFor_password() {
         Log.d(TAG, ">>>RUN>>>prepareScreenUIFor_password()");
         titleTextView.setText(R.string.login);
@@ -570,11 +578,6 @@ public class AuthenticationActivity extends AppCompatActivity {
 
         passwordEditText2.setVisibility(View.INVISIBLE);
         deletePasswordImageView2.setVisibility(View.INVISIBLE);
-
-        if (mEmail.trim().equals("millejanos31@gmail.com") || mEmail.trim().equals("wolterwill31@gmail.com")) {  //TODO : DELETE THIS !
-            mPassword = "01234567";
-            passwordEditText.setText("01234567");
-        }
 
         params = (ConstraintLayout.LayoutParams) authButton.getLayoutParams();
         params.topToBottom = passwordEditText.getId();
@@ -682,6 +685,9 @@ public class AuthenticationActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * This method prepares the User Interface for Registration view.
+     */
     private void prepareScreenUIFor_register() {
         Log.d(TAG, ">>>RUN>>>prepareScreenUIFor_register()");
         titleTextView.setText(R.string.register);
@@ -761,7 +767,6 @@ public class AuthenticationActivity extends AppCompatActivity {
                     Util.progressDialog.setCancelable(false);
                     Util.progressDialog.show();
 
-                    // TODO: kicserelni a fetchProviderForEmail-t lecserelni: https://firebase.google.com/docs/auth/admin/manage-users#list_all_users
                     Util.mAuth.fetchProvidersForEmail(mEmail).addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
                             Log.d(TAG, "checking to see if user exists in firebase or not");
@@ -865,11 +870,6 @@ public class AuthenticationActivity extends AppCompatActivity {
         }
     }
 
-    /*
-     *
-     *  Connection Testers:   ///TODO replace all invokations with static ones from Util class
-     *
-     */
 
 
     /*
@@ -878,6 +878,9 @@ public class AuthenticationActivity extends AppCompatActivity {
      *
      */
 
+    /**
+     * Sends reset password to currently logged in user.
+     */
     private void resetPassword() {
         Log.d(TAG, ">>>RUN>>>resetPassword()");
         forgotPassTextView.setVisibility(View.INVISIBLE);
@@ -890,7 +893,6 @@ public class AuthenticationActivity extends AppCompatActivity {
             return;
         } else {
             Log.d(TAG, "Waiting for fetchProvidersForEmail() ...");
-            // TODO: kicserelni a fetchProviderForEmail-t lecserelni: https://firebase.google.com/docs/auth/admin/manage-users#list_all_users
             Util.mAuth.fetchProvidersForEmail(mEmail).addOnCompleteListener(new OnCompleteListener<ProviderQueryResult>() {
                 @Override
                 public void onComplete(@NonNull Task<ProviderQueryResult> task) {
@@ -974,6 +976,9 @@ public class AuthenticationActivity extends AppCompatActivity {
         forgotPassTextView.setVisibility(View.VISIBLE);
     }
 
+    /**
+     * This method downloads the user model (if user has one).
+     */
     private void CheckUserModel_and_small_stuff() {
         // Test user model existence in firebase
         // AFTER signInWithEmailAndPassword is succed !

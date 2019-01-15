@@ -51,7 +51,6 @@ public class SplashScreenActivity extends AppCompatActivity {
 
         if (Util.isFinished) {
             Log.d(TAG, " isFinished() = true");
-            Util.isFinished = false;    // TODO: VIGYAZZ MERT ITT MEGSZAKITJA A LANCOLT KILEPEST, MIVEL EZ AZ UTOLSO ACTIVITY A STACKBEN, ugy(e nelkul) ujrainditaskor is kikapcsolt
             finish();
         }
     }

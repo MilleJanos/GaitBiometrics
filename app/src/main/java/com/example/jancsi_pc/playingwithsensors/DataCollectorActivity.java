@@ -56,7 +56,7 @@ import java.util.Date;
 import java.util.UUID;
 
 /**
- * Activity that handles collecting the data sample of the user's walking and ....
+ * Activity that handles collecting the data sample of the user's walking and saving them.
  */
 public class DataCollectorActivity extends AppCompatActivity implements SensorEventListener, StepListener, NavigationView.OnNavigationItemSelectedListener {
     private static final String TAG = "DataCollectorActivity";
@@ -98,11 +98,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     Date mDate;
     private String mFileName;
 
-    //private final MediaPlayer mp = MediaPlayer.create(DataCollectorActivity.this, R.raw.sound2);
-
-    //queue for containing the fixed number of steps that has to be processed
-    //TODO
-
     // For Step Detecting:
     private StepDetector simpleStepDetector;
 
@@ -118,21 +113,11 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     private File rawdataUserFile;
     private File featureUserFile;
 
-    // Progress:
-    //private ProgressDialog progressDialog;
-
-    // Debug Mode:
-    // private Switch debugSwitch;
 
     // Proxy sensor:
     private SensorManager mSensorManager;
     private Sensor mProximity;
     private static final int SENSOR_SENSITIVITY = 4;
-
-    // WakeLock (for proxy)
-    //WAKELOCK//private PowerManager powerManager;
-    //WAKELOCK//private PowerManager.WakeLock wakeLock;
-    //WAKELOCK//private int field = 0x00000020;
 
     View attachedLayout;
 
@@ -152,28 +137,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         findViewByIDs();
 
 
-        //
-        //
-        //
-
-        //setSupportActionBar(toolbar);
-        //Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        //
-        //FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        //fab.setOnClickListener(new View.OnClickListener() {
-        //    @Override
-        //    public void onClick(View view) {
-        //        Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-        //                .setAction("Action", null).show();
-        //    }
-        //});
-        //
-        //DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        //ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-        //        this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        //drawer.addDrawerListener(toggle);
-        //toggle.syncState();
-
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         navigationView.getMenu().getItem(0).setChecked(true);
@@ -181,28 +144,11 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         navigationMenuUserName = findViewById(R.id.nav_header_name);
         navigationMenuEmail = findViewById(R.id.nav_header_email);
 
-        // in Resume:
-        //navigationMenuUserName.setText("---");
-        //navigationMenuEmail.setText( Util.userEmail );
-
-        //
-        //
-        //
-
 
         Log.d(TAG, ">>>RUN>>>onCreate()");
 
         Util.progressDialog = new ProgressDialog(DataCollectorActivity.this);
 
-        //########################################################
-        //########################################################
-        //########################################################
-
-
-
-        //########################################################
-        //########################################################
-        //########################################################
 
         // hide keyboard if needed:
         try {
@@ -309,14 +255,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         mSensorManager = (SensorManager) getSystemService(DataCollectorActivity.this.SENSOR_SERVICE);
         mProximity = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
 
-        // wake lock (for proxy)
-        //WAKELOCK//powerManager = (PowerManager) getSystemService(POWER_SERVICE);
-        //WAKELOCK//try {
-        //WAKELOCK//    // Yeah, this is hidden field.
-        //WAKELOCK//    field = PowerManager.class.getClass().getField("PROXIMITY_SCREEN_OFF_WAKE_LOCK").getInt(null);
-        //WAKELOCK//} catch (Throwable ignored) {
-        //WAKELOCK//}
-        //WAKELOCK//wakeLock = powerManager.newWakeLock(field, getLocalClassName());
 
         if (NO_PYTHON_SERVER_YET) {
             sendToServerButton.setVisibility(View.INVISIBLE);
@@ -326,21 +264,10 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         accelerometerEventListener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent event) {
-                //if(stepNumber>MAX_STEP_NUMBER){ //only N steps allowed
-                //stopButton.callOnClick();
-                //}
-                //if(stepNumber>MIN_STEP_NUMBER && !stopButton.isEnabled()){ //at least M steps
-                //stopButton.setEnabled(true);
-                //}
-                //long timeStamp = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
                 long timeStamp = event.timestamp;
                 float x = event.values[0];
                 float y = event.values[1];
                 float z = event.values[2];
-
-                //queueing
-                //keeping the queue size fixed
-
                 accelerometerX.setText(("X: " + x));
                 accelerometerY.setText(("Y: " + y));
                 accelerometerZ.setText(("Z: " + z));
@@ -348,9 +275,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                 if (isRecording) {
                     accArray.add(new Accelerometer(timeStamp, x, y, z, stepNumber));
                     recordCount++;
-                    /*(STEPCOUNT)
-                    stepArray.add(numSteps);
-                    */
                     textViewStatus.setText(("Recording: " + stepNumber + " steps made."));
                 }
             }
@@ -369,8 +293,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
         startButton.setOnClickListener(v -> {
             Log.d(TAG, ">>>RUN>>>startButtonClickListener");
-            //mediaPlayer.create(null,R.raw.start);
-            //mediaPlayer.start();
             recordCount = 0;
             stepNumber = 0;
             sensorManager.registerListener(DataCollectorActivity.this, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
@@ -381,7 +303,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
             sendToServerButton.setEnabled(false);
             saveToFirebaseButton.setEnabled(false);
             Log.d("ConnectionActivity_", "Start Rec.");
-            //textViewStatus.setText("Recording ...");
         });
 
         /*
@@ -420,12 +341,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
             Log.d(TAG, ">>>RUN>>>sendButtonClickListener");
             sendToServerButton.setEnabled(false);
             Toast.makeText(DataCollectorActivity.this, "freq1: " + Util.samplingFrequency(accArray), Toast.LENGTH_LONG).show();
-            //TODO check if connected to wifi before attempting to send
-            //extract features first TODO
-            //ArrayList<byte[]> byteList = new FeatureExtractor(accArray).getByteList();
 
-            // STOP button generates the CMD
-            //sentTextView.setText( CMD );
             // Sending the array in multiple packages:
             accArrayGroupArrayToString();
             for (int i = 0; i < accArrayStringGroups.size(); ++i) {
@@ -463,10 +379,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                     the files has to be renamed withoutDate to make sure
                     there will be no copy in the internal storage.
                  */
-                //endregion
-                //RENAME//if( ! renameIternalFiles_to_withDate() ){ //return false if an error occured     // will be renamed back after uploads
-                //RENAME//    throw new MyFileRenameException("Error renaming file to \"..._<date>_<time>...\"");
-                //RENAME//}
                 if (checkCallingOrSelfPermission("android.permission.WRITE_EXTERNAL_STORAGE") != PackageManager.PERMISSION_GRANTED) {
                     ActivityCompat.requestPermissions(DataCollectorActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, Util.REQUEST_CODE);
                 }
@@ -505,30 +417,10 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                 FirebaseUtil.UploadObjectToFirebaseFirestore(DataCollectorActivity.this, info, mDocRef);
                 FirebaseUtil.updateStatsInFirestore(stepNumber);
 
-                // TODO: VARJA BE OKET ES FUTTASSA LE EZT: !!!
-                // Wait until these two async uploads finish !
-                //RENAME//if (!renameIternalFiles_to_withoutDate()) { //return false if an error occured     // will be renamed back after uploads
-                //RENAME//    Toast.makeText(DataCollectorActivity.this,"ERROR (renamig file)",Toast.LENGTH_LONG).show();
-                //RENAME//    throw new MyFileRenameException("Error renaming file to \"..._<date>_<time>...\"");
-                //RENAME//}
-
-                //RENAME//}catch( MyFileRenameException e ){
-                //RENAME//    Util.progressDialog.dismiss();
-                //RENAME//    Log.e(TAG,"ERROR (MyFileRenameError): File cannot be renamed !");
-                //RENAME//    e.printStackTrace();
             } catch (Exception e) {
                 Util.progressDialog.dismiss();
                 e.printStackTrace();
             }
-
-//                /*DELETE_ME_PLEASE*/ // SAVE TO FIREBASE FOR TIMI FOR RAW DATA -> MODEL
-//                String r = UUID.randomUUID().toString();
-//                String fileNameWithDate = "/rawdata_" + mAuth.getUid() + "_" + Util.recordDateAndTimeFormatted + ".csv";
-//                /*DELETE_ME_PLEASE*/ StorageReference ref = mStorageReference.child( "jancsi_raw_data_for_model/" + fileNameWithDate );
-//                /*DELETE_ME_PLEASE*/ FirebaseUtil.UploadFileToFirebaseStorage(DataCollectorActivity.this,rawdataUserFile, ref);
-
-
-            // TODO: if( az utolso 4 fuggveny hibatlanul lefutott ) ==> ROLLBACK
 
 
         });
@@ -536,7 +428,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
     }// OnCreate
 
-    // step: 1,2,3 in FirebaseUtil
 
 
     //region HELP
@@ -647,7 +538,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                 .append(accArray.get(i).getZ())
                 .append(",")
                 .append(stepNumber);
-        //.append(",");
         return sb.toString();
     }
 
@@ -727,7 +617,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
      *
      * @author Mille Janos
      */
-    // <String, String, TCPClient>            // TODO: Modify if needed
+    // <String, String, TCPClient>
     public static class Socket_AsyncTask extends AsyncTask<Void, Void, Void> {
         Socket socket;
 
@@ -929,7 +819,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         // If close all Activityes
         if (Util.isFinished) {
             Log.d(TAG, " isFinished() = true");
-            //Util.isFinished = false;    // TODO: VIGYAZZ MERT ITT MEGSZAKITJA A LANCOLT KILEPEST, MIVEL EZ AZ UTOLSO ACTIVITY A STACKBEN, ugy(e nelkul) ujrainditaskor is kikapcsolt
             finish();
         }
 
@@ -939,38 +828,12 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
             Intent intent = new Intent(DataCollectorActivity.this, AuthenticationActivity.class);
             startActivity(intent);
         } else {
-            // Set email and username on Slide Menu
-            //navigationMenuUserName.setText("---");
-            //navigationMenuEmail.setText( Util.userEmail );
-            // Test if user is imposter:
-            // TODO DELETE THIS IF !
-            // TODO something
             if (mAuth.getUid().equals("LnntbFQGpBeHx3RwMu42e2yOks32")) {
                 ShowGaitResult();
             }
         }
 
         sensorManager.registerListener(accelerometerEventListener, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
-
-        //MOVED TO SETTINGS
-        //
-        // // Admin Mode:
-        // if( Util.isAdminLoggedIn ){
-        //     debugSwitch.setChecked(false);
-        //     debugSwitch.setVisibility(View.VISIBLE);
-        //     debugSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-        //         if (isChecked) {
-        //             Util.debugMode = true;
-        //             Log.i(TAG, "Debug Mode -> ON");
-        //         } else {
-        //             Util.debugMode = false;
-        //             Log.i(TAG, "Debug Mode -> OFF");
-        //         }
-        //     });
-        // }else{
-        //     debugSwitch.setChecked(false);
-        //     debugSwitch.setVisibility(View.INVISIBLE);
-        // }
 
         // Show on screen model status
         if (Util.isSetUserModel) {
@@ -1017,23 +880,11 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                     event.timestamp, event.values[0], event.values[1], event.values[2]);
         }
 
-        // Proxy sensor:
-        //WAKELOCK//if (event.sensor.getType() == Sensor.TYPE_PROXIMITY) {
-        //WAKELOCK//    if (event.values[0] >= -SENSOR_SENSITIVITY && event.values[0] <= SENSOR_SENSITIVITY) {
-        //WAKELOCK//        //near
-        //WAKELOCK//        //Toast.makeText(getApplicationContext(), "near", Toast.LENGTH_SHORT).show();
-        //WAKELOCK//        wakeLock.release();
-        //WAKELOCK//    } else {
-        //WAKELOCK//        //far
-        //WAKELOCK//        //Toast.makeText(getApplicationContext(), "far", Toast.LENGTH_SHORT).show();
-        //WAKELOCK//        wakeLock.acquire();
-        //WAKELOCK//    }
-        //WAKELOCK//}
     }
 
     /**
      * Increases the stepNumber variable by 1.
-     * @param timeNs
+     * @param timeNs non
      */
     @Override
     public void step(long timeNs) {
@@ -1051,7 +902,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         if (id == R.id.nav_home) {
             Snackbar.make(attachedLayout, "HOME", Snackbar.LENGTH_SHORT).show();
         } else if (id == R.id.nav_profile) {
-            //Snackbar.make(attachedLayout, "PROFILE", Snackbar.LENGTH_SHORT).show();
             Intent intent = new Intent(DataCollectorActivity.this, UserProfileActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_collection) {
@@ -1060,7 +910,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
             Intent intent = new Intent(DataCollectorActivity.this, ListDataFromFirebaseActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_settings) {
-            //Snackbar.make(attachedLayout,"SETTINGS",Snackbar.LENGTH_SHORT).show();
             Intent intent = new Intent(DataCollectorActivity.this, SettingsActivity.class);
             startActivity(intent);
         } else if (id == R.id.nav_logout) {
@@ -1072,7 +921,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
             Util.validatedOnce = false;
             startActivity(new Intent(DataCollectorActivity.this, AuthenticationActivity.class));
         } else if (id == R.id.nav_exit) {
-            //Snackbar.make(attachedLayout,"EXIT APP",Snackbar.LENGTH_SHORT).show();
             Util.isFinished = true;
             finish();
         }

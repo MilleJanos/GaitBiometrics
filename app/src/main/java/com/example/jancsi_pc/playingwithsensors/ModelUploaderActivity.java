@@ -14,10 +14,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.format.DateFormat;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,9 +38,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
 
-// import ro.sapientia.gaitbiom.GaitModelBuilder;
-// import ro.sapientia.gaitbiom.IGaitModelBuilder;
-
+/**
+ * Activity that handle the user model: download model, upload model, generate model.
+ */
 
 public class ModelUploaderActivity extends AppCompatActivity implements SensorEventListener, StepListener {
     private final String TAG = "ModelUploaderActivity";
@@ -53,43 +51,26 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
     private Button startButton;
     private Button stopButton;
     private Button saveToFirebaseButton;
-    //PORT: 21567                         "<ip>:<port>"
-    private String IP_ADDRESS = "192.168.137.90:21456";
-    public static String wifiModuleIp = "";
-    public static int wifiModulePort = 0;
     public static String CMD = "0";
     private boolean isRecording = false;
     private ArrayList<Accelerometer> accArray = new ArrayList<>();
     private long recordCount = 0;
-    private ArrayList<String> accArrayStringGroups = new ArrayList<>();
-    private final int RECORDS_PER_PACKAGE_LIMIT = 128;
     public static int stepNumber = 0;
-    public static final int MAX_STEP_NUMBER = 10;
-    public static final int MIN_STEP_NUMBER = 5;
     private TextView textViewStatus;
     private TextView loggedInUserEmailTextView;
     private ImageView logoutImageView;
     private TextView reportErrorTextView;
 
-    //private final MediaPlayer mp = MediaPlayer.create(ModelUploaderActivity.this, R.raw.sound2);
-
-    //queue for containing the fixed number of steps that has to be processed
-    //TODO
-
     // For Step Detecting:
     private StepDetector simpleStepDetector;
-    private static final int REQUEST_CODE = 212;
 
     //Firebase:
     private FirebaseStorage mFirestore;            // used to upload files
     private StorageReference mStorageReference;  // to storage
     private FirebaseAuth mAuth = FirebaseAuth.getInstance();
-    private FirebaseFirestore mFirebaseFirestore = FirebaseFirestore.getInstance();
-    private FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
     private DocumentReference mDocRef; // = FirebaseFirestore.getInstance().document("usersFiles/information");
 
     private Date mDate;
-    private String mFileName;
 
     // local stored files:
     private File featureDummyFile;  // local stored dummy file from firebase
@@ -100,11 +81,6 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
     // for shared pres
     private CharSequence lastModelDate = "";
 
-    // Progress:
-    //private ProgressDialog Util.progressDialog;
-
-    //Debug mode:
-    // Switch debugSwitch;
 
     /*
      *
@@ -139,15 +115,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
             Log.i(TAG, "Path not exists (" + myInternalFilesRoot.getAbsolutePath() + ") --> .mkdirs()");
         }
 
-        //region
-        /*
-            storing:
-                INTERNAL STORAGE            FIREBASE STORAGE
-                feature_dummy.arff          -
-                deature_<userId>.arff       deature_<userId>_<date>_<time>.arff
-                model_<userId>.mdl          model_<userId>_<date>_<time>.mdl
-                rawdata_<userId>.csv        rawdata_<userId>_<date>_<time>.csv
-        */
+
         //endregion
         Util.feature_dummy_path = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/feature_dummy.arff";
         Util.rawdata_user_path = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/rawdata_" + mAuth.getUid() + ".csv";
@@ -234,13 +202,9 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
         stopButton.setEnabled(false);
         saveToFirebaseButton.setEnabled(false);
 
-        // debugSwitch = findViewById(R.id.debugSwitch);
-
 
         final DecimalFormat df = new DecimalFormat("0");
         df.setMaximumIntegerDigits(20);
-        // 123...45E9 -> 123...459234
-        //         ==            ====
 
         //Step Detecting:
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -261,21 +225,10 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
         accelerometerEventListener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent event) {
-                //if(stepNumber>MAX_STEP_NUMBER){ //only N steps allowed
-                //stopButton.callOnClick();
-                //}
-                //if(stepNumber>MIN_STEP_NUMBER && !stopButton.isEnabled()){ //at least M steps
-                //stopButton.setEnabled(true);
-                //}
-                //long timeStamp = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
                 long timeStamp = event.timestamp;
                 float x = event.values[0];
                 float y = event.values[1];
                 float z = event.values[2];
-
-                //queueing
-                //keeping the queue size fixed
-
                 if (isRecording) {
                     accArray.add(new Accelerometer(timeStamp, x, y, z, stepNumber));
                     recordCount++;
@@ -297,8 +250,6 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
 
         startButton.setOnClickListener(v -> {
             Log.d(TAG, ">>>RUN>>>startButtonClickListener");
-            //mediaPlayer.create(null,R.raw.start);
-            //mediaPlayer.start();
             recordCount = 0;
             stepNumber = 0;
             sensorManager.registerListener(ModelUploaderActivity.this, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
@@ -308,7 +259,6 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
             stopButton.setEnabled(true);
             saveToFirebaseButton.setEnabled(false);
             Log.d("ConnectionActivity_", "Start Rec.");
-            //textViewStatus.setText("Recording ...");
         });
 
         /*
@@ -350,14 +300,6 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
             Util.progressDialog.show();
 
             try {
-                /*
-                 * We have to upload the files withDate then after upload
-                 * the files has to be renamed withoutDate to make sure
-                 * there will be no copy in the internal storage.
-                 */
-                //RENAME//if( ! renameIternalFiles_to_withDate() ){ //return false if an error occured     // will be renamed back after uploads
-                //RENAME//    throw new MyFileRenameException("Error renaming file to \"..._<date>_<time>...\"");
-                //RENAME//}
                 if (checkCallingOrSelfPermission("android.permission.INTERNET") != PackageManager.PERMISSION_GRANTED) {
                     ActivityCompat.requestPermissions(ModelUploaderActivity.this, new String[]{Manifest.permission.INTERNET}, Util.REQUEST_CODE);
                 }
@@ -391,14 +333,6 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
                         .document(randomId);
                 FirebaseUtil.UploadObjectToFirebaseFirestore(ModelUploaderActivity.this, info, mDocRef);
 
-                // solved in ContinueModelGenerating
-                //
-                // // TODO: VARJA BE OKET ES FUTTASSA LE EZT: !!!
-                // // Wait until these two async uploads finish !
-                // if (!renameIternalFiles_to_withoutDate()) { //return false if an error occured     // will be renamed back after uploads
-                //     Toast.makeText(ModelUploaderActivity.this,"ERROR (renamig file)",Toast.LENGTH_LONG).show();
-                //     throw new MyFileRenameException("Error renaming file to \"..._<date>_<time>...\"");
-                // }
 
                 /*
                  * Model generating:
@@ -407,11 +341,6 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
                 DownloadDummyDataFromFireBaseStorage_and_GenerateModel();
 
             }
-            // catch( MyFileRenameException e ){Util.progressDialog.dismiss();
-            //Util.progressDialog.dismiss();
-            //Log.e(TAG,"ERROR (MyFileRenameError): File cannot be renamed !");
-            //e.printStackTrace();
-            //}
             catch (Exception e) {
                 Util.progressDialog.dismiss();
                 e.printStackTrace();
@@ -420,7 +349,6 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
             Date date = new Date();
             lastModelDate = DateFormat.format("yyyyMMdd_HHmmss", date.getTime());
 
-            // TODO: if( az utolso 4 fuggveny hibatlanul lefutott ) ==> ROLLBACK
         });
 
 
@@ -438,7 +366,6 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
 
     }// OnCreate
 
-    // step: 2,3 in FirebaseUtil
 
     /**
      * DownloadDummyDataFromFireBaseStorage_and_GenerateModel()
@@ -458,14 +385,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
      */
     private void DownloadDummyDataFromFireBaseStorage_and_GenerateModel() {
         Log.d(TAG, ">>>RUN>>>DownloadDummyDataFromFireBaseStorage_and_GenerateModel()");
-        // Dowloading Dummy Feature from FireBase Storage:
-
-        // String featureFolder;
-        // if( Util.debugMode ){
-        //     featureFolder = FirebaseUtil.STORAGE_FEATURES_DEBUG_KEY;
-        // }else {
-        //     featureFolder = FirebaseUtil.STORAGE_FEATURES_KEY;
-        // }
+        // Downloading Dummy Feature from FireBase Storage:
         // Dummy is always in features folder (not in features_debug)
         Util.mRef = Util.mStorage.getReference().child( /*featureFolder*/ FirebaseUtil.STORAGE_FEATURES_KEY + "/" + Util.firebaseDummyFileName);
         Log.i(TAG, "DUMMY: mRef = " + Util.mRef.toString());
@@ -497,74 +417,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
     private void ModelBuilder() {
         Log.d(TAG, ">>RUN>>>ContinueModelGenerating()");
 
-        // TODO FIX CREATE MODEL:
         Toast.makeText(ModelUploaderActivity.this, "- under development -", Toast.LENGTH_SHORT).show();
-        /*
-
-        //region *
-        Log.i(TAG," |IN| String Util.rawdata_user_path [size:"+ new File(Util.rawdata_user_path).length() +"]= "   + Util.rawdata_user_path );
-        Log.i(TAG," |IN| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= " + Util.feature_user_path);
-        //endregion
-        GaitHelperFunctions.createFeaturesFileFromRawFile(
-                Util.rawdata_user_path,                                                                 // INPUT
-                Util.feature_user_path.substring(0,Util.feature_user_path.length()-(".arff").length()), // OUTPUT       // getFeatures will add the ".arff" to the end of the file (and saves it)
-                Util.mAuth.getUid() );                                                                  // INPUT
-        //region *
-        Log.i(TAG," |OUT| String Util.rawdata_user_path [size:"+ new File(Util.rawdata_user_path).length() +"]= "   + Util.rawdata_user_path );
-        Log.i(TAG," |OUT| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= " + Util.feature_user_path);
-        //endregion
-
-        //region *
-        Log.i(TAG," |IN| String Util.feature_dummy_path [size:"+ new File(Util.feature_dummy_path).length() +"]= " + Util.feature_dummy_path);
-        Log.i(TAG," |IN| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= "  + Util.feature_user_path);
-        //endregion
-        GaitHelperFunctions.mergeEquallyArffFiles(
-                Util.feature_dummy_path,    // INPUT
-                Util.feature_user_path);    // INPUT & OUTPUT
-        //region *
-        Log.i(TAG," |OUT| String Util.feature_dummy_path [size:"+ new File(Util.feature_dummy_path).length() +"]= " + Util.feature_dummy_path);
-        Log.i(TAG," |OUT| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= "  + Util.feature_user_path);
-        //endregion
-        try{
-            //region *
-            Log.i(TAG," |IN| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= "  + Util.feature_user_path );
-            Log.i(TAG," |IN| String Util.model_user_path = [size:"+ new File(Util.model_user_path).length() +"]" + Util.model_user_path);
-            //endregion
-
-            IGaitModelBuilder builder = new GaitModelBuilder();
-            //region **
-            Log.d(TAG,">RUN>builder.createModel()");
-            //endregion
-            // Creates the model from feature
-            Classifier classifier = builder.createModel(Util.feature_user_path);
-            //region **
-            Log.d(TAG,"<FINISH<builder.createModel()");
-            //endregion
-
-            // Save model to file
-            //region **
-            Log.d(TAG,">RUN>builder.saveModel()");
-            //endregion
-            ((GaitModelBuilder) builder).saveModel(classifier, Util.model_user_path );
-            //region **
-            Log.d(TAG,"<FINISHED<builder.saveModel()");
-            //endregion
-            //region *
-            Log.i(TAG," |OUT| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= "  + Util.feature_user_path );
-            Log.i(TAG," |OUT| String Util.model_user_path = [size:"+ new File(Util.model_user_path).length() +"]" + Util.model_user_path);
-            //endregion
-
-        }
-        catch (Exception e){
-            Util.progressDialog.dismiss();
-            Toast.makeText(ModelUploaderActivity.this,"Model generating failed!",Toast.LENGTH_LONG).show();
-            Log.e(TAG,"ERROR: ModelBuilderMain.CreateAndSaveModel(Util.feature_user_path, Util.model_user_path)");
-            e.printStackTrace();
-        }
-        UploadModelToFireBaseStorage();
-        Util.progressDialog.dismiss();
-
-        */
     }
 
     /**
@@ -585,9 +438,6 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
 
         if (path != null) {
             Log.i(TAG, "Uploading Model...");
-            //final ProgressDialog Util.progressDialog = new ProgressDialog(ModelUploaderActivity.this);
-            //Util.progressDialog.setTitle("Uploading...");
-            //Util.progressDialog.show();
             String filesDir;
             if (Util.debugMode) {
                 filesDir = FirebaseUtil.STORAGE_MODELS_DEBUG_KEY;
@@ -597,10 +447,8 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
             StorageReference ref = mStorageReference.child(filesDir + "/" + path.getLastPathSegment());
             ref.putFile(path)
                     .addOnSuccessListener(taskSnapshot -> {
-                        //Util.progressDialog.dismiss();
                         Log.i(TAG, "Model Uploaded");
                         Toast.makeText(ModelUploaderActivity.this, "Model uploaded.", Toast.LENGTH_LONG).show();
-                        // Wait until these two async uploads finish !
                         if (!renameIternalFiles_to_withoutDate()) { //return false if an error occured     // will be renamed back after uploads
                             Toast.makeText(ModelUploaderActivity.this, "ERROR (renamig file)", Toast.LENGTH_LONG).show();
                             //throw new MyFileRenameException("Error renaming file to \"..._<date>_<time>...\"");
@@ -609,15 +457,11 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
                     .addOnFailureListener(e -> {
                         Log.e(TAG, "CSV upload Failed");
                         Toast.makeText(ModelUploaderActivity.this, "Model upload failed!", Toast.LENGTH_LONG).show();
-                        // Wait until these two async uploads finish !
                         if (!renameIternalFiles_to_withoutDate()) { //return false if an error occured     // will be renamed back after uploads
                             Toast.makeText(ModelUploaderActivity.this, "ERROR (renamig file)", Toast.LENGTH_LONG).show();
-                            //throw new MyFileRenameException("Error renaming file to \"..._<date>_<time>...\"");
                         }
                     })
                     .addOnProgressListener(taskSnapshot -> {
-                        //double progress = (100.0*taskSnapshot.getBytesTransferred()/taskSnapshot.getTotalByteCount());
-                        //Util.progressDialog.setMessage("Uploaded " + (int)progress + "%" );
                     });
         }
 
@@ -754,30 +598,8 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
 
         if (Util.isFinished) {
             Log.d(TAG, " isFinished() = true");
-            //Util.isFinished = false;    // TODO: VIGYAZZ MERT ITT MEGSZAKITJA A LANCOLT KILEPEST, MIVEL EZ AZ UTOLSO ACTIVITY A STACKBEN, ugy(e nelkul) ujrainditaskor is kikapcsolt
             finish();
         }
-
-        //MOVED TO SETTINGS
-        //
-        // // Admin Mode:
-        // if( Util.isAdminLoggedIn ){
-        //     debugSwitch.setChecked(false);
-        //     debugSwitch.setVisibility(View.VISIBLE);
-        //     debugSwitch = findViewById(R.id.debugSwitch);
-        //     debugSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-        //         if (isChecked) {
-        //             Util.debugMode = true;
-        //             Log.i(TAG, "Debug Mode -> ON");
-        //         } else {
-        //             Util.debugMode = false;
-        //             Log.i(TAG, "Debug Mode -> OFF");
-        //         }
-        //     });
-        // }else{
-        //     debugSwitch.setChecked(false);
-        //     debugSwitch.setVisibility(View.INVISIBLE);
-        // }
 
         // Check if user is signed in (non-null) and update UI accordingly.
         if (!Util.isSignedIn) {
@@ -807,7 +629,6 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
         sensorManager.unregisterListener(accelerometerEventListener);
     }
 
-    //(STEPCOUNT)
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
@@ -823,7 +644,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
 
     /**
      * Increases the stepNumber variable by 1.
-     * @param timeNs
+     * @param timeNs non
      */
     @Override
     public void step(long timeNs) {
