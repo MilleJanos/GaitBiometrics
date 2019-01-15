@@ -51,15 +51,13 @@
         <activity
             android:name=".ModelUploaderActivity"
             android:screenOrientation="portrait" />
-        <activity
-            android:name=".ListDataFromFirebaseActivity"
-            android:screenOrientation="portrait" />
 
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
 
         <activity android:name=".GaitValidationActivity" />
+        <activity android:name=".SettingsActivity"></activity>
         <activity android:name=".UserProfileActivity"/>
         <activity android:name=".EditUserActivity"/>
     </application>
