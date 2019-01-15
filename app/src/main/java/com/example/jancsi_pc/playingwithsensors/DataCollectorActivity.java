@@ -138,13 +138,20 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
         findViewByIDs();
 
+        /*
+         * Load Navigation menu:
+         */
 
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-        navigationView.getMenu().getItem(0).setChecked(true);
+        //navigationView.getMenu().getItem(0).setChecked(true);
 
-        navigationMenuUserName = findViewById(R.id.nav_header_name);
-        navigationMenuEmail = findViewById(R.id.nav_header_email);
+        Util.mSharedPref = getSharedPreferences(Util.sharedPrefFile, MODE_PRIVATE);
+        Util.mSharedPrefEditor = Util.mSharedPref.edit();
+
+        navigationMenuUserName = navigationView.getHeaderView(0).findViewById(R.id.nav_header_name);
+        navigationMenuEmail =    navigationView.getHeaderView(0).findViewById(R.id.nav_header_email);
+
 
 
         Log.d(TAG, ">>>RUN>>>onCreate()");
@@ -432,7 +439,9 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                 FirebaseUtil.UploadObjectToFirebaseFirestore(DataCollectorActivity.this, info, mDocRef);
 
                 // Update User Statistics in Firebase Firestore:
+                /*
                 FirebaseUtil.updateStatsInFirestore(stepNumber);
+                */
 
             } catch (Exception e) {
                 Util.progressDialog.dismiss();
@@ -818,6 +827,14 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
             Intent intent = new Intent(DataCollectorActivity.this, AuthenticationActivity.class);
             startActivity(intent);
         } else {
+            // Get and Load last logged in user name from Shared Preferences
+            String lastLoggedInEmail = Util.mSharedPref.getString(Util.LAST_LOGGED_IN_USER_NAME_KEY, null);
+            if (lastLoggedInEmail != null) {                                 // If was not set yet(in shared pref)
+                navigationMenuUserName.setText( lastLoggedInEmail );
+            }
+            navigationMenuEmail.setText( Util.userEmail );
+
+            // Test Gait for Mille Janos
             if (mAuth.getUid().equals("LnntbFQGpBeHx3RwMu42e2yOks32")) {
                 ShowGaitResult();
             }
