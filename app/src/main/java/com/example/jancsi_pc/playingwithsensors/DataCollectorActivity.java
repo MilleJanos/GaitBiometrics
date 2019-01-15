@@ -57,6 +57,8 @@ import java.util.UUID;
 
 /**
  * Activity that handles collecting the data sample of the user's walking and saving them.
+ *
+ * @author MilleJanos
  */
 public class DataCollectorActivity extends AppCompatActivity implements SensorEventListener, StepListener, NavigationView.OnNavigationItemSelectedListener {
     private static final String TAG = "DataCollectorActivity";

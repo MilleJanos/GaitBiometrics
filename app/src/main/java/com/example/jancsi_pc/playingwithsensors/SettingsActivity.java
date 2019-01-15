@@ -11,6 +11,12 @@ import android.widget.Toast;
 
 import com.example.jancsi_pc.playingwithsensors.Utils.Util;
 
+/**
+ *  This Activity is used to manage application settings.
+ *
+ * @author MilleJanos
+ */
+
 public class SettingsActivity extends AppCompatActivity {
 
     private String TAG = "SettingsActivity";
@@ -30,6 +36,16 @@ public class SettingsActivity extends AppCompatActivity {
          * Load data from shared pref
          */
         LoadSettings();
+
+        /*
+         * Set switch state
+         */
+
+        if(Util.debugMode){
+            settingsDebugSwitch.setChecked(true);
+        }else{
+            settingsDebugSwitch.setChecked(false);
+        }
 
         Log.i(TAG, "|||||||| Read Shared Pref: " + (Util.debugMode ? "TRUE" : "FALSE"));
         /*
@@ -56,6 +72,9 @@ public class SettingsActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Saves the app settings to shared preferences
+     */
     private void SaveSettings() {
         /*
          * Get fresh shared preferences
@@ -70,6 +89,9 @@ public class SettingsActivity extends AppCompatActivity {
         Util.mSharedPrefEditor.apply();
     }
 
+    /**
+     * Loads the app settings from shared preferences
+     */
     private void LoadSettings() {
         /*
          * Get fresh shared preferences
@@ -95,10 +117,14 @@ public class SettingsActivity extends AppCompatActivity {
 
     private View.OnClickListener saveButtonClickListener = v -> {
         SaveSettings(); // Save Settings to shared pref
+        finish();
     };
 
     private View.OnClickListener cancelButtonClickListener = v -> finish();
 
+    /**
+     * Finds the views used by SettingsActivity
+     */
     private void FindViewsById() {
         settingsSaveButton = findViewById(R.id.settingsSaveButton);
         settingsCancelButton = findViewById(R.id.settingsCancelButton);

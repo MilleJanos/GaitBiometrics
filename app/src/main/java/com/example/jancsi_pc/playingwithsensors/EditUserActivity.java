@@ -18,7 +18,18 @@ import android.widget.Toast;
 
 import com.example.jancsi_pc.playingwithsensors.Utils.Util;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+/**
+ * This Activity is responsible in editing the user`s personal data
+ *
+ * @author Fulop Timea
+ */
 
 public class EditUserActivity extends AppCompatActivity {
 
@@ -87,7 +98,13 @@ public class EditUserActivity extends AppCompatActivity {
             //final File file = new File(Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/lastuserimage.jpg");
             //File auxFile = new File(selectedImageUri.getPath());
             //assertEquals(file.getAbsolutePath(), auxFile.getAbsolutePath());
-            Log.e(TAG, "selectedImageUri = " + selectedImageUri);
+            Log.i(TAG, "selectedImageUri = " + selectedImageUri);
+
+
+            String destinationFilename = Util.internalFilesRoot.getAbsolutePath() + "/" + Util.customDIR + "last_user_profile_image.jpg";
+            Log.i(TAG,"destinationFilename= " + destinationFilename );
+            SaveUriToFile(selectedImageUri,destinationFilename);
+
         }
     }
     public String getPath(Uri uri) {
@@ -96,6 +113,36 @@ public class EditUserActivity extends AppCompatActivity {
         int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
         cursor.moveToFirst();
         return cursor.getString(column_index);
+    }
+
+    void SaveUriToFile(Uri sourceUri, String destinationFilePath)
+    {
+        Log.i(TAG,">>>RUN>>>SaveUriToFile");
+        String sourceFilename= sourceUri.getPath();
+        // /*String */ destinationFilePath = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + File.separatorChar + "last_user_profile_image.jpg";
+
+        BufferedInputStream bis = null;
+        BufferedOutputStream bos = null;
+
+        try {
+            bis = new BufferedInputStream(new FileInputStream(sourceFilename));
+            bos = new BufferedOutputStream(new FileOutputStream(destinationFilePath, false));
+            byte[] buf = new byte[1024];
+            bis.read(buf);
+            do {
+                bos.write(buf);
+            } while(bis.read(buf) != -1);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (bis != null) bis.close();
+                if (bos != null) bos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        Log.i(TAG,"<<<FINISHED<<<SaveUriToFile");
     }
 
 }
