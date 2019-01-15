@@ -306,6 +306,18 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
                     ActivityCompat.requestPermissions(ModelUploaderActivity.this, new String[]{Manifest.permission.INTERNET}, Util.REQUEST_CODE);
                 }
 
+                // Get debug value from shared pref
+                String debugModeStr = Util.mSharedPref.getString(Util.SETTING_DEBUG_MODE_KEY, null);
+                if (debugModeStr == null) {                                 // If was not set yet(in shared pref)
+                    Log.i(TAG, "debugModeStr= " + null);
+                    Util.debugMode = false;
+                } else {
+                    Log.i(TAG, "debugModeStr= " + "\"" + debugModeStr + "\"");
+                    int debugModeInt = Integer.parseInt(debugModeStr);
+                    Log.i(TAG, "debugModeInt= " + debugModeInt);
+                    Util.debugMode = debugModeInt == 1;
+                }
+
                 // Change Debug DIR
                 String fileStorageName;
                 String collectionName;
