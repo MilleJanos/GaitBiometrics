@@ -88,7 +88,7 @@ public class UserProfileActivity extends AppCompatActivity {
         //
         // Set username into Shared Pref
         //
-        Util.mSharedPrefEditor.putString(Util.LAST_LOGGED_IN_USER_NAME_KEY, (Util.userEmail ));
+        Util.mSharedPrefEditor.putString(Util.LAST_LOGGED_IN_USER_NAME_KEY, ( userDataObject.userName ));
         // Set more options goes here !
         Util.mSharedPrefEditor.apply();
     }
