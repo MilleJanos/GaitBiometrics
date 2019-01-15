@@ -34,6 +34,8 @@ import java.util.Date;
 
 /**
  * Activity that handle the user authentication: log-in, register, forgot password.
+ *
+ * @author MilleJanos
  */
 public class AuthenticationActivity extends AppCompatActivity {
 
@@ -184,7 +186,7 @@ public class AuthenticationActivity extends AppCompatActivity {
 
         Util.validatedOnce = false;
 
-        if (!Util.RequireEnabledInternetAndInternetConnection(this) /*RequireEnabledInternetAndInternetConnection()*/) {
+        if (!Util.RequireInternetConnection(this) /*RequireEnabledInternetAndInternetConnection()*/) {
             Util.progressDialog.dismiss();
             return;
         } else {
@@ -292,7 +294,7 @@ public class AuthenticationActivity extends AppCompatActivity {
 
         authButton.setEnabled(false);
 
-        if (!Util.RequireEnabledInternetAndInternetConnection(this) /*RequireEnabledInternetAndInternetConnection()*/) {
+        if (!Util.RequireInternetConnection(this) /*RequireEnabledInternetAndInternetConnection()*/) {
             Util.progressDialog.dismiss();
             return;
         }
@@ -388,7 +390,7 @@ public class AuthenticationActivity extends AppCompatActivity {
             Log.d(TAG, ">>>RUN>>>authButtonClickListener");
             authButton.setEnabled(false);
 
-            if (Util.RequireEnabledInternetAndInternetConnection(this) /*RequireEnabledInternetAndInternetConnection()*/) {            // This method gives feedback using Snackbar
+            if (Util.RequireInternetConnection(this) /*RequireEnabledInternetAndInternetConnection()*/) {            // This method gives feedback using Snackbar
                 //Log.d(TAG, " isNetworkEnabled = true");
                 //Log.d(TAG, " isNetworkConnection = true");
                 mEmail = emailEditText.getText().toString();
@@ -589,7 +591,7 @@ public class AuthenticationActivity extends AppCompatActivity {
 
             // Finishing Login
             Log.d(TAG, ">>>RUN>>>authButtonClickListener");
-            if (Util.RequireEnabledInternetAndInternetConnection(this) /*RequireEnabledInternetAndInternetConnection()*/) {            // This method gives feedback using Snackbar
+            if (Util.RequireInternetConnection(this) /*RequireEnabledInternetAndInternetConnection()*/) {            // This method gives feedback using Snackbar
                 mPassword = passwordEditText.getText().toString();
 
                 Util.progressDialog = new ProgressDialog(AuthenticationActivity.this, ProgressDialog.STYLE_SPINNER);
@@ -758,7 +760,7 @@ public class AuthenticationActivity extends AppCompatActivity {
             mEmail = emailEditText.getText().toString();
             if (!mEmail.equals("")) {
 
-                if (Util.RequireEnabledInternetAndInternetConnection(this) /*RequireEnabledInternetAndInternetConnection()*/) {
+                if (Util.RequireInternetConnection(this) /*RequireEnabledInternetAndInternetConnection()*/) {
 
                     Util.progressDialog = new ProgressDialog(AuthenticationActivity.this, ProgressDialog.STYLE_SPINNER);
                     Util.progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
@@ -835,7 +837,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         forgotPassTextView.setVisibility(View.INVISIBLE);
         forgotPassTextView.setOnClickListener(v -> {
             Log.d(TAG, ">>>RUN>>>forgotPassTextViewClickListener");
-            if (Util.RequireEnabledInternetAndInternetConnection(this) /*RequireEnabledInternetAndInternetConnection()*/) {
+            if (Util.RequireInternetConnection(this) /*RequireEnabledInternetAndInternetConnection()*/) {
 
                 resetPassword();
 

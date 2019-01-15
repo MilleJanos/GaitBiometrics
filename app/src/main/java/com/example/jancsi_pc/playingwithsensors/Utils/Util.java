@@ -329,7 +329,7 @@ public class Util {
      * @return true if there is internet connection and false if not.
      */
     // B
-    private static boolean RequireInternetConnection(Activity activity) {
+    public static boolean RequireInternetConnection(Activity activity) {
         Log.d(TAG, ">>>RUN>>>RequireInternetConnection()");
         ConnectivityManager cm = (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
@@ -343,7 +343,7 @@ public class Util {
      * @return true if the FiWi module is on and false if not.
      */
     // A
-    private static boolean CheckWiFiNetwork(Context context) {
+    public static boolean CheckWiFiNetwork(Context context) {
         Log.d(TAG, ">>>RUN>>>CheckWiFiNetwork()");
 
         final WifiManager mWifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);

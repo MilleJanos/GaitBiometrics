@@ -40,6 +40,8 @@ import java.util.UUID;
 
 /**
  * Activity that handle the user model: download model, upload model, generate model.
+ *
+ * @author MilleJanos
  */
 
 public class ModelUploaderActivity extends AppCompatActivity implements SensorEventListener, StepListener {

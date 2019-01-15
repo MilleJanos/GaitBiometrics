@@ -6,7 +6,11 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-
+/**
+ * This Activity show the data of the user downloaded from Firebase
+ *
+ * @author Fulop Timea
+ */
 public class UserProfileActivity extends AppCompatActivity {
 
     private TextView userNameTextView;
