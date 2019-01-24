@@ -11,7 +11,7 @@ import com.example.jancsi_pc.playingwithsensors.R
  *  This is a class that is meant to draw a horizontal line divider for a RecyclerView with the
  *  characteristics given in the line_divider.xml drawable
  *
- *  @param[context] the application context
+ *  @param context the application context
  */
 class ItemDividerDecoration(context: Context) : RecyclerView.ItemDecoration() {
     private val mDivider: Drawable = ContextCompat.getDrawable(context, R.drawable.line_divider)!!
