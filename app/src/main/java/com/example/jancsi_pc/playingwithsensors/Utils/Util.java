@@ -14,6 +14,7 @@ import android.view.inputmethod.InputMethodManager;
 
 import com.example.jancsi_pc.playingwithsensors.AuthenticationActivity;
 import com.example.jancsi_pc.playingwithsensors.R;
+import com.example.jancsi_pc.playingwithsensors.Utils.Firebase.UserDataObject;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;

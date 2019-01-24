@@ -1,4 +1,4 @@
-package com.example.jancsi_pc.playingwithsensors.Utils
+package com.example.jancsi_pc.playingwithsensors.ListUserStats
 
 import android.content.Context
 import android.graphics.Canvas

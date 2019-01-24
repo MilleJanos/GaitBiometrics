@@ -1,4 +1,4 @@
-package com.example.jancsi_pc.playingwithsensors.Utils;
+package com.example.jancsi_pc.playingwithsensors.Utils.Firebase;
 
 import android.support.annotation.NonNull;
 
@@ -9,6 +9,8 @@ import java.util.List;
 /**
  * A class that model the user_stats Firebase/Firestore collection's structure in order to update
  * that data
+ *
+ * @author Krisztian-Miklos Nemeth
  */
 public class UserStatsObject {
     private List<String> devices;
@@ -27,6 +29,7 @@ public class UserStatsObject {
      * @param last_session timestamp of the last session
      * @param sessions     number of sessions the user has recorded
      * @param steps        number of steps the user has made
+     * @author Krisztian-Miklos Nemeth
      */
     public UserStatsObject(List<String> devices, String email, int files, long last_session, int sessions, int steps) {
         this.devices = devices;
@@ -41,6 +44,7 @@ public class UserStatsObject {
      * Adds a new device in the list of devices if it doesn't already contain it
      *
      * @param device the new device's string representation
+     * @author Krisztian-Miklos Nemeth
      */
     public void addDevice(String device) {
         if (!this.devices.contains(device)) {
@@ -87,6 +91,7 @@ public class UserStatsObject {
      *
      * @param sessionTimestamp timestamp that has to be compared with the object's one
      * @return true if the parameter is not in the same day as the last_session property
+     * @author Krisztian-Miklos Nemeth
      */
     public boolean isNewSession(long sessionTimestamp) {
         Calendar cal1 = Calendar.getInstance();

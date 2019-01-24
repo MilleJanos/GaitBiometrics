@@ -7,8 +7,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.example.jancsi_pc.playingwithsensors.Utils.FirebaseUtil;
-import com.example.jancsi_pc.playingwithsensors.Utils.UserDataObject;
+import com.example.jancsi_pc.playingwithsensors.Utils.Firebase.FirebaseUtil;
+import com.example.jancsi_pc.playingwithsensors.Utils.Firebase.UserDataObject;
 import com.example.jancsi_pc.playingwithsensors.Utils.Util;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;

@@ -1,13 +1,12 @@
-package com.example.jancsi_pc.playingwithsensors
+package com.example.jancsi_pc.playingwithsensors.ListUserStats
 
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
-import com.example.jancsi_pc.playingwithsensors.Utils.FirebaseUserData
-import com.example.jancsi_pc.playingwithsensors.Utils.FirebaseUtil
-import com.example.jancsi_pc.playingwithsensors.Utils.ItemDividerDecoration
+import com.example.jancsi_pc.playingwithsensors.Utils.Firebase.FirebaseUtil
+import com.example.jancsi_pc.playingwithsensors.R
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.activity_list_data_from_firebase.*
 import java.lang.Exception

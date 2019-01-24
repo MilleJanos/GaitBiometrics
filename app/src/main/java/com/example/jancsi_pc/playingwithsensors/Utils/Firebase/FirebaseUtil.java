@@ -1,27 +1,24 @@
-package com.example.jancsi_pc.playingwithsensors.Utils;
+package com.example.jancsi_pc.playingwithsensors.Utils.Firebase;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.net.Uri;
-import android.service.autofill.UserData;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.example.jancsi_pc.playingwithsensors.AuthenticationActivity;
-import com.example.jancsi_pc.playingwithsensors.DataCollectorActivity;
 import com.example.jancsi_pc.playingwithsensors.EditUserActivity;
-import com.example.jancsi_pc.playingwithsensors.ListDataFromFirebaseActivity;
+import com.example.jancsi_pc.playingwithsensors.ListUserStats.ListDataFromFirebaseActivity;
+import com.example.jancsi_pc.playingwithsensors.ListUserStats.FirebaseUserData;
 import com.example.jancsi_pc.playingwithsensors.UserProfileActivity;
+import com.example.jancsi_pc.playingwithsensors.Utils.Util;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
@@ -44,18 +41,18 @@ public class FirebaseUtil {
     public static final String USER_RECORDS_OLD_KEY = "user_records";
     public static final String USER_RECORDS_NEW_KEY = "user_records_2";
     public static final String USER_RECORDS_DEBUG_KEY = "user_records_debug";
-        /* <user_id> */
-            /* <device_id> */
-                /* <random_id> */
-                    public static final String DATE_KEY = "date";                   // they will be used more
-                    public static final String FILE_ID_KEY = "fileId";              // often in UserRecordObject
-                    public static final String DOWNLOAD_URL_KEY = "downloadUrl";    // class
+    /* <user_id> */
+    /* <device_id> */
+    /* <random_id> */
+    public static final String DATE_KEY = "date";                   // they will be used more
+    public static final String FILE_ID_KEY = "fileId";              // often in UserRecordObject
+    public static final String DOWNLOAD_URL_KEY = "downloadUrl";    // class
 
     public static final String USER_DATA_KEY = "user_data";
-        /* <user_id> */
-            public static final String USER_DATE_KEY = "date";                   // they will be used more
-            public static final String USER_FILE_ID_KEY = "fileId";              // often in UserRecordObject
-            public static final String USER_DOWNLOAD_URL_KEY = "downloadUrl";    // class
+    /* <user_id> */
+    public static final String USER_DATE_KEY = "date";                   // they will be used more
+    public static final String USER_FILE_ID_KEY = "fileId";              // often in UserRecordObject
+    public static final String USER_DOWNLOAD_URL_KEY = "downloadUrl";    // class
 
     // Storage (Files)
     public static final String STORAGE_FEATURES_KEY = "features";
@@ -75,7 +72,6 @@ public class FirebaseUtil {
      * @param activity the activity context where the method will display progress messages
      * @param file     the File that will be uploaded
      * @param ref      the StorageReference where the file will be uploaded
-     *
      * @author Mille Janos
      */
     public static void UploadFileToFirebaseStorage(Activity activity, File file, StorageReference ref) {
@@ -141,7 +137,6 @@ public class FirebaseUtil {
      * @param activity the activity context where the method will display progress messages
      * @param info     the object that describes the required JSON object
      * @param ref      the StorageReference where the file will be uploaded
-     *
      * @author Mille Janos
      */
     public static void UploadObjectToFirebaseFirestore(Activity activity, UserObject info, DocumentReference ref) {
@@ -170,7 +165,6 @@ public class FirebaseUtil {
      * @param activity        the activity context where the method will display progress messaged
      * @param downloadFromRef the StorageReference where the file will be downloaded from
      * @param saveToThisFile  the file that will contain the downloaded data
-     *
      * @author Mille Janos
      */
     public static void DownloadFileFromFirebaseStorage(Activity activity, StorageReference downloadFromRef, File saveToThisFile) {
@@ -206,32 +200,32 @@ public class FirebaseUtil {
     }
 
     /**
-     *  Download data of the user from Firebase Firestore
-     *  and sets the user data resoult
+     * Download data of the user from Firebase Firestore
+     * and sets the user data resoult
      *
      * @param activity activuty.
-     * @param ref Firestore document reference.
+     * @param ref      Firestore document reference.
      */
-    public static void DownloadUserDataObjectFromFirebaseFirestore_AND_SetTheResult(Activity activity, DocumentReference ref, int from){
+    public static void DownloadUserDataObjectFromFirebaseFirestore_AND_SetTheResult(Activity activity, DocumentReference ref, int from) {
         String TAG = "FirebaseUtil";
-        Log.i(TAG,">>>RUN>>>DownloadUserDataObjectFromFirebaseFirestore_AND_SetTheResult()");
+        Log.i(TAG, ">>>RUN>>>DownloadUserDataObjectFromFirebaseFirestore_AND_SetTheResult()");
         ref.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
-                Log.i(TAG,"<<<FINISHED<<<(async)DownloadUserDataObjectFromFirebaseFirestore_AND_SetTheResult() - running task in background");
-                    UserDataObject udo = documentSnapshot.toObject( UserDataObject.class );
-                    Util.mUserDataObject_Temp = udo;
-                    if(from == 0){
-                        UserProfileActivity.UpdateUserDataObject();
-                    }else{
-                        if(from == 1){
-                            EditUserActivity.UpdateUserDataObject();
-                        }
+                Log.i(TAG, "<<<FINISHED<<<(async)DownloadUserDataObjectFromFirebaseFirestore_AND_SetTheResult() - running task in background");
+                UserDataObject udo = documentSnapshot.toObject(UserDataObject.class);
+                Util.mUserDataObject_Temp = udo;
+                if (from == 0) {
+                    UserProfileActivity.UpdateUserDataObject();
+                } else {
+                    if (from == 1) {
+                        EditUserActivity.UpdateUserDataObject();
                     }
-
                 }
-            });
-        Log.i(TAG,"(<<<FINISHED<<<)DownloadUserDataObjectFromFirebaseFirestore_AND_SetTheResult() - running task in background");
+
+            }
+        });
+        Log.i(TAG, "(<<<FINISHED<<<)DownloadUserDataObjectFromFirebaseFirestore_AND_SetTheResult() - running task in background");
     }
 
     /**
@@ -241,7 +235,6 @@ public class FirebaseUtil {
      * @param activity        the activity context where the method will display progress messages
      * @param downloadFromRef the StorageReference where the file will be downloaded from
      * @param saveToThisFile  the file that will contain the downloaded data
-     *
      * @author Mille Janos
      */
     public static void DownloadFileFromFirebaseStorage_AND_CheckUserInPercentage(Activity activity, StorageReference downloadFromRef, File saveToThisFile) {
@@ -309,8 +302,6 @@ public class FirebaseUtil {
     }
 
 
-
-
     /**
      * A constant that contains the name of the Firebase/Firestore collection where user statistics
      * are stored
@@ -336,7 +327,7 @@ public class FirebaseUtil {
                     if (task.isSuccessful()) {
                         Log.d("updateStatsInFirestore:", task.getResult().toString());
                         //getting existing records
-                        UserStatsObject statsObject = task.getResult().toObject(UserStatsObject.class);
+                        UserStatsObject statsObject = task.getResult().toObject(UserStatsObject.class);///Todo fixxxxxxxxx
                         if (statsObject == null) {
                             return;
                         }

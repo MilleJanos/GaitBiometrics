@@ -1,5 +1,6 @@
-package com.example.jancsi_pc.playingwithsensors.Utils;
+package com.example.jancsi_pc.playingwithsensors.Utils.Firebase;
 
+import com.example.jancsi_pc.playingwithsensors.Utils.Firebase.UserObject;
 import com.google.firebase.firestore.IgnoreExtraProperties;
 
 /**
@@ -8,7 +9,7 @@ import com.google.firebase.firestore.IgnoreExtraProperties;
  * @author Mille Janos
  */
 @IgnoreExtraProperties
-public class UserRecordObject extends UserObject{
+public class UserRecordObject extends UserObject {
 
     public UserRecordObject(String date, String fileId, String downloadUrl) {
         super(date,fileId,downloadUrl);
