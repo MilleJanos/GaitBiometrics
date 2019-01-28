@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:minHeight="164dp"
-    tools:context=".AuthenticationActivity"
+    tools:context=".Activityes.Main.AuthenticationActivity"
     android:background="@drawable/green_background_lighter_50"
     android:gravity="center">
 

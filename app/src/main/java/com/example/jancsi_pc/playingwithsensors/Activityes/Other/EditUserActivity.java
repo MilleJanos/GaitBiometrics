@@ -1,13 +1,9 @@
-package com.example.jancsi_pc.playingwithsensors;
+package com.example.jancsi_pc.playingwithsensors.Activityes.Other;
 
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -15,12 +11,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.Toast;
 
+import com.example.jancsi_pc.playingwithsensors.R;
 import com.example.jancsi_pc.playingwithsensors.Utils.FirebaseUtil;
 import com.example.jancsi_pc.playingwithsensors.Utils.UserDataObject;
 import com.example.jancsi_pc.playingwithsensors.Utils.Util;
-import com.google.android.gms.auth.api.signin.internal.Storage;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;

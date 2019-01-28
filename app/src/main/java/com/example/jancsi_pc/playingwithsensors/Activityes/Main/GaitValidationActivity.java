@@ -1,4 +1,4 @@
-package com.example.jancsi_pc.playingwithsensors;
+package com.example.jancsi_pc.playingwithsensors.Activityes.Main;
 
 import android.content.Intent;
 import android.hardware.Sensor;
@@ -15,6 +15,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.jancsi_pc.playingwithsensors.R;
 import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepDetector;
 import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepListener;
 import com.example.jancsi_pc.playingwithsensors.Utils.Accelerometer;

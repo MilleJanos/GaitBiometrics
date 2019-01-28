@@ -1,7 +1,6 @@
-package com.example.jancsi_pc.playingwithsensors;
+package com.example.jancsi_pc.playingwithsensors.Activityes.Main;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -30,8 +29,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.jancsi_pc.playingwithsensors.Activityes.Other.ListDataFromFirebaseActivity;
+import com.example.jancsi_pc.playingwithsensors.R;
+import com.example.jancsi_pc.playingwithsensors.Activityes.Other.SettingsActivity;
 import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepDetector;
 import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepListener;
+import com.example.jancsi_pc.playingwithsensors.Activityes.Other.UserProfileActivity;
 import com.example.jancsi_pc.playingwithsensors.Utils.Accelerometer;
 import com.example.jancsi_pc.playingwithsensors.Utils.FirebaseUtil;
 import com.example.jancsi_pc.playingwithsensors.Utils.UserRecordObject;

@@ -1,4 +1,4 @@
-package com.example.jancsi_pc.playingwithsensors;
+package com.example.jancsi_pc.playingwithsensors.Activityes.Main;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -21,6 +21,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.jancsi_pc.playingwithsensors.R;
 import com.example.jancsi_pc.playingwithsensors.Utils.Util;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;

@@ -9,7 +9,7 @@
     android:fitsSystemWindows="true"
     android:background="@drawable/green_background_lighter_50"
     android:gravity="center"
-    tools:context=".DataCollectorActivity"
+    tools:context=".Activityes.Main.DataCollectorActivity"
     tools:openDrawer="start">
 
     <TextView

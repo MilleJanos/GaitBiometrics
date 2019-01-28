@@ -1,4 +1,4 @@
-package com.example.jancsi_pc.playingwithsensors;
+package com.example.jancsi_pc.playingwithsensors.Activityes.Other;
 
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.example.jancsi_pc.playingwithsensors.R;
 import com.example.jancsi_pc.playingwithsensors.Utils.FirebaseUtil;
 import com.example.jancsi_pc.playingwithsensors.Utils.UserDataObject;
 import com.example.jancsi_pc.playingwithsensors.Utils.Util;

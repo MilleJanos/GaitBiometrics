@@ -12,7 +12,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
-import com.example.jancsi_pc.playingwithsensors.AuthenticationActivity;
+import com.example.jancsi_pc.playingwithsensors.Activityes.Main.AuthenticationActivity;
 import com.example.jancsi_pc.playingwithsensors.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.storage.FirebaseStorage;

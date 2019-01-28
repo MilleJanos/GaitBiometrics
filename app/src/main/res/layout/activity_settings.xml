@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/green_background_lighter_50"
-    tools:context=".SettingsActivity">
+    tools:context=".Activityes.Other.SettingsActivity">
 
 
     <TextView

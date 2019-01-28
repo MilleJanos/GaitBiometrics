@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/green_background_lighter_50"
-    tools:context=".GaitValidationActivity">
+    tools:context=".Activityes.Main.GaitValidationActivity">
 
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"

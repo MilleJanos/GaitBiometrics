@@ -6,12 +6,11 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.example.jancsi_pc.playingwithsensors.DataCollectorActivity;
+import com.example.jancsi_pc.playingwithsensors.Activityes.Main.DataCollectorActivity;
 import com.example.jancsi_pc.playingwithsensors.R;
 
 public class  StepCounterActivity extends AppCompatActivity implements SensorEventListener, StepListener {

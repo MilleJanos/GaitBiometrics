@@ -24,7 +24,7 @@
             android:screenOrientation="portrait">
         -->
         <activity
-            android:name=".SplashScreenActivity"
+            android:name=".Activityes.Other.SplashScreenActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -42,24 +42,24 @@
             android:name=".StepCounterPackage.StepCounterActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".DataCollectorActivity"
+            android:name=".Activityes.Main.DataCollectorActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".AuthenticationActivity"
+            android:name=".Activityes.Main.AuthenticationActivity"
             android:screenOrientation="portrait" />
         <!-- <activity android:name=".SplashScreenActivity"></activity> -->
         <activity
-            android:name=".ModelUploaderActivity"
+            android:name=".Activityes.Main.ModelUploaderActivity"
             android:screenOrientation="portrait" />
 
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
 
-        <activity android:name=".GaitValidationActivity" />
-        <activity android:name=".SettingsActivity"></activity>
-        <activity android:name=".UserProfileActivity"/>
-        <activity android:name=".EditUserActivity"/>
+        <activity android:name=".Activityes.Main.GaitValidationActivity" />
+        <activity android:name=".Activityes.Other.SettingsActivity"></activity>
+        <activity android:name=".Activityes.Other.UserProfileActivity"/>
+        <activity android:name=".Activityes.Other.EditUserActivity"/>
     </application>
 
 </manifest>
