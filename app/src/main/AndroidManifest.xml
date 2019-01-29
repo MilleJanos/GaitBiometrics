@@ -33,12 +33,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".Old.RecorderActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name=".Old.ConnectionActivity"
-            android:screenOrientation="portrait" />
-        <activity
             android:name=".StepCounterPackage.StepCounterActivity"
             android:screenOrientation="portrait" />
         <activity

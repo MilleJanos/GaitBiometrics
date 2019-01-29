@@ -67,7 +67,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     private static final String TAG = "DataCollectorActivity";
 
     private boolean NO_PYTHON_SERVER_YET = true;
-
     private SensorManager sensorManager;
     private Sensor accelerometerSensor;
     private SensorEventListener accelerometerEventListener;
@@ -75,7 +74,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     private Button startButton;
     private Button stopButton;
     private Button saveToFirebaseButton;
-    //PORT: 21567                         "<ip>:<port>"
+    //                                    "<ip>:<port>"
     private String IP_ADDRESS = "192.168.137.90:21456";
     public static String wifiModuleIp = "";
     public static int wifiModulePort = 0;
@@ -99,13 +98,10 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     private ImageView pythonServerImageView;
     private TextView navigationMenuUserName;
     private TextView navigationMenuEmail;
-
     Date mDate;
     private String mFileName;
-
     // For Step Detecting:
     private StepDetector simpleStepDetector;
-
     // Firebase:
     private FirebaseStorage mFirestore;            // used to upload files
     private StorageReference mStorageReference;  // to storage
@@ -113,17 +109,13 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     private FirebaseFirestore mFirebaseFirestore = FirebaseFirestore.getInstance();
     private FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
     private DocumentReference mDocRef; // = FirebaseFirestore.getInstance().document("usersFiles/information");
-
     // Internal Files:
     private File rawdataUserFile;
     private File featureUserFile;
-
-
     // Proxy sensor:
     private SensorManager mSensorManager;
     private Sensor mProximity;
     private static final int SENSOR_SENSITIVITY = 4;
-
     View attachedLayout;
 
     /*
@@ -136,115 +128,48 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     protected void onCreate(Bundle savedInstanceState) {
         setTheme(R.style.AppTheme);
 
+        Log.d(TAG, ">>>RUN>>>onCreate()");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_data_collector_nav);
 
-        findViewByIDs();
+        // Find views for the current activity
+        FindViewsById();
 
-        /*
-         * Load Navigation menu:
-         */
-
+        // Load Navigation menu:
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         //navigationView.getMenu().getItem(0).setChecked(true);
-
-        Util.mSharedPref = getSharedPreferences(Util.sharedPrefFile, MODE_PRIVATE);
-        Util.mSharedPrefEditor = Util.mSharedPref.edit();
-
         navigationMenuUserName = navigationView.getHeaderView(0).findViewById(R.id.nav_header_name);
         navigationMenuEmail =    navigationView.getHeaderView(0).findViewById(R.id.nav_header_email);
 
+        // Initialize shared preferences:
+        Util.mSharedPref = getSharedPreferences(Util.sharedPrefFile, MODE_PRIVATE);
+        Util.mSharedPrefEditor = Util.mSharedPref.edit();
 
-
-        Log.d(TAG, ">>>RUN>>>onCreate()");
-
+        // Initialize Progress Dialog
         Util.progressDialog = new ProgressDialog(DataCollectorActivity.this);
 
-
-        // hide keyboard if needed:
-        try {
-            Util.hideKeyboard(DataCollectorActivity.this);
-        } catch (Exception ignore) {
-
-        }
-        //
         // Internal Saving Location for ALL hidden files:
-        //
-        Util.internalFilesRoot = new File(getFilesDir().toString());
-        Log.i(TAG, "Util.internalFilesRoot.getAbsolutePath() = " + Util.internalFilesRoot.getAbsolutePath());
+        InitializeInternalFileVariables();
 
-
-        //
-        // Internal files Path:
-        //
-        mDate = new Date();
-
-        // Create folder if not exists:
-        File myInternalFilesRoot;
-
-        myInternalFilesRoot = new File(Util.internalFilesRoot.getAbsolutePath() /*+ customDIR*/);
-        if (!myInternalFilesRoot.exists()) {
-            myInternalFilesRoot.mkdirs();
-            Log.i(TAG, "Path not exists (" + myInternalFilesRoot.getAbsolutePath() + ") --> .mkdirs()");
-        }
-
-        // Creating user's raw data file path:
-        Util.rawdata_user_path = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/rawdata_" + mAuth.getUid() + ".csv";
-        Util.feature_user_path = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/feature_" + mAuth.getUid() + ".arff";   //*// we need this for validation only
-        Util.feature_dummy_path = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/feature_dummy.arff";                   //*//  - dummy exists and it is not empty
-        rawdataUserFile = new File(Util.rawdata_user_path);
-        featureUserFile = new File(Util.feature_user_path);                                                                          //*//
-        Log.i(TAG, "PATH: Util.rawdata_user_path  = " + Util.rawdata_user_path);
-        Log.i(TAG, "PATH: Util.rawdata_user_path  = " + Util.feature_user_path);                                                   //*//
-
-        // Creating user's raw data file (if not exists):
-        if (!rawdataUserFile.exists()) {
-            try {
-                rawdataUserFile.createNewFile();
-            } catch (Exception e) {
-                e.printStackTrace();
-                Log.e(TAG, "File can't be created: " + Util.rawdata_user_path);
-            }
-        }
-        // Creating user's feature file (if not exists):
-        if (!featureUserFile.exists()) {
-            try {
-                featureUserFile.createNewFile();
-            } catch (Exception e) {
-                e.printStackTrace();
-                Log.e(TAG, "File can't be created: " + Util.feature_user_path);
-            }
-        }
-
-        //FIREBASE INIT:
+        // Initialize Firebase:
         mFirestore = FirebaseStorage.getInstance();
         mStorageReference = mFirestore.getReference();
 
-        //SENSOR:
+        // Initialize accelerometer sensor:
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-
         if (accelerometerSensor == null) {
             Toast.makeText(this, "The device has no com.example.jancsi_pc.playingwithsensors.Utils.Accelerometer !", Toast.LENGTH_SHORT).show();
+            // TODO: create a button to let the user to read the error then accept to exit
             finish();
         }
 
         textViewStatus.setText(R.string.startRecording);
-
         stopButton.setEnabled(false);
         sendToServerButton.setEnabled(false);
         saveToFirebaseButton.setEnabled(false);
-
-        reportErrorTextView.setOnClickListener(v -> {
-            Log.d(TAG, ">>>RUN>>>reportErrorTextViewClickListener");
-            Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto", "abc@gmail.com", null));
-            emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Problem with authentication.");
-            emailIntent.putExtra(Intent.EXTRA_TEXT, "");
-            emailIntent.putExtra(Intent.EXTRA_EMAIL, "");
-            startActivity(Intent.createChooser(emailIntent, "Send email..."));
-        });
-
+        reportErrorTextView.setOnClickListener(v -> ReportError() );
         final DecimalFormat df = new DecimalFormat("0");
         df.setMaximumIntegerDigits(20);
         // 123...45E9 -> 123...459234
@@ -257,7 +182,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         simpleStepDetector.registerListener(this);
 
         // HIDE ACCELEROMETER COORDINATES:
-
         accelerometerTitleTextView.setVisibility(View.INVISIBLE);
         accelerometerX.setVisibility(View.INVISIBLE);
         accelerometerY.setVisibility(View.INVISIBLE);
@@ -787,7 +711,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
      *
      * @author Mille Janos
      */
-    private void findViewByIDs() {
+    private void FindViewsById() {
         textViewStatus = findViewById(R.id.textViewStatus);
         startButton = findViewById(R.id.buttonStart);
         stopButton = findViewById(R.id.buttonStop);
@@ -804,6 +728,64 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
         attachedLayout = findViewById(R.id.datacollector_main_layout);
 
+    }
+
+    /**
+     * This method initializes the internal root and files paths.
+     */
+    private void InitializeInternalFileVariables(){
+        Util.internalFilesRoot = new File(getFilesDir().toString());
+        Log.i(TAG, "Util.internalFilesRoot.getAbsolutePath() = " + Util.internalFilesRoot.getAbsolutePath());
+
+        // Internal files Path:
+        mDate = new Date();
+        // Create folder if not exists:
+        File myInternalFilesRoot;
+        myInternalFilesRoot = new File(Util.internalFilesRoot.getAbsolutePath() /*+ customDIR*/);
+        if (!myInternalFilesRoot.exists()) {
+            myInternalFilesRoot.mkdirs();
+            Log.i(TAG, "Path not exists (" + myInternalFilesRoot.getAbsolutePath() + ") --> .mkdirs()");
+        }
+
+        // Creating user's raw data file path:
+        Util.rawdata_user_path = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/rawdata_" + mAuth.getUid() + ".csv";
+        Util.feature_user_path = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/feature_" + mAuth.getUid() + ".arff";   //*// we need this for validation only
+        Util.feature_dummy_path = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/feature_dummy.arff";                   //*//  - dummy exists and it is not empty
+        rawdataUserFile = new File(Util.rawdata_user_path);
+        featureUserFile = new File(Util.feature_user_path);                                                                          //*//
+        Log.i(TAG, "PATH: Util.rawdata_user_path  = " + Util.rawdata_user_path);
+        Log.i(TAG, "PATH: Util.rawdata_user_path  = " + Util.feature_user_path);                                                   //*//
+
+        // Creating user's raw data file (if not exists):
+        if (!rawdataUserFile.exists()) {
+            try {
+                rawdataUserFile.createNewFile();
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e(TAG, "File can't be created: " + Util.rawdata_user_path);
+            }
+        }
+        // Creating user's feature file (if not exists):
+        if (!featureUserFile.exists()) {
+            try {
+                featureUserFile.createNewFile();
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e(TAG, "File can't be created: " + Util.feature_user_path);
+            }
+        }
+    }
+
+    /**
+     *  This method reports an error customized by user.
+     */
+    private void ReportError() {
+        Log.d(TAG, ">>>RUN>>>reportErrorTextViewClickListener");
+        Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto", "abc@gmail.com", null));
+        emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Problem with authentication.");
+        emailIntent.putExtra(Intent.EXTRA_TEXT, "");
+        emailIntent.putExtra(Intent.EXTRA_EMAIL, "");
+        startActivity(Intent.createChooser(emailIntent, "Send mEmail..."));
     }
 
     @Override
@@ -843,7 +825,15 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
             }
         }
 
+        // Register accelerometer
         sensorManager.registerListener(accelerometerEventListener, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
+
+        // Hide keyboard if needed:
+        try {
+            Util.hideKeyboard(DataCollectorActivity.this);
+        } catch (Exception ignore) {
+
+        }
 
         // Show on screen model status
         if (Util.isSetUserModel) {

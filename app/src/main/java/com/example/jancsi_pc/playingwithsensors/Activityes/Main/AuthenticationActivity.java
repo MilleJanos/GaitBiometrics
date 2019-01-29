@@ -41,58 +41,43 @@ import java.util.Date;
 public class AuthenticationActivity extends AppCompatActivity {
 
     private final long ONE_MEGABYTE = 1024 * 1024;
-
     private TextView appNameTextView;
-
     private TextView titleTextView;
     private TextView selectedEmailTextView;
-
     private EditText emailEditText;
     private ImageView deleteEmailImageView;
-
     private EditText passwordEditText;
     private ImageView deletePasswordImageView;
-
     private EditText passwordEditText2;
     private ImageView deletePasswordImageView2;
-
     private Button authButton;
     private TextView registerORloginTextView;
     private TextView forgotPassTextView;
-
     private Button backButton;
     private ImageView editEmailImageView;
     private TextView reportErrorTextView;
     private TextView infoTextView;
-
     private TextView auth_offlineValidationTextView;
-
     private ConstraintLayout.LayoutParams params;
-
     private String mEmail = "";
     private String mPassword = "";
     private String password2 = "";
-
     private final String TAG = "AuthenticationActivity";
-
     private int requestPasswordResetCount = 0;
     private boolean doubleBackToExitPressedOnce = false;
-
     private boolean emailToPass = false;
     private boolean passToEmail = false;
     private boolean emailToRegister = false;
     private boolean registerToEmail = false;
     private boolean userExists = false;
-
     // Progress Bar
     private ProgressBar progressBar;
     private TextView loadingTextView;
     private int mProgressStatus = 0;
-    ;
     private Handler mHandler = new Handler();
-
     // Progress Dialog
     // ProgressDialog Util.progressDialog;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,77 +85,46 @@ public class AuthenticationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_authentication);
         Log.d(TAG, ">>>RUN>>>onCreate()");
 
+        // Create the shared progress dialog:
         Util.progressDialog = new ProgressDialog(AuthenticationActivity.this);
 
-        appNameTextView = findViewById(R.id.auth_appNameTextView);
-        appNameTextView.setTextColor(R.string.app_name);
+        // Set the views of the activity:
+        FindViewsById();
 
-        titleTextView = findViewById(R.id.auth_titleTextView);
-        selectedEmailTextView = findViewById(R.id.auth_selectedEmailTextView);
-
-        emailEditText = findViewById(R.id.auth_emailEditText);
-        deleteEmailImageView = findViewById(R.id.auth_deleteEmailImageView);
+        // Hide error click listeners (hides the error of the view when is clicked):
         emailEditText.setOnClickListener(v -> emailEditText.setError(null));
-
-        passwordEditText = findViewById(R.id.auth_passwordEditText);
-        deletePasswordImageView = findViewById(R.id.auth_deletePasswordImageView);
         passwordEditText.setOnClickListener(v -> passwordEditText.setError(null));
-
-        passwordEditText2 = findViewById(R.id.auth_passwordEditText2);
-        deletePasswordImageView2 = findViewById(R.id.auth_deletePasswordImageView2);
         passwordEditText2.setOnClickListener(v -> passwordEditText2.setError(null));
 
-        authButton = findViewById(R.id.auth_button);
-        registerORloginTextView = findViewById(R.id.auth_registerORloginTextView);
-        forgotPassTextView = findViewById(R.id.auth_forgotPassTextView);
-        infoTextView = findViewById(R.id.auth_infoTextView);
+        // Error report click listener:
+        reportErrorTextView.setOnClickListener(v -> ReportError() );
 
-        backButton = findViewById(R.id.auth_backButton);
-        editEmailImageView = findViewById(R.id.auth_editEmailImageView); // ugyan azt csinalja mint a backButton csak felhasználóbarátabb
-
+        // Small UI settings:
+        appNameTextView.setTextColor(R.string.app_name);
         forgotPassTextView.setText(R.string.forgotPassword);
-
-        reportErrorTextView = findViewById(R.id.auth_errorReportTextView);
-        reportErrorTextView.setOnClickListener(v -> {
-            Log.d(TAG, ">>>RUN>>>reportErrorTextViewClickListener");
-            Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto", "abc@gmail.com", null));
-            emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Problem with authentication.");
-            emailIntent.putExtra(Intent.EXTRA_TEXT, "");
-            emailIntent.putExtra(Intent.EXTRA_EMAIL, "");
-            startActivity(Intent.createChooser(emailIntent, "Send mEmail..."));
-        });
-
         emailEditText.setText("");
         passwordEditText.setText("");
         passwordEditText2.setText("");
-
-        progressBar = findViewById(R.id.auth_progressBar);
-        loadingTextView = findViewById(R.id.auth_loadingCompleteTextView);
         loadingTextView.setVisibility(View.INVISIBLE);
         progressBar.setVisibility(View.INVISIBLE);
 
+        // Offline validation button(TextView):
         auth_offlineValidationTextView = findViewById(R.id.auth_offlineValidationTextView);
         auth_offlineValidationTextView.setOnClickListener(v -> startActivity(new Intent(AuthenticationActivity.this, GaitValidationActivity.class)));
 
-
-        /*
-         *
-         *  Setup the Interface
-         *
-         */
-
+        // Setup/change the Interface:
         switch (Util.screenMode) {
 
             case EMAIL_MODE: {
-                prepareScreenUIFor_email();
+                PrepareScreenUIFor_email();
                 break;
             }
             case PASSWORD_MODE: {
-                prepareScreenUIFor_password();
+                PrepareScreenUIFor_password();
                 break;
             }
             case REGISTER_MODE: {
-                prepareScreenUIFor_register();
+                PrepareScreenUIFor_register();
                 break;
             }
         }
@@ -364,12 +318,11 @@ public class AuthenticationActivity extends AppCompatActivity {
      *
      */
 
-
     /**
      * This method prepares the User Interface for Login(email only) view.
      */
-    private void prepareScreenUIFor_email() {
-        Log.d(TAG, ">>>RUN>>>prepareScreenUIFor_email()");
+    private void PrepareScreenUIFor_email() {
+        Log.d(TAG, ">>>RUN>>>PrepareScreenUIFor_email()");
         titleTextView.setText(R.string.login);
         titleTextView.setVisibility(View.VISIBLE);
 
@@ -418,7 +371,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                                 emailToRegister = false;    // because of animations
                                 registerToEmail = false;    //
                                 Util.screenMode = Util.ScreenModeEnum.PASSWORD_MODE;
-                                prepareScreenUIFor_password();
+                                PrepareScreenUIFor_password();
                                 authButton.setEnabled(true);
                                 authButton.setEnabled(true);
                                 Util.progressDialog.dismiss();
@@ -510,13 +463,13 @@ public class AuthenticationActivity extends AppCompatActivity {
             emailToRegister = true;    // because of animations
             registerToEmail = false;    //
             Util.screenMode = Util.ScreenModeEnum.REGISTER_MODE;
-            prepareScreenUIFor_register();
+            PrepareScreenUIFor_register();
         });
 
         forgotPassTextView.setVisibility(View.VISIBLE);
         forgotPassTextView.setOnClickListener(v -> {
             Log.d(TAG, ">>>RUN>>>forgotPassTextViewClickListener");
-            resetPassword();
+            ResetPassword();
         });
 
         backButton.setVisibility(View.INVISIBLE);
@@ -564,8 +517,8 @@ public class AuthenticationActivity extends AppCompatActivity {
     /**
      * This method prepares the User Interface for Login(password only) view.
      */
-    private void prepareScreenUIFor_password() {
-        Log.d(TAG, ">>>RUN>>>prepareScreenUIFor_password()");
+    private void PrepareScreenUIFor_password() {
+        Log.d(TAG, ">>>RUN>>>PrepareScreenUIFor_password()");
         titleTextView.setText(R.string.login);
         titleTextView.setVisibility(View.VISIBLE);
 
@@ -619,7 +572,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         //    public void onClick(View v) {
         //        Log.d(TAG,"Go To: EMAIL_MODE");
         //        Util.screenMode = Util.ScreenModeEnum.EMAIL_MODE;
-        //        prepareScreenUIFor_email();
+        //        PrepareScreenUIFor_email();
         //    }
         //});
 
@@ -627,7 +580,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         forgotPassTextView.setVisibility(View.VISIBLE);
         forgotPassTextView.setOnClickListener(v -> {
             Log.d(TAG, ">>>RUN>>>forgotPassTextViewClickListener");
-            resetPassword();
+            ResetPassword();
         });
 
         backButton.setVisibility(View.VISIBLE);
@@ -639,7 +592,7 @@ public class AuthenticationActivity extends AppCompatActivity {
             emailToRegister = false;    // because of animations
             registerToEmail = false;    //
             Util.screenMode = Util.ScreenModeEnum.EMAIL_MODE;
-            prepareScreenUIFor_email();
+            PrepareScreenUIFor_email();
         });
         editEmailImageView.setVisibility(View.VISIBLE);
         editEmailImageView.setOnClickListener(v -> {
@@ -650,7 +603,7 @@ public class AuthenticationActivity extends AppCompatActivity {
             emailToRegister = false;    // because of animations
             registerToEmail = false;    //
             Util.screenMode = Util.ScreenModeEnum.EMAIL_MODE;
-            prepareScreenUIFor_email();
+            PrepareScreenUIFor_email();
         });
         //Animation:
 
@@ -691,8 +644,8 @@ public class AuthenticationActivity extends AppCompatActivity {
     /**
      * This method prepares the User Interface for Registration view.
      */
-    private void prepareScreenUIFor_register() {
-        Log.d(TAG, ">>>RUN>>>prepareScreenUIFor_register()");
+    private void PrepareScreenUIFor_register() {
+        Log.d(TAG, ">>>RUN>>>PrepareScreenUIFor_register()");
         titleTextView.setText(R.string.register);
         titleTextView.setVisibility(View.VISIBLE);
 
@@ -831,7 +784,7 @@ public class AuthenticationActivity extends AppCompatActivity {
             emailToRegister = false;    // because of animations
             registerToEmail = true;    //
             Util.screenMode = Util.ScreenModeEnum.EMAIL_MODE;
-            prepareScreenUIFor_email();
+            PrepareScreenUIFor_email();
         });
 
         //forgotPassTextView.setText("forgot password.");
@@ -840,7 +793,7 @@ public class AuthenticationActivity extends AppCompatActivity {
             Log.d(TAG, ">>>RUN>>>forgotPassTextViewClickListener");
             if (Util.RequireInternetConnection(this) /*RequireEnabledInternetAndInternetConnection()*/) {
 
-                resetPassword();
+                ResetPassword();
 
             } else {
                 Util.hideKeyboard(AuthenticationActivity.this);
@@ -873,7 +826,29 @@ public class AuthenticationActivity extends AppCompatActivity {
         }
     }
 
-
+    /**
+     * This method sets the view variables in Authentication activity.
+     */
+    private void FindViewsById(){
+        appNameTextView = findViewById(R.id.auth_appNameTextView);
+        titleTextView = findViewById(R.id.auth_titleTextView);
+        selectedEmailTextView = findViewById(R.id.auth_selectedEmailTextView);
+        emailEditText = findViewById(R.id.auth_emailEditText);
+        deleteEmailImageView = findViewById(R.id.auth_deleteEmailImageView);
+        passwordEditText = findViewById(R.id.auth_passwordEditText);
+        deletePasswordImageView = findViewById(R.id.auth_deletePasswordImageView);
+        passwordEditText2 = findViewById(R.id.auth_passwordEditText2);
+        deletePasswordImageView2 = findViewById(R.id.auth_deletePasswordImageView2);
+        authButton = findViewById(R.id.auth_button);
+        registerORloginTextView = findViewById(R.id.auth_registerORloginTextView);
+        forgotPassTextView = findViewById(R.id.auth_forgotPassTextView);
+        infoTextView = findViewById(R.id.auth_infoTextView);
+        backButton = findViewById(R.id.auth_backButton);
+        editEmailImageView = findViewById(R.id.auth_editEmailImageView); // same ass back button, but more user friendly
+        reportErrorTextView = findViewById(R.id.auth_errorReportTextView);
+        progressBar = findViewById(R.id.auth_progressBar);
+        loadingTextView = findViewById(R.id.auth_loadingCompleteTextView);
+    }
 
     /*
      *
@@ -884,8 +859,8 @@ public class AuthenticationActivity extends AppCompatActivity {
     /**
      * Sends reset password to currently logged in user.
      */
-    private void resetPassword() {
-        Log.d(TAG, ">>>RUN>>>resetPassword()");
+    private void ResetPassword() {
+        Log.d(TAG, ">>>RUN>>>ResetPassword()");
         forgotPassTextView.setVisibility(View.INVISIBLE);
         mEmail = emailEditText.getText().toString().trim();
         if (mEmail.equals("")) {
@@ -980,6 +955,18 @@ public class AuthenticationActivity extends AppCompatActivity {
     }
 
     /**
+     *  This method reports an error customized by user.
+     */
+    private void ReportError() {
+        Log.d(TAG, ">>>RUN>>>reportErrorTextViewClickListener");
+        Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto", "abc@gmail.com", null));
+        emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Problem with authentication.");
+        emailIntent.putExtra(Intent.EXTRA_TEXT, "");
+        emailIntent.putExtra(Intent.EXTRA_EMAIL, "");
+        startActivity(Intent.createChooser(emailIntent, "Send mEmail..."));
+    }
+
+    /**
      * This method downloads the user model (if user has one).
      */
     private void CheckUserModel_and_small_stuff() {
@@ -1049,6 +1036,11 @@ public class AuthenticationActivity extends AppCompatActivity {
         Log.d(TAG, "<<<FINISHED<<<CheckUserModel_and_small_stuff()");
     }
 
+    /*
+     *
+     * Activity methods:
+     *
+     */
 
     @Override
     public void onBackPressed() {
@@ -1075,7 +1067,7 @@ public class AuthenticationActivity extends AppCompatActivity {
             emailToRegister = false;    // because of animations
             registerToEmail = false;    //
             Util.screenMode = Util.ScreenModeEnum.EMAIL_MODE;
-            prepareScreenUIFor_email();
+            PrepareScreenUIFor_email();
         }
         if (Util.screenMode == Util.ScreenModeEnum.REGISTER_MODE) {
             Log.d(TAG, "Go To: EMAIL_MODE");
@@ -1084,7 +1076,7 @@ public class AuthenticationActivity extends AppCompatActivity {
             emailToRegister = false;    // because of animations
             registerToEmail = true;    //
             Util.screenMode = Util.ScreenModeEnum.EMAIL_MODE;
-            prepareScreenUIFor_email();
+            PrepareScreenUIFor_email();
         }
     }
 
