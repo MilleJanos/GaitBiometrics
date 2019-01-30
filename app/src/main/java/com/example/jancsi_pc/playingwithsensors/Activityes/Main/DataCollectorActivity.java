@@ -200,184 +200,26 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         accelerometerEventListener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent event) {
-                long timeStamp = event.timestamp;
-                float x = event.values[0];
-                float y = event.values[1];
-                float z = event.values[2];
-                accelerometerX.setText(("X: " + x));
-                accelerometerY.setText(("Y: " + y));
-                accelerometerZ.setText(("Z: " + z));
-
-                if (isRecording) {
-                    accArray.add(new Accelerometer(timeStamp, x, y, z, stepNumber));
-                    recordCount++;
-                    textViewStatus.setText(("Recording: " + stepNumber + " steps made."));
-                }
+                UpdateXYZ_and_RecordRawData(event);
             }
-
             @Override
             public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
+                // do nothing
             }
         };
 
-        /*
-         *
-         *   Start recording
-         *
-         */
+        // Start recording
+        startButton.setOnClickListener(startButtonClickListener);
 
-        startButton.setOnClickListener(v -> {
-            Log.d(TAG, ">>>RUN>>>startButtonClickListener");
-            recordCount = 0;
-            stepNumber = 0;
-            sensorManager.registerListener(DataCollectorActivity.this, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
-            accArray.clear();
-            isRecording = true;
-            startButton.setEnabled(false);
-            stopButton.setEnabled(true);
-            sendToServerButton.setEnabled(false);
-            saveToFirebaseButton.setEnabled(false);
-            Log.d("ConnectionActivity_", "Start Rec.");
-        });
+        // Stop recording
+        stopButton.setOnClickListener(stopButtonClickListener);
 
-        /*
-         *
-         *   Stop recording
-         *
-         */
+        // Sending records to server
+        sendToServerButton.setOnClickListener(sendToServerButtonClickListener);
 
-        stopButton.setOnClickListener(v -> {
-            Log.d(TAG, ">>>RUN>>>stopButtonClickListener");
-            mDate = new Date();
-            Util.recordDateAndTimeFormatted = DateFormat.format("yyyyMMdd_HHmmss", mDate.getTime());
-            //Toast.makeText(DataCollectorActivity.this, Util.recordDateAndTimeFormatted, Toast.LENGTH_LONG).show();
-            isRecording = false;
-            startButton.setEnabled(true);
-            stopButton.setEnabled(false);
-            sendToServerButton.setEnabled(true);
-            saveToFirebaseButton.setEnabled(true);
-            sensorManager.unregisterListener(DataCollectorActivity.this);
-            Log.d("ConnectionActivity", "Stop Rec. - Generating CMD");
-            textViewStatus.setText(R.string.calculating);
-            CMD = accArrayToString();
-            CMD += ",end";
-            Log.d("ConnectionActivity", "CMD Generated.");
-            textViewStatus.setText(("Recorded: " + recordCount + " datapoints and " + stepNumber + " step cycles."));
-            // Proxy sensor:
-            mSensorManager.unregisterListener(DataCollectorActivity.this);
-        });
-
-        /*
-         *
-         *   Sending records to server
-         *
-         */
-        sendToServerButton.setOnClickListener(v -> {
-            Log.d(TAG, ">>>RUN>>>sendButtonClickListener");
-            sendToServerButton.setEnabled(false);
-            Toast.makeText(DataCollectorActivity.this, "freq1: " + Util.samplingFrequency(accArray), Toast.LENGTH_LONG).show();
-
-            // Sending the array in multiple packages:
-            accArrayGroupArrayToString();
-            for (int i = 0; i < accArrayStringGroups.size(); ++i) {
-                Log.i("accArrayString", "aASG.get(" + i + ")= " + accArrayStringGroups.get(i));
-                CMD = accArrayStringGroups.get(i);  //group of RECORDS_LIMIT_PER_PACKAGE records
-                //Prepare and Send
-                getIPandPort();
-                Socket_AsyncTask cmd_send_data = new Socket_AsyncTask();
-                cmd_send_data.execute();
-            }
-            Toast.makeText(DataCollectorActivity.this, "Data has been sent. " + Calendar.getInstance().getTime(), Toast.LENGTH_LONG).show();
-        });
-
-        /*
-         *
-         *   Sending to Firebase
-         *   from Start to End
-         *
-         */
-
-        saveToFirebaseButton.setOnClickListener(v -> {
-            Log.d(TAG, ">>>RUN>>>saveToFirebaseButtonClickListener");
-
-            Util.progressDialog = new ProgressDialog(DataCollectorActivity.this, ProgressDialog.STYLE_SPINNER);
-            Util.progressDialog.setTitle("Progress Dialog");
-            Util.progressDialog.setMessage("Uploading");
-            Util.progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-            Util.progressDialog.show();
-
-            try {
-
-                //region Explanation
-                /*
-                    We have to upload the files withDate then after upload
-                    the files has to be renamed withoutDate to make sure
-                    there will be no copy in the internal storage.
-                 */
-                if (checkCallingOrSelfPermission("android.permission.WRITE_EXTERNAL_STORAGE") != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(DataCollectorActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, Util.REQUEST_CODE);
-                }
-                if (checkCallingOrSelfPermission("android.permission.INTERNET") != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(DataCollectorActivity.this, new String[]{Manifest.permission.INTERNET}, Util.REQUEST_CODE);
-                }
-
-                // Get debug value from shared pref
-                String debugModeStr = Util.mSharedPref.getString(Util.SETTING_DEBUG_MODE_KEY, null);
-                if (debugModeStr == null) {                                 // If was not set yet(in shared pref)
-                    Log.i(TAG, "debugModeStr= " + null);
-                    Util.debugMode = false;
-                } else {
-                    Log.i(TAG, "debugModeStr= " + "\"" + debugModeStr + "\"");
-                    int debugModeInt = Integer.parseInt(debugModeStr);
-                    Log.i(TAG, "debugModeInt= " + debugModeInt);
-                    Util.debugMode = debugModeInt == 1;
-                }
-
-                // Change Debug DIR
-                String fileStorageName;
-                String collectionName;
-                if (Util.debugMode) {
-                    fileStorageName = FirebaseUtil.STORAGE_FILES_DEBUG_KEY;
-                    collectionName = FirebaseUtil.USER_RECORDS_DEBUG_KEY;
-                } else {
-                    fileStorageName = FirebaseUtil.STORAGE_FILES_KEY;
-                    collectionName = FirebaseUtil.USER_RECORDS_NEW_KEY;
-                }
-
-                // Saving array into .CSV file (Local):
-                Util.SaveAccArrayIntoCsvFile(accArray, rawdataUserFile);
-
-                // Saving CSV File to FireBase Storage:
-                StorageReference ref = mStorageReference.child(fileStorageName + "/" + rawdataUserFile.getName());
-                FirebaseUtil.UploadFileToFirebaseStorage(DataCollectorActivity.this, rawdataUserFile, ref);
-
-                // Updating (JSON) Object in the FireStore: (Collection->Documents->Collection->Documents->...)
-                String randomId = UUID.randomUUID().toString();
-                String downloadUrl = ref.getDownloadUrl().toString();
-                UserRecordObject info = new UserRecordObject(mDate.toString(), rawdataUserFile.getName(), downloadUrl);
-
-                mDocRef = FirebaseFirestore.getInstance()
-                        .collection(collectionName + "/")
-                        .document(mAuth.getUid() + "")
-                        .collection(Util.deviceId)
-                        .document(randomId);
-                // Upload Object To Firebase Firestore:
-                FirebaseUtil.UploadObjectToFirebaseFirestore(DataCollectorActivity.this, info, mDocRef);
-
-                // Update User Statistics in Firebase Firestore:
-                /*
-                FirebaseUtil.updateStatsInFirestore(stepNumber);
-                */
-
-            } catch (Exception e) {
-                Util.progressDialog.dismiss();
-                e.printStackTrace();
-            }
-
-
-        });
-
+        // Sending to Firebase
+        // from Start to End
+        saveToFirebaseButton.setOnClickListener(saveToFirebaseButtonClickListener);
 
     }// OnCreate
 
@@ -933,6 +775,181 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    /**
+     * This is a click listener for handle the start recording button.
+     */
+    public View.OnClickListener startButtonClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Log.d(TAG, ">>>RUN>>>startButtonClickListener");
+            recordCount = 0;
+            stepNumber = 0;
+            sensorManager.registerListener(DataCollectorActivity.this, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
+            accArray.clear();
+            isRecording = true;
+            startButton.setEnabled(false);
+            stopButton.setEnabled(true);
+            sendToServerButton.setEnabled(false);
+            saveToFirebaseButton.setEnabled(false);
+            Log.d("ConnectionActivity_", "Start Rec.");
+        }
+    };
+
+    /**
+     * This is a click listener for handle the stop recording button.
+     */
+    public View.OnClickListener stopButtonClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Log.d(TAG, ">>>RUN>>>stopButtonClickListener");
+            mDate = new Date();
+            Util.recordDateAndTimeFormatted = DateFormat.format("yyyyMMdd_HHmmss", mDate.getTime());
+            //Toast.makeText(DataCollectorActivity.this, Util.recordDateAndTimeFormatted, Toast.LENGTH_LONG).show();
+            isRecording = false;
+            startButton.setEnabled(true);
+            stopButton.setEnabled(false);
+            sendToServerButton.setEnabled(true);
+            saveToFirebaseButton.setEnabled(true);
+            sensorManager.unregisterListener(DataCollectorActivity.this);
+            Log.d("ConnectionActivity", "Stop Rec. - Generating CMD");
+            textViewStatus.setText(R.string.calculating);
+            CMD = accArrayToString();
+            CMD += ",end";
+            Log.d("ConnectionActivity", "CMD Generated.");
+            textViewStatus.setText(("Recorded: " + recordCount + " datapoints and " + stepNumber + " step cycles."));
+            // Proxy sensor:
+            mSensorManager.unregisterListener(DataCollectorActivity.this);
+        }
+    };
+
+    /**
+     * This is a click listener for handle the send to firebase button.
+     */
+    public View.OnClickListener sendToServerButtonClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Log.d(TAG, ">>>RUN>>>sendButtonClickListener");
+            sendToServerButton.setEnabled(false);
+            Toast.makeText(DataCollectorActivity.this, "freq1: " + Util.samplingFrequency(accArray), Toast.LENGTH_LONG).show();
+
+            // Sending the array in multiple packages:
+            accArrayGroupArrayToString();
+            for (int i = 0; i < accArrayStringGroups.size(); ++i) {
+                Log.i("accArrayString", "aASG.get(" + i + ")= " + accArrayStringGroups.get(i));
+                CMD = accArrayStringGroups.get(i);  //group of RECORDS_LIMIT_PER_PACKAGE records
+                //Prepare and Send
+                getIPandPort();
+                Socket_AsyncTask cmd_send_data = new Socket_AsyncTask();
+                cmd_send_data.execute();
+            }
+            Toast.makeText(DataCollectorActivity.this, "Data has been sent. " + Calendar.getInstance().getTime(), Toast.LENGTH_LONG).show();
+        }
+    };
+
+    /**
+     * This is a click listener for handle the save to firebase button.
+     */
+    public View.OnClickListener saveToFirebaseButtonClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Log.d(TAG, ">>>RUN>>>saveToFirebaseButtonClickListener");
+
+            Util.progressDialog = new ProgressDialog(DataCollectorActivity.this, ProgressDialog.STYLE_SPINNER);
+            Util.progressDialog.setTitle("Progress Dialog");
+            Util.progressDialog.setMessage("Uploading");
+            Util.progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            Util.progressDialog.show();
+
+            try {
+
+                //region Explanation
+                /*
+                    We have to upload the files withDate then after upload
+                    the files has to be renamed withoutDate to make sure
+                    there will be no copy in the internal storage.
+                 */
+                if (checkCallingOrSelfPermission("android.permission.WRITE_EXTERNAL_STORAGE") != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(DataCollectorActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, Util.REQUEST_CODE);
+                }
+                if (checkCallingOrSelfPermission("android.permission.INTERNET") != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(DataCollectorActivity.this, new String[]{Manifest.permission.INTERNET}, Util.REQUEST_CODE);
+                }
+
+                // Get debug value from shared pref
+                String debugModeStr = Util.mSharedPref.getString(Util.SETTING_DEBUG_MODE_KEY, null);
+                if (debugModeStr == null) {                                 // If was not set yet(in shared pref)
+                    Log.i(TAG, "debugModeStr= " + null);
+                    Util.debugMode = false;
+                } else {
+                    Log.i(TAG, "debugModeStr= " + "\"" + debugModeStr + "\"");
+                    int debugModeInt = Integer.parseInt(debugModeStr);
+                    Log.i(TAG, "debugModeInt= " + debugModeInt);
+                    Util.debugMode = debugModeInt == 1;
+                }
+
+                // Change Debug DIR
+                String fileStorageName;
+                String collectionName;
+                if (Util.debugMode) {
+                    fileStorageName = FirebaseUtil.STORAGE_FILES_DEBUG_KEY;
+                    collectionName = FirebaseUtil.USER_RECORDS_DEBUG_KEY;
+                } else {
+                    fileStorageName = FirebaseUtil.STORAGE_FILES_KEY;
+                    collectionName = FirebaseUtil.USER_RECORDS_NEW_KEY;
+                }
+
+                // Saving array into .CSV file (Local):
+                Util.SaveAccArrayIntoCsvFile(accArray, rawdataUserFile);
+
+                // Saving CSV File to FireBase Storage:
+                StorageReference ref = mStorageReference.child(fileStorageName + "/" + rawdataUserFile.getName());
+                FirebaseUtil.UploadFileToFirebaseStorage(DataCollectorActivity.this, rawdataUserFile, ref);
+
+                // Updating (JSON) Object in the FireStore: (Collection->Documents->Collection->Documents->...)
+                String randomId = UUID.randomUUID().toString();
+                String downloadUrl = ref.getDownloadUrl().toString();
+                UserRecordObject info = new UserRecordObject(mDate.toString(), rawdataUserFile.getName(), downloadUrl);
+
+                mDocRef = FirebaseFirestore.getInstance()
+                        .collection(collectionName + "/")
+                        .document(mAuth.getUid() + "")
+                        .collection(Util.deviceId)
+                        .document(randomId);
+                // Upload Object To Firebase Firestore:
+                FirebaseUtil.UploadObjectToFirebaseFirestore(DataCollectorActivity.this, info, mDocRef);
+
+                // Update User Statistics in Firebase Firestore:
+                /*
+                FirebaseUtil.updateStatsInFirestore(stepNumber);
+                */
+            } catch (Exception e) {
+                Util.progressDialog.dismiss();
+                e.printStackTrace();
+            }
+        }
+    };
+
+    /**
+     * This method updates the x,y and z coordinates on the user interface
+     * and is able to record this tree coordinates into accArray.
+     * @param event contains the x,y and z
+     */
+    private void UpdateXYZ_and_RecordRawData(SensorEvent event) {
+        long timeStamp = event.timestamp;
+        float x = event.values[0];
+        float y = event.values[1];
+        float z = event.values[2];
+        accelerometerX.setText(("X: " + x));
+        accelerometerY.setText(("Y: " + y));
+        accelerometerZ.setText(("Z: " + z));
+
+        if (isRecording) {
+            accArray.add(new Accelerometer(timeStamp, x, y, z, stepNumber));
+            recordCount++;
+            textViewStatus.setText(("Recording: " + stepNumber + " steps made."));
+        }
     }
 
 

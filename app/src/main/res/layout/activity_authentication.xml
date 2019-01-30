@@ -263,12 +263,14 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
-        android:id="@+id/auth_deleteEmailImageView"
+        android:id="@+id/auth_deleteOrEditEmailImageView"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="14dp"
+        android:layout_marginEnd="8dp"
         android:padding="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/auth_guidelineVertical"
         app:layout_constraintTop_toTopOf="@+id/auth_guidelineHorisontal2"
         app:srcCompat="@drawable/ic_clear_black" />
@@ -314,19 +316,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/auth_passwordEditText2" />
-
-    <ImageView
-        android:id="@+id/auth_editEmailImageView"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="14dp"
-        android:layout_marginEnd="8dp"
-        android:padding="10dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/auth_guidelineVertical"
-        app:layout_constraintTop_toTopOf="@+id/auth_guidelineHorisontal2"
-        app:srcCompat="@drawable/ic_edit_black" />
 
     <ImageView
         android:id="@+id/auth_imageView2"
