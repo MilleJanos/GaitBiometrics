@@ -2,7 +2,7 @@
 
 LetMeIn is an Android application meant for gait recognition. The app allows the logged in user to record a walking sample and using FeatureExtractorLibrary and ModelBuilderLibrary runs the authentication process.
 
-The FeatureExtractorLibrary can be found on github at https://github.com/NemethKrisztian96/FeatureExtractor/ and the ModelBuilderLibrary ca be found at (** LINK **)
+The FeatureExtractorLibrary can be found on github at https://github.com/NemethKrisztian96/FeatureExtractor/ and the ModelBuilderLibrary ca be found at https://github.com/Timi1427/GaitModelBuilder
 ## Installation
 
 Use Gradle to build and install the app.
