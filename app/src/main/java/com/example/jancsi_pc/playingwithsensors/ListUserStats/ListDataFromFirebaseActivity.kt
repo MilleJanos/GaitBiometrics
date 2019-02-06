@@ -53,7 +53,7 @@ class ListDataFromFirebaseActivity : AppCompatActivity() {
          *          or null if the user does not exist
          * @author Krisztian-Miklos Nemeth
          */
-        public fun queryOneUsersDataFromFireStore(userId: String): FirebaseUserData? {
+        fun queryOneUsersDataFromFireStore(userId: String): FirebaseUserData? {
             Log.d(TAG, "queryUserDataFromFirebase")
             var doc = FirebaseFirestore.getInstance().collection(FirebaseUtil.FIRESTORE_STATS_NODE).document(userId)
             var data: FirebaseUserData? = null
