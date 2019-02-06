@@ -642,7 +642,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         Log.d(TAG, ">>>RUN>>>onResume()");
         super.onResume();
 
-        // If close all Activityes
+        // If close all Activities
         if (Util.isFinished) {
             Log.d(TAG, " isFinished() = true");
             finish();

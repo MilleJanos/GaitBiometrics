@@ -46,14 +46,14 @@ public class SplashScreenActivity extends AppCompatActivity {
         timer.start();
     }
 
-    @Override
-    protected void onResume() {
-        Log.d(TAG, ">>>RUN>>>onResume()");
-        super.onResume();
-
-        if (Util.isFinished) {
-            Log.d(TAG, " isFinished() = true");
-            finish();
-        }
-    }
+//    @Override
+//    protected void onResume() {
+//        Log.d(TAG, ">>>RUN>>>onResume()");
+//        super.onResume();
+//    }
+//    // If close all Activityes
+//    if (Util.isFinished) {
+//        Log.d(TAG, " isFinished() = true");
+//    finish();
+//    }
 }

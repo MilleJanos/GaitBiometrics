@@ -18,6 +18,7 @@ import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
+import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
 import android.widget.Button;
 import android.widget.EditText;
@@ -30,6 +31,7 @@ import com.example.jancsi_pc.playingwithsensors.R;
 import com.example.jancsi_pc.playingwithsensors.Utils.Util;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.errorprone.annotations.ForOverride;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -65,6 +67,7 @@ public class AuthenticationActivity extends AppCompatActivity {
     private TextView reportErrorTextView;
     private TextView infoTextView;
     private TextView auth_offlineValidationTextView;
+    private ImageView appLogoImageView;
     private ConstraintLayout.LayoutParams params;
     private String mEmail = "";
     private String mPassword = "";
@@ -167,6 +170,7 @@ public class AuthenticationActivity extends AppCompatActivity {
 
         Log.d(TAG, "\nmEmail=\"" + mEmail + "\"");
 
+        // Catch input errors:
         if (mEmail.equals("")) {
             emailEditText.setError("Wrong mEmail");
             emailEditText.requestFocus();
@@ -271,6 +275,7 @@ public class AuthenticationActivity extends AppCompatActivity {
 
         Log.d(TAG, "mEmail=\"" + mEmail + "\"");
 
+        // Catch input errors:
         if (mEmail.equals("")) {
             Util.progressDialog.dismiss();
             emailEditText.setError("Wrong mEmail");
@@ -338,7 +343,6 @@ public class AuthenticationActivity extends AppCompatActivity {
 
         // Animations:
         if (passToEmail) {
-            passwordEditText.setText("");
             HandleAnimation_passwordToEmail();
         }
 
@@ -346,8 +350,15 @@ public class AuthenticationActivity extends AppCompatActivity {
             passwordEditText.setText("");
             HandleAnimation_registerToEmail();
         }
+        HangleAnimation_SwitchTitle(titleTextView,"Login");
 
-        titleTextView.setText(R.string.login);
+        // Remove error marks
+        passwordEditText.setError(null);
+        passwordEditText2.setError(null);
+
+        // Update UI
+        passwordEditText.setText("");
+        //titleTextView.setText(R.string.login);    // Added animated text change
         titleTextView.setVisibility(View.VISIBLE);
 
         selectedEmailTextView.setText("");
@@ -508,6 +519,19 @@ public class AuthenticationActivity extends AppCompatActivity {
      */
     private void PrepareScreenUIFor_password() {
         Log.d(TAG, ">>>RUN>>>PrepareScreenUIFor_password()");
+
+        // Animations
+        if (emailToPass) {  // in current state there is only this way
+            HandleAnimation_emailToPassword();
+        }
+        HangleAnimation_SwitchTitle(titleTextView,"Login - Step 2");
+
+        // Remove error marks
+        emailEditText.setError(null);
+        passwordEditText.setError(null);
+        passwordEditText2.setError(null);
+
+        // Update UI
         titleTextView.setText(R.string.login);
         titleTextView.setVisibility(View.VISIBLE);
 
@@ -614,23 +638,6 @@ public class AuthenticationActivity extends AppCompatActivity {
             Log.i(TAG, "Util.isAdminLoggedIn -> false");
         }
 
-
-        if (emailToPass) {
-            HandleAnimation_emailToPassword();
-            /*
-            TranslateAnimation translateAnimation = new TranslateAnimation(0, 0, -150, 0);
-            translateAnimation.setDuration(300);
-
-            authButton.setAnimation(translateAnimation);
-            passwordEditText.setAnimation(translateAnimation);
-            deletePasswordImageView.setAnimation(translateAnimation);
-            registerORloginTextView.setAnimation(translateAnimation);
-            forgotPassTextView.setAnimation(translateAnimation);
-            //passwordEditText.startAnimation(alphaAnimation);
-            //registerORloginTextView.startAnimation(alphaAnimation);
-            //deletePasswordImageView.startAnimation(alphaAnimation);
-            */
-        }
     }
 
     /**
@@ -638,7 +645,21 @@ public class AuthenticationActivity extends AppCompatActivity {
      */
     private void PrepareScreenUIFor_register() {
         Log.d(TAG, ">>>RUN>>>PrepareScreenUIFor_register()");
-        titleTextView.setText(R.string.register);
+
+        // Animation
+        if (emailToRegister) {
+            HandleAnimation_emailToRegister();
+        }
+        HangleAnimation_SwitchTitle(titleTextView,"Register");
+
+        // Remove error marks
+        emailEditText.setError(null);
+        passwordEditText.setError(null);
+        passwordEditText2.setError(null);
+
+        // Update UI
+        passwordEditText.setText("");
+        //titleTextView.setText(R.string.register); // Added animated Text Change
         titleTextView.setVisibility(View.VISIBLE);
 
         selectedEmailTextView.setText("");
@@ -796,27 +817,6 @@ public class AuthenticationActivity extends AppCompatActivity {
         });
 
         backButton.setVisibility(View.INVISIBLE);
-
-        if (emailToRegister) {
-            passwordEditText.setText("");
-            HandleAnimation_emailToRegister();
-            //TranslateAnimation translateAnimation1 = new TranslateAnimation(0, 0, -180, 0);
-            //translateAnimation1.setDuration(300);
-            //TranslateAnimation translateAnimation2 = new TranslateAnimation(0, 0, -360, 0);
-            //translateAnimation2.setDuration(300);
-            //
-            //
-            //passwordEditText.setAnimation(translateAnimation1);
-            //deletePasswordImageView.setAnimation(translateAnimation1);
-            //passwordEditText2.setAnimation(translateAnimation2);
-            //deletePasswordImageView2.setAnimation(translateAnimation2);
-            //authButton.setAnimation(translateAnimation2);
-            //registerORloginTextView.setAnimation(translateAnimation2);
-            //forgotPassTextView.setAnimation(translateAnimation2);
-            //passwordEditText.startAnimation(alphaAnimation);
-            //registerORloginTextView.startAnimation(alphaAnimation);
-            //deletePasswordImageView.startAnimation(alphaAnimation);
-        }
     }
 
     /*
@@ -995,6 +995,45 @@ public class AuthenticationActivity extends AppCompatActivity {
         forgotPassTextView.setAnimation(as4);
     }
 
+    private void HangleAnimation_SwitchTitle(View view, String new_title){
+
+        float distanceX = TypedValue.applyDimension(         // dip to pixels
+                TypedValue.COMPLEX_UNIT_DIP, 300,
+                getResources().getDisplayMetrics()
+        );
+        // Translate:
+        Animation translateAnimationOldOut = new TranslateAnimation(0,-distanceX,0,0);  // hiding animation
+        translateAnimationOldOut.setDuration(ANIMATION_DURATION/2);
+        Animation translateAnimationNewIn = new TranslateAnimation(-distanceX,0,0,0);   // showing animation
+        translateAnimationNewIn.setDuration(ANIMATION_DURATION/2);
+
+        if (view instanceof TextView) {
+            TextView textView= (TextView) view;
+            translateAnimationOldOut.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+                    // do nothing
+                }
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    // After the hiding animation finished, start the showing one
+                    textView.setText(new_title);
+                    textView.setAnimation(translateAnimationNewIn);
+                }
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+                    // do nothing
+                }
+            });
+            textView.startAnimation(translateAnimationOldOut);
+        }
+        else if (view instanceof ImageView) {
+            ImageView imageView = (ImageView) view;
+            // do what you want with textView
+            // TODO: imageView switch - maybe in a later version
+        }
+    }
+
     /**
      * This method sets the view variables in Authentication activity.
      */
@@ -1013,6 +1052,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         forgotPassTextView = findViewById(R.id.auth_forgotPassTextView);
         infoTextView = findViewById(R.id.auth_infoTextView);
         backButton = findViewById(R.id.auth_backButton);
+        appLogoImageView = findViewById(R.id.auth_AppIconImageView);
 
         reportErrorTextView = findViewById(R.id.auth_errorReportTextView);
         progressBar = findViewById(R.id.auth_progressBar);
@@ -1264,7 +1304,38 @@ public class AuthenticationActivity extends AppCompatActivity {
         Util.mSharedPrefEditor.putString(Util.LAST_LOGGED_IN_DATE_KEY, s.toString());
         Util.mSharedPrefEditor.apply();
 
-
         super.onResume();
     }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        // Animate Logo
+        float distanceY = TypedValue.applyDimension(         // dip to pixels
+                TypedValue.COMPLEX_UNIT_DIP, 45,
+                getResources().getDisplayMetrics()
+        );
+        // Translate:
+        TranslateAnimation translateAnimation = new TranslateAnimation(0, 0, distanceY, 0);
+        translateAnimation.setDuration(ANIMATION_DURATION);
+
+        // Scale
+        Animation scaleAnimation = new ScaleAnimation(
+                2f, 1f, // Start and end values for the X axis scaling
+                2f, 1f, // Start and end values for the Y axis scaling
+                Animation.RELATIVE_TO_SELF, 0.5f, // Pivot point of X scaling
+                Animation.RELATIVE_TO_SELF, 0.5f); // Pivot point of Y scaling
+        scaleAnimation.setFillAfter(true); // Needed to keep the result of the animation
+        scaleAnimation.setDuration(ANIMATION_DURATION);
+
+        // Animation Set: (Translate+Alpha)
+        AnimationSet as = new AnimationSet(false);
+        as.addAnimation(translateAnimation);
+        as.addAnimation(scaleAnimation);
+
+        // Start Animations:
+        appLogoImageView.setAnimation(as);
+    }
+
 }

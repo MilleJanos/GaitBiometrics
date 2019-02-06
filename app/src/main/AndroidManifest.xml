@@ -11,11 +11,11 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
-        android:hardwareAccelerated="true"
-        android:largeHeap="true"
         android:allowBackup="true"
+        android:hardwareAccelerated="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:largeHeap="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
@@ -26,7 +26,7 @@
             android:screenOrientation="portrait">
         -->
         <activity
-            android:name=".Activityes.Other.SplashScreenActivity"
+            android:name=".Activityes.Main.MainActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -34,6 +34,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".Activityes.Other.SplashScreenActivity"
+            android:screenOrientation="portrait" />
+
         <activity
             android:name=".StepCounterPackage.StepCounterActivity"
             android:screenOrientation="portrait" />
@@ -43,19 +48,26 @@
         <activity
             android:name=".Activityes.Main.AuthenticationActivity"
             android:screenOrientation="portrait" />
-        <!-- <activity android:name=".SplashScreenActivity"></activity> -->
         <activity
             android:name=".Activityes.Main.ModelUploaderActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activityes.Main.GaitValidationActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activityes.Other.SettingsActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activityes.Other.UserProfileActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Activityes.Other.EditUserActivity"
             android:screenOrientation="portrait" />
 
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
 
-        <activity android:name=".Activityes.Main.GaitValidationActivity" />
-        <activity android:name=".Activityes.Other.SettingsActivity"></activity>
-        <activity android:name=".Activityes.Other.UserProfileActivity"/>
-        <activity android:name=".Activityes.Other.EditUserActivity"/>
     </application>
 
 </manifest>
