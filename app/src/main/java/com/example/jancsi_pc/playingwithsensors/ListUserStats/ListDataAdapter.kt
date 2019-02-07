@@ -1,4 +1,4 @@
-package com.example.jancsi_pc.playingwithsensors.Activityes.Other
+package com.example.jancsi_pc.playingwithsensors.ListUserStats
 
 import android.content.Context
 import android.support.v7.widget.RecyclerView
@@ -7,7 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import com.example.jancsi_pc.playingwithsensors.R
-import com.example.jancsi_pc.playingwithsensors.Utils.FirebaseUserData
 import kotlinx.android.synthetic.main.data_list_item.view.*
 import java.util.*
 

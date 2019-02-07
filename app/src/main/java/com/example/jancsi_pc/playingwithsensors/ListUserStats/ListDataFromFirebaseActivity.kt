@@ -1,14 +1,12 @@
-package com.example.jancsi_pc.playingwithsensors.Activityes.Other
+package com.example.jancsi_pc.playingwithsensors.ListUserStats
 
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
+import com.example.jancsi_pc.playingwithsensors.Utils.Firebase.FirebaseUtil
 import com.example.jancsi_pc.playingwithsensors.R
-import com.example.jancsi_pc.playingwithsensors.Utils.FirebaseUserData
-import com.example.jancsi_pc.playingwithsensors.Utils.FirebaseUtil
-import com.example.jancsi_pc.playingwithsensors.Utils.ItemDividerDecoration
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.activity_list_data_from_firebase.*
 import java.lang.Exception
@@ -55,7 +53,7 @@ class ListDataFromFirebaseActivity : AppCompatActivity() {
          *          or null if the user does not exist
          * @author Krisztian-Miklos Nemeth
          */
-        public fun queryOneUsersDataFromFireStore(userId: String): FirebaseUserData? {
+        fun queryOneUsersDataFromFireStore(userId: String): FirebaseUserData? {
             Log.d(TAG, "queryUserDataFromFirebase")
             var doc = FirebaseFirestore.getInstance().collection(FirebaseUtil.FIRESTORE_STATS_NODE).document(userId)
             var data: FirebaseUserData? = null

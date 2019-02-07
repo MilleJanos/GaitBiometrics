@@ -66,11 +66,11 @@ dependencies {
     //implementation 'com.android.support:design:27.1.0'
     //implementation project(':MPChartLib')
     /*
-                                        //FireStore:
-                                        // implementation 'com.google.firebase:firebase-core:16.0.1'
-                                        implementation 'com.google.firebase:firebase-database:16.0.4'
-                                        // implementation com.google.firebase:firebase-firestore:17.1.2
-                                        */
+                                            //FireStore:
+                                            // implementation 'com.google.firebase:firebase-core:16.0.1'
+                                            implementation 'com.google.firebase:firebase-database:16.0.4'
+                                            // implementation com.google.firebase:firebase-firestore:17.1.2
+                                            */
     // Firebase:
     implementation 'com.google.firebase:firebase-core:16.0.1'
     implementation 'com.google.firebase:firebase-firestore:17.1.0'
@@ -86,6 +86,7 @@ dependencies {
     implementation 'com.android.support:multidex:1.0.0'
     implementation files('libs/GaitModelBuilder.jar')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'com.google.gms:google-services:4.0.0'
 }
 
 apply plugin: 'com.google.gms.google-services'

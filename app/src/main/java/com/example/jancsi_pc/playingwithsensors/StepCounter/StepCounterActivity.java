@@ -1,4 +1,4 @@
-package com.example.jancsi_pc.playingwithsensors.StepCounterPackage;
+package com.example.jancsi_pc.playingwithsensors.StepCounter;
 
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;

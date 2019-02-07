@@ -1,4 +1,4 @@
-package com.example.jancsi_pc.playingwithsensors.Activityes.Other;
+package com.example.jancsi_pc.playingwithsensors.UserProfile;
 
 import android.content.Intent;
 import android.database.Cursor;
@@ -13,8 +13,8 @@ import android.widget.EditText;
 import android.widget.ImageView;
 
 import com.example.jancsi_pc.playingwithsensors.R;
-import com.example.jancsi_pc.playingwithsensors.Utils.FirebaseUtil;
-import com.example.jancsi_pc.playingwithsensors.Utils.UserDataObject;
+import com.example.jancsi_pc.playingwithsensors.Utils.Firebase.FirebaseUtil;
+import com.example.jancsi_pc.playingwithsensors.Utils.Firebase.UserDataObject;
 import com.example.jancsi_pc.playingwithsensors.Utils.Util;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;

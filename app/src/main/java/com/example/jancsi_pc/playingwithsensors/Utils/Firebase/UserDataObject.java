@@ -1,6 +1,4 @@
-package com.example.jancsi_pc.playingwithsensors.Utils;
-
-import android.view.View;
+package com.example.jancsi_pc.playingwithsensors.Utils.Firebase;
 
 import com.google.firebase.firestore.IgnoreExtraProperties;
 
@@ -11,7 +9,7 @@ import com.google.firebase.firestore.IgnoreExtraProperties;
  * @author Fulop Timea
  */
 @IgnoreExtraProperties
-public class UserDataObject extends UserObject{
+public class UserDataObject extends UserObject {
 
     public String userName;
 

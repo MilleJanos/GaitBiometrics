@@ -1,4 +1,4 @@
-package com.example.jancsi_pc.playingwithsensors.Utils;
+package com.example.jancsi_pc.playingwithsensors.Utils.Firebase;
 
 
 import com.google.firebase.firestore.IgnoreExtraProperties;

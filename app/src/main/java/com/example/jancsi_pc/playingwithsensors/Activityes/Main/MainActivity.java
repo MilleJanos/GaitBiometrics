@@ -17,7 +17,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        //setContentView(R.layout.activity_main);
         startActivity( new Intent(MainActivity.this, SplashScreenActivity.class) );
 
     }
@@ -27,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         // If close all Activities
         if (Util.isFinished) {
+            Util.isFinished = false;    // to run the app if the app is restarted
             Log.d(TAG, " isFinished() = true");
             finish();
         }

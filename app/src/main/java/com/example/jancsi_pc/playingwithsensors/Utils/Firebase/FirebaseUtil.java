@@ -1,4 +1,4 @@
-package com.example.jancsi_pc.playingwithsensors.Utils;
+package com.example.jancsi_pc.playingwithsensors.Utils.Firebase;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -8,9 +8,11 @@ import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.example.jancsi_pc.playingwithsensors.Activityes.Other.EditUserActivity;
-import com.example.jancsi_pc.playingwithsensors.Activityes.Other.ListDataFromFirebaseActivity;
-import com.example.jancsi_pc.playingwithsensors.Activityes.Other.UserProfileActivity;
+import com.example.jancsi_pc.playingwithsensors.UserProfile.EditUserActivity;
+import com.example.jancsi_pc.playingwithsensors.ListUserStats.FirebaseUserData;
+import com.example.jancsi_pc.playingwithsensors.ListUserStats.ListDataFromFirebaseActivity;
+import com.example.jancsi_pc.playingwithsensors.UserProfile.UserProfileActivity;
+import com.example.jancsi_pc.playingwithsensors.Utils.Util;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -25,6 +27,8 @@ import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * This class contains the Util variables and methods for firebase transactions.
@@ -305,7 +309,6 @@ public class FirebaseUtil {
 
 
 
-
     /**
      * A constant that contains the name of the Firebase/Firestore collection where user statistics
      * are stored
@@ -331,10 +334,20 @@ public class FirebaseUtil {
                     if (task.isSuccessful()) {
                         Log.d("updateStatsInFirestore:", task.getResult().toString());
                         //getting existing records
-                        UserStatsObject statsObject = task.getResult().toObject(UserStatsObject.class);
-                        if (statsObject == null) {
+                        DocumentSnapshot document = task.getResult();
+                        if(document==null){
                             return;
                         }
+                        List<String> devices = new ArrayList<>();
+                        devices.addAll(Arrays.asList(document.get("devices").toString().replace("[", "").replace("]", "").split(",")));
+                        UserStatsObject statsObject = new UserStatsObject(
+                                devices,
+                                document.get("email").toString(),
+                                Integer.parseInt(document.get("files").toString()),
+                                Long.parseLong(document.get("last_session").toString()),
+                                Integer.parseInt(document.get("sessions").toString()),
+                                Integer.parseInt(document.get("steps").toString())
+                        );
                         Log.d("RESULTED OBJECT:", statsObject.toString());
                         //updating records
                         if (statsObject.isNewSession(System.currentTimeMillis() / 1000)) {
@@ -345,7 +358,7 @@ public class FirebaseUtil {
                         statsObject.incrementFiles();
                         statsObject.incrementSteps(steps);
 
-                        docRef.set(statsObject);
+                        docRef.set(statsObject); //TODO test
                     } else { //handle failure
                         //it means the user is new and does not have stats yet => creating stats
                         FirebaseUtil.createStatsInFirestore(FirebaseAuth.getInstance().getCurrentUser().getEmail());
@@ -364,7 +377,7 @@ public class FirebaseUtil {
         FirebaseFirestore.getInstance()
                 .collection(FIRESTORE_STATS_NODE + "/")
                 .document(Util.mAuth.getUid())
-                .set(new UserStatsObject(new ArrayList<String>(), email, 0, System.currentTimeMillis() / 1000, 0, 0));
+                .set(new UserStatsObject(new ArrayList<>(), email, 0, System.currentTimeMillis() / 1000, 0, 0));
     }
 
     /**
@@ -379,4 +392,5 @@ public class FirebaseUtil {
         //invoking a function already implemented in kotlin :D
         return ListDataFromFirebaseActivity.Companion.queryOneUsersDataFromFireStore(userId);
     }
+
 }

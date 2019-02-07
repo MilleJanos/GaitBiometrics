@@ -1,4 +1,4 @@
-package com.example.jancsi_pc.playingwithsensors.Utils
+package com.example.jancsi_pc.playingwithsensors.ListUserStats
 
 /**
  * A class that stores data from Firebase/Firestore contained in the user_stats collection in order to be shown in a RecyclerView

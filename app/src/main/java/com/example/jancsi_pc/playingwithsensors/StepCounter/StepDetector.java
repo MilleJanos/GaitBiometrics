@@ -1,4 +1,4 @@
-package com.example.jancsi_pc.playingwithsensors.StepCounterPackage;
+package com.example.jancsi_pc.playingwithsensors.StepCounter;
 
 /**
  * The Step Detector/Counter used from:

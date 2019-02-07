@@ -20,11 +20,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.jancsi_pc.playingwithsensors.R;
-import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepDetector;
-import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepListener;
+import com.example.jancsi_pc.playingwithsensors.StepCounter.StepDetector;
+import com.example.jancsi_pc.playingwithsensors.StepCounter.StepListener;
 import com.example.jancsi_pc.playingwithsensors.Utils.Accelerometer;
-import com.example.jancsi_pc.playingwithsensors.Utils.FirebaseUtil;
-import com.example.jancsi_pc.playingwithsensors.Utils.UserRecordObject;
+import com.example.jancsi_pc.playingwithsensors.Utils.Firebase.FirebaseUtil;
+import com.example.jancsi_pc.playingwithsensors.Utils.Firebase.UserRecordObject;
 import com.example.jancsi_pc.playingwithsensors.Utils.Util;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;

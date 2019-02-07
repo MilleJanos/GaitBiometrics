@@ -31,7 +31,6 @@ import com.example.jancsi_pc.playingwithsensors.R;
 import com.example.jancsi_pc.playingwithsensors.Utils.Util;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.errorprone.annotations.ForOverride;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -48,7 +47,7 @@ import java.util.Date;
 public class AuthenticationActivity extends AppCompatActivity {
 
     private final long ONE_MEGABYTE = 1024 * 1024;
-    private final long ANIMATION_DURATION = 300;//miliseconds
+    private final long ANIMATION_DURATION = 300; //miliseconds
     private TextView appNameTextView;
     private TextView titleTextView;
     private TextView selectedEmailTextView;
@@ -350,7 +349,7 @@ public class AuthenticationActivity extends AppCompatActivity {
             passwordEditText.setText("");
             HandleAnimation_registerToEmail();
         }
-        HangleAnimation_SwitchTitle(titleTextView,"Login");
+        HangleAnimation_switchTitle(titleTextView,"Login");
 
         // Remove error marks
         passwordEditText.setError(null);
@@ -524,7 +523,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         if (emailToPass) {  // in current state there is only this way
             HandleAnimation_emailToPassword();
         }
-        HangleAnimation_SwitchTitle(titleTextView,"Login - Step 2");
+        HangleAnimation_switchTitle(titleTextView,"Login - Step 2");
 
         // Remove error marks
         emailEditText.setError(null);
@@ -650,7 +649,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         if (emailToRegister) {
             HandleAnimation_emailToRegister();
         }
-        HangleAnimation_SwitchTitle(titleTextView,"Register");
+        HangleAnimation_switchTitle(titleTextView,"Register");
 
         // Remove error marks
         emailEditText.setError(null);
@@ -995,7 +994,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         forgotPassTextView.setAnimation(as4);
     }
 
-    private void HangleAnimation_SwitchTitle(View view, String new_title){
+    private void HangleAnimation_switchTitle(View view, String new_title){
 
         float distanceX = TypedValue.applyDimension(         // dip to pixels
                 TypedValue.COMPLEX_UNIT_DIP, 300,
@@ -1032,6 +1031,33 @@ public class AuthenticationActivity extends AppCompatActivity {
             // do what you want with textView
             // TODO: imageView switch - maybe in a later version
         }
+    }
+
+    private void HandleAnimation_appLogoIntro(){
+        float distanceY = TypedValue.applyDimension(         // dip to pixels
+                TypedValue.COMPLEX_UNIT_DIP, 45,
+                getResources().getDisplayMetrics()
+        );
+        // Translate:
+        TranslateAnimation translateAnimation = new TranslateAnimation(0, 0, distanceY, 0);
+        translateAnimation.setDuration(ANIMATION_DURATION);
+
+        // Scale
+        Animation scaleAnimation = new ScaleAnimation(
+                2f, 1f, // Start and end values for the X axis scaling
+                2f, 1f, // Start and end values for the Y axis scaling
+                Animation.RELATIVE_TO_SELF, 0.5f, // Pivot point of X scaling
+                Animation.RELATIVE_TO_SELF, 0.5f); // Pivot point of Y scaling
+        scaleAnimation.setFillAfter(true); // Needed to keep the result of the animation
+        scaleAnimation.setDuration(ANIMATION_DURATION);
+
+        // Animation Set: (Translate+Alpha)
+        AnimationSet as = new AnimationSet(false);
+        as.addAnimation(translateAnimation);
+        as.addAnimation(scaleAnimation);
+
+        // Start Animations:
+        appLogoImageView.setAnimation(as);
     }
 
     /**
@@ -1312,30 +1338,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         super.onStart();
 
         // Animate Logo
-        float distanceY = TypedValue.applyDimension(         // dip to pixels
-                TypedValue.COMPLEX_UNIT_DIP, 45,
-                getResources().getDisplayMetrics()
-        );
-        // Translate:
-        TranslateAnimation translateAnimation = new TranslateAnimation(0, 0, distanceY, 0);
-        translateAnimation.setDuration(ANIMATION_DURATION);
-
-        // Scale
-        Animation scaleAnimation = new ScaleAnimation(
-                2f, 1f, // Start and end values for the X axis scaling
-                2f, 1f, // Start and end values for the Y axis scaling
-                Animation.RELATIVE_TO_SELF, 0.5f, // Pivot point of X scaling
-                Animation.RELATIVE_TO_SELF, 0.5f); // Pivot point of Y scaling
-        scaleAnimation.setFillAfter(true); // Needed to keep the result of the animation
-        scaleAnimation.setDuration(ANIMATION_DURATION);
-
-        // Animation Set: (Translate+Alpha)
-        AnimationSet as = new AnimationSet(false);
-        as.addAnimation(translateAnimation);
-        as.addAnimation(scaleAnimation);
-
-        // Start Animations:
-        appLogoImageView.setAnimation(as);
+        HandleAnimation_appLogoIntro();
     }
 
 }

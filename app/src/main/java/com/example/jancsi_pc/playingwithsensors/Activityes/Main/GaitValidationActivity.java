@@ -16,8 +16,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.jancsi_pc.playingwithsensors.R;
-import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepDetector;
-import com.example.jancsi_pc.playingwithsensors.StepCounterPackage.StepListener;
+import com.example.jancsi_pc.playingwithsensors.StepCounter.StepDetector;
+import com.example.jancsi_pc.playingwithsensors.StepCounter.StepListener;
 import com.example.jancsi_pc.playingwithsensors.Utils.Accelerometer;
 import com.example.jancsi_pc.playingwithsensors.Utils.Util;
 
