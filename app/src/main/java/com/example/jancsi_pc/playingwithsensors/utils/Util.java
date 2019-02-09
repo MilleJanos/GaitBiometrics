@@ -12,8 +12,8 @@ import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
-import com.example.jancsi_pc.playingwithsensors.activityes.main.AuthenticationActivity;
 import com.example.jancsi_pc.playingwithsensors.R;
+import com.example.jancsi_pc.playingwithsensors.activityes.main.AuthenticationActivity;
 import com.example.jancsi_pc.playingwithsensors.utils.firebase.UserDataObject;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.storage.FirebaseStorage;
@@ -125,9 +125,9 @@ public class Util {
     }
 
     // Cloud
-    public static FirebaseAuth mAuth = FirebaseAuth.getInstance();
+    public static FirebaseAuth mAuth;// = FirebaseAuth.getInstance(); //TODO??
     public static StorageReference mRef;
-    public static FirebaseStorage mStorage = FirebaseStorage.getInstance();
+    public static FirebaseStorage mStorage;// = FirebaseStorage.getInstance(); //TODO??
 
     // Shared Preferences
     public static String sharedPrefFile = "sharedPref";  // "com.example/jancsi_pc.playingwithsensors";
