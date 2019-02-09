@@ -65,7 +65,6 @@ import java.util.UUID;
  * @author MilleJanos
  */
 public class DataCollectorActivity extends AppCompatActivity implements SensorEventListener, StepListener, NavigationView.OnNavigationItemSelectedListener {
-
     private static final String TAG = "DataCollectorActivity";
     private boolean NO_PYTHON_SERVER_YET = true;
     private SensorManager sensorManager;
@@ -75,25 +74,8 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     private Button startButton;
     private Button stopButton;
     private Button saveToFirebaseButton;
-    /**
-     * This is a click listener for handle the start recording button.
-     */
-    public View.OnClickListener startButtonClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            Log.d(TAG, ">>>RUN>>>startButtonClickListener");
-            recordCount = 0;
-            stepNumber = 0;
-            sensorManager.registerListener(DataCollectorActivity.this, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
-            accArray.clear();
-            isRecording = true;
-            startButton.setEnabled(false);
-            stopButton.setEnabled(true);
-            sendToServerButton.setEnabled(false);
-            saveToFirebaseButton.setEnabled(false);
-            Log.d("ConnectionActivity_", "Start Rec.");
-        }
-    };
+    //PORT: 21567                         "<ip>:<port>"
+    private String IP_ADDRESS = "192.168.137.90:21456";
     public static String wifiModuleIp = "";
     public static int wifiModulePort = 0;
     public static String CMD = "0";
@@ -116,14 +98,231 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     private ImageView pythonServerImageView;
     private TextView navigationMenuUserName;
     private TextView navigationMenuEmail;
+
     Date mDate;
     private String mFileName;
-    /**
-     * This is a click listener for handle the stop recording button.
+
+    // For Step Detecting:
+    private StepDetector simpleStepDetector;
+
+    // Firebase:
+    private FirebaseStorage mFirestore;            // used to upload files
+    private StorageReference mStorageReference;  // to storage
+    private FirebaseAuth mAuth = FirebaseAuth.getInstance();
+    private FirebaseFirestore mFirebaseFirestore = FirebaseFirestore.getInstance();
+    private FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
+    private DocumentReference mDocRef; // = FirebaseFirestore.getInstance().document("usersFiles/information");
+
+    // Internal Files:
+    private File rawdataUserFile;
+    private File featureUserFile;
+
+
+    // Proxy sensor:
+    private SensorManager mSensorManager;
+    private Sensor mProximity;
+    private static final int SENSOR_SENSITIVITY = 4;
+
+    View attachedLayout;
+
+    /*
+     *
+     *   OnCreate
+     *
      */
-    public View.OnClickListener stopButtonClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        setTheme(R.style.AppTheme);
+
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_data_collector_nav);
+
+        findViewByIDs();
+
+        /*
+         * Load Navigation menu:
+         */
+
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+        //navigationView.getMenu().getItem(0).setChecked(true);
+
+        Util.mSharedPref = getSharedPreferences(Util.sharedPrefFile, MODE_PRIVATE);
+        Util.mSharedPrefEditor = Util.mSharedPref.edit();
+
+        navigationMenuUserName = navigationView.getHeaderView(0).findViewById(R.id.nav_header_name);
+        navigationMenuEmail =    navigationView.getHeaderView(0).findViewById(R.id.nav_header_email);
+
+
+
+        Log.d(TAG, ">>>RUN>>>onCreate()");
+
+        Util.progressDialog = new ProgressDialog(DataCollectorActivity.this);
+
+
+        // hide keyboard if needed:
+        try {
+            Util.hideKeyboard(DataCollectorActivity.this);
+        } catch (Exception ignore) {
+
+        }
+        //
+        // Internal Saving Location for ALL hidden files:
+        //
+        Util.internalFilesRoot = new File(getFilesDir().toString());
+        Log.i(TAG, "Util.internalFilesRoot.getAbsolutePath() = " + Util.internalFilesRoot.getAbsolutePath());
+
+
+        //
+        // Internal files Path:
+        //
+        mDate = new Date();
+
+        // Create folder if not exists:
+        File myInternalFilesRoot;
+
+        myInternalFilesRoot = new File(Util.internalFilesRoot.getAbsolutePath() /*+ customDIR*/);
+        if (!myInternalFilesRoot.exists()) {
+            myInternalFilesRoot.mkdirs();
+            Log.i(TAG, "Path not exists (" + myInternalFilesRoot.getAbsolutePath() + ") --> .mkdirs()");
+        }
+
+        // Creating user's raw data file path:
+        Util.rawdata_user_path = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/rawdata_" + mAuth.getUid() + ".csv";
+        Util.feature_user_path = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/feature_" + mAuth.getUid() + ".arff";   //*// we need this for validation only
+        Util.feature_dummy_path = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/feature_dummy.arff";                   //*//  - dummy exists and it is not empty
+        rawdataUserFile = new File(Util.rawdata_user_path);
+        featureUserFile = new File(Util.feature_user_path);                                                                          //*//
+        Log.i(TAG, "PATH: Util.rawdata_user_path  = " + Util.rawdata_user_path);
+        Log.i(TAG, "PATH: Util.rawdata_user_path  = " + Util.feature_user_path);                                                   //*//
+
+        // Creating user's raw data file (if not exists):
+        if (!rawdataUserFile.exists()) {
+            try {
+                rawdataUserFile.createNewFile();
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e(TAG, "File can't be created: " + Util.rawdata_user_path);
+            }
+        }
+        // Creating user's feature file (if not exists):
+        if (!featureUserFile.exists()) {
+            try {
+                featureUserFile.createNewFile();
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e(TAG, "File can't be created: " + Util.feature_user_path);
+            }
+        }
+
+        //FIREBASE INIT:
+        mFirestore = FirebaseStorage.getInstance();
+        mStorageReference = mFirestore.getReference();
+
+        //SENSOR:
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+
+        if (accelerometerSensor == null) {
+            Toast.makeText(this, "The device has no com.example.jancsi_pc.playingwithsensors.Utils.Accelerometer !", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+
+        textViewStatus.setText(R.string.startRecording);
+
+        stopButton.setEnabled(false);
+        sendToServerButton.setEnabled(false);
+        saveToFirebaseButton.setEnabled(false);
+
+        reportErrorTextView.setOnClickListener(v -> {
+            Log.d(TAG, ">>>RUN>>>reportErrorTextViewClickListener");
+            Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto", "abc@gmail.com", null));
+            emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Problem with authentication.");
+            emailIntent.putExtra(Intent.EXTRA_TEXT, "");
+            emailIntent.putExtra(Intent.EXTRA_EMAIL, "");
+            startActivity(Intent.createChooser(emailIntent, "Send email..."));
+        });
+
+        final DecimalFormat df = new DecimalFormat("0");
+        df.setMaximumIntegerDigits(20);
+        // 123...45E9 -> 123...459234
+        //         ==            ====
+
+        //Step Detecting:
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        simpleStepDetector = new StepDetector();
+        simpleStepDetector.registerListener(this);
+
+        // HIDE ACCELEROMETER COORDINATES:
+
+        accelerometerTitleTextView.setVisibility(View.INVISIBLE);
+        accelerometerX.setVisibility(View.INVISIBLE);
+        accelerometerY.setVisibility(View.INVISIBLE);
+        accelerometerZ.setVisibility(View.INVISIBLE);
+
+        // Proxy sensor:
+        mSensorManager = (SensorManager) getSystemService(DataCollectorActivity.this.SENSOR_SERVICE);
+        mProximity = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
+
+
+        if (NO_PYTHON_SERVER_YET) {
+            sendToServerButton.setVisibility(View.INVISIBLE);
+            pythonServerImageView.setVisibility((View.INVISIBLE));
+        }
+
+        accelerometerEventListener = new SensorEventListener() {
+            @Override
+            public void onSensorChanged(SensorEvent event) {
+                long timeStamp = event.timestamp;
+                float x = event.values[0];
+                float y = event.values[1];
+                float z = event.values[2];
+                accelerometerX.setText(("X: " + x));
+                accelerometerY.setText(("Y: " + y));
+                accelerometerZ.setText(("Z: " + z));
+
+                if (isRecording) {
+                    accArray.add(new Accelerometer(timeStamp, x, y, z, stepNumber));
+                    recordCount++;
+                    textViewStatus.setText(("Recording: " + stepNumber + " steps made."));
+                }
+            }
+
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+            }
+        };
+
+        /*
+         *
+         *   Start recording
+         *
+         */
+
+        startButton.setOnClickListener(v -> {
+            Log.d(TAG, ">>>RUN>>>startButtonClickListener");
+            recordCount = 0;
+            stepNumber = 0;
+            sensorManager.registerListener(DataCollectorActivity.this, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
+            accArray.clear();
+            isRecording = true;
+            startButton.setEnabled(false);
+            stopButton.setEnabled(true);
+            sendToServerButton.setEnabled(false);
+            saveToFirebaseButton.setEnabled(false);
+            Log.d("ConnectionActivity_", "Start Rec.");
+        });
+
+        /*
+         *
+         *   Stop recording
+         *
+         */
+
+        stopButton.setOnClickListener(v -> {
             Log.d(TAG, ">>>RUN>>>stopButtonClickListener");
             mDate = new Date();
             Util.recordDateAndTimeFormatted = DateFormat.format("yyyyMMdd_HHmmss", mDate.getTime());
@@ -142,113 +341,42 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
             textViewStatus.setText(("Recorded: " + recordCount + " datapoints and " + stepNumber + " step cycles."));
             // Proxy sensor:
             mSensorManager.unregisterListener(DataCollectorActivity.this);
-        }
-    };
-    // For Step Detecting:
-    private StepDetector simpleStepDetector;
-    // Firebase:
-    private FirebaseStorage mFirestore;            // used to upload files
-    private StorageReference mStorageReference;  // to storage
-    private FirebaseAuth mAuth = FirebaseAuth.getInstance();
-    private FirebaseFirestore mFirebaseFirestore = FirebaseFirestore.getInstance();
-    private FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
-    private DocumentReference mDocRef; // = FirebaseFirestore.getInstance().document("usersFiles/information");
-    // Internal Files:
-    private File rawdataUserFile;
-    private File featureUserFile;
-    // Proxy sensor:
-    private SensorManager mSensorManager;
-    private Sensor mProximity;
-    private static final int SENSOR_SENSITIVITY = 4;
-    View attachedLayout;
+        });
 
-    /*
-     *
-     *   OnCreate
-     *
-     */
-    /**
-     * This is a click listener for handle the save to firebase button.
-     */
-    public View.OnClickListener saveToFirebaseButtonClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            Log.d(TAG, ">>>RUN>>>saveToFirebaseButtonClickListener");
+        /*
+         *
+         *   Sending records to server
+         *
+         */
+        sendToServerButton.setOnClickListener(v -> {
+            Log.d(TAG, ">>>RUN>>>sendButtonClickListener");
+            sendToServerButton.setEnabled(false);
+            Toast.makeText(DataCollectorActivity.this, "freq1: " + Util.samplingFrequency(accArray), Toast.LENGTH_LONG).show();
 
-            Util.progressDialog = new ProgressDialog(DataCollectorActivity.this, ProgressDialog.STYLE_SPINNER);
-            Util.progressDialog.setTitle("Progress Dialog");
-            Util.progressDialog.setMessage("Uploading");
-            Util.progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-            Util.progressDialog.show();
-
-            try {
-
-                //region Explanation
-                /*
-                    We have to upload the files withDate then after upload
-                    the files has to be renamed withoutDate to make sure
-                    there will be no copy in the internal storage.
-                 */
-                if (checkCallingOrSelfPermission("android.permission.WRITE_EXTERNAL_STORAGE") != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(DataCollectorActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, Util.REQUEST_CODE);
-                }
-                if (checkCallingOrSelfPermission("android.permission.INTERNET") != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(DataCollectorActivity.this, new String[]{Manifest.permission.INTERNET}, Util.REQUEST_CODE);
-                }
-
-                // Get debug value from shared pref
-                String debugModeStr = Util.mSharedPref.getString(Util.SETTING_DEBUG_MODE_KEY, null);
-                if (debugModeStr == null) {                                 // If was not set yet(in shared pref)
-                    Log.i(TAG, "debugModeStr= " + null);
-                    Util.debugMode = false;
-                } else {
-                    Log.i(TAG, "debugModeStr= " + "\"" + debugModeStr + "\"");
-                    int debugModeInt = Integer.parseInt(debugModeStr);
-                    Log.i(TAG, "debugModeInt= " + debugModeInt);
-                    Util.debugMode = debugModeInt == 1;
-                }
-
-                // Change Debug DIR
-                String fileStorageName;
-                String collectionName;
-                if (Util.debugMode) {
-                    fileStorageName = FirebaseUtil.STORAGE_FILES_DEBUG_KEY;
-                    collectionName = FirebaseUtil.USER_RECORDS_DEBUG_KEY;
-                } else {
-                    fileStorageName = FirebaseUtil.STORAGE_FILES_KEY;
-                    collectionName = FirebaseUtil.USER_RECORDS_NEW_KEY;
-                }
-
-                // Saving array into .CSV file (Local):
-                Util.saveAccArrayIntoCsvFile(accArray, rawdataUserFile);
-
-                // Saving CSV File to FireBase Storage:
-                StorageReference ref = mStorageReference.child(fileStorageName + "/" + rawdataUserFile.getName());
-                FirebaseUtil.uploadFileToFirebaseStorage(DataCollectorActivity.this, rawdataUserFile, ref);
-
-                // Updating (JSON) Object in the FireStore: (Collection->Documents->Collection->Documents->...)
-                String randomId = UUID.randomUUID().toString();
-                String downloadUrl = ref.getDownloadUrl().toString();
-                UserRecordObject info = new UserRecordObject(mDate.toString(), rawdataUserFile.getName(), downloadUrl);
-
-                mDocRef = FirebaseFirestore.getInstance()
-                        .collection(collectionName + "/")
-                        .document(mAuth.getUid() + "")
-                        .collection(Util.deviceId)
-                        .document(randomId);
-                // Upload Object To Firebase Firestore:
-                FirebaseUtil.uploadObjectToFirebaseFirestore(DataCollectorActivity.this, info, mDocRef);
-
-                // Update User Statistics in Firebase Firestore:
-                /*
-                FirebaseUtil.updateStatsInFirestore(stepNumber);
-                */
-            } catch (Exception e) {
-                Util.progressDialog.dismiss();
-                e.printStackTrace();
+            // Sending the array in multiple packages:
+            accArrayGroupArrayToString();
+            for (int i = 0; i < accArrayStringGroups.size(); ++i) {
+                Log.i("accArrayString", "aASG.get(" + i + ")= " + accArrayStringGroups.get(i));
+                CMD = accArrayStringGroups.get(i);  //group of RECORDS_LIMIT_PER_PACKAGE records
+                //Prepare and Send
+                getIPandPort();
+                Socket_AsyncTask cmd_send_data = new Socket_AsyncTask();
+                cmd_send_data.execute();
             }
-        }
-    };
+            Toast.makeText(DataCollectorActivity.this, "Data has been sent. " + Calendar.getInstance().getTime(), Toast.LENGTH_LONG).show();
+        });
+
+        /*
+         *
+         *   Sending to Firebase
+         *   from Start to End
+         *
+         */
+
+        saveToFirebaseButton.setOnClickListener(saveToFirebaseButtonClickListener);
+
+
+    }// OnCreate
 
 
 
@@ -473,139 +601,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         }
     }
 
-    //                                    "<ip>:<port>"
-    private String IP_ADDRESS = "192.168.137.90:21456";
-    /**
-     * This is a click listener for handle the send to firebase button.
-     */
-    public View.OnClickListener sendToServerButtonClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            Log.d(TAG, ">>>RUN>>>sendButtonClickListener");
-            sendToServerButton.setEnabled(false);
-            Toast.makeText(DataCollectorActivity.this, "freq1: " + Util.samplingFrequency(accArray), Toast.LENGTH_LONG).show();
-
-            // Sending the array in multiple packages:
-            accArrayGroupArrayToString();
-            for (int i = 0; i < accArrayStringGroups.size(); ++i) {
-                Log.i("accArrayString", "aASG.get(" + i + ")= " + accArrayStringGroups.get(i));
-                CMD = accArrayStringGroups.get(i);  //group of RECORDS_LIMIT_PER_PACKAGE records
-                //Prepare and Send
-                getIPandPort();
-                Socket_AsyncTask cmd_send_data = new Socket_AsyncTask();
-                cmd_send_data.execute();
-            }
-            Toast.makeText(DataCollectorActivity.this, "Data has been sent. " + Calendar.getInstance().getTime(), Toast.LENGTH_LONG).show();
-        }
-    };
-    private boolean doubleBackToExitPressedOnce = false;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        setTheme(R.style.AppTheme);
-
-        Log.d(TAG, ">>>RUN>>>onCreate()");
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_data_collector_nav);
-
-        // Find views for the current activity
-        findViewsById();
-
-        // Load Navigation menu:
-        NavigationView navigationView = findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
-        //navigationView.getMenu().getItem(0).setChecked(true);
-        navigationMenuUserName = navigationView.getHeaderView(0).findViewById(R.id.nav_header_name);
-        navigationMenuEmail = navigationView.getHeaderView(0).findViewById(R.id.nav_header_email);
-
-        // Initialize shared preferences:
-        Util.mSharedPref = getSharedPreferences(Util.sharedPrefFile, MODE_PRIVATE);
-        Util.mSharedPrefEditor = Util.mSharedPref.edit();
-
-        // Initialize Progress Dialog
-        Util.progressDialog = new ProgressDialog(DataCollectorActivity.this);
-
-        // Internal Saving Location for ALL hidden files:
-        initializeInternalFileVariables();
-
-        // Initialize Firebase:
-        mFirestore = FirebaseStorage.getInstance();
-        mStorageReference = mFirestore.getReference();
-
-        // Initialize accelerometer sensor:
-        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        if (accelerometerSensor == null) {
-            Toast.makeText(this, "The device has no com.example.jancsi_pc.playingwithsensors.Utils.Accelerometer !", Toast.LENGTH_SHORT).show();
-            // TODO: create a button to let the user to read the error then accept to exit
-            finish();
-        }
-
-        textViewStatus.setText(R.string.startRecording);
-        stopButton.setEnabled(false);
-        sendToServerButton.setEnabled(false);
-        saveToFirebaseButton.setEnabled(false);
-        reportErrorTextView.setOnClickListener(v -> ReportError());
-        final DecimalFormat df = new DecimalFormat("0");
-        df.setMaximumIntegerDigits(20);
-        // 123...45E9 -> 123...459234
-        //         ==            ====
-
-        //Step Detecting:
-        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        simpleStepDetector = new StepDetector();
-        simpleStepDetector.registerListener(this);
-
-        // HIDE ACCELEROMETER COORDINATES:
-        accelerometerTitleTextView.setVisibility(View.INVISIBLE);
-        accelerometerX.setVisibility(View.INVISIBLE);
-        accelerometerY.setVisibility(View.INVISIBLE);
-        accelerometerZ.setVisibility(View.INVISIBLE);
-
-        // Proxy sensor:
-        mSensorManager = (SensorManager) getSystemService(DataCollectorActivity.this.SENSOR_SERVICE);
-        mProximity = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
-
-
-        if (NO_PYTHON_SERVER_YET) {
-            sendToServerButton.setVisibility(View.INVISIBLE);
-            pythonServerImageView.setVisibility((View.INVISIBLE));
-        }
-
-        accelerometerEventListener = new SensorEventListener() {
-            @Override
-            public void onSensorChanged(SensorEvent event) {
-                UpdateXYZ_and_RecordRawData(event);
-            }
-
-            @Override
-            public void onAccuracyChanged(Sensor sensor, int accuracy) {
-                // do nothing
-            }
-        };
-
-        // Start recording
-        startButton.setOnClickListener(startButtonClickListener);
-
-        // Stop recording
-        stopButton.setOnClickListener(stopButtonClickListener);
-
-        // Sending records to server
-        sendToServerButton.setOnClickListener(sendToServerButtonClickListener);
-
-        // Sending to Firebase
-        // from Start to End
-        saveToFirebaseButton.setOnClickListener(saveToFirebaseButtonClickListener);
-
-    }// OnCreate
-
-    @Override
-    public void onStart() {
-        Log.d(TAG, ">>>RUN>>>onStart()");
-        super.onStart();
-        Util.deviceId = Settings.Secure.getString(DataCollectorActivity.this.getContentResolver(), Settings.Secure.ANDROID_ID);
-    }
 
     /**
      * Gait validation for current logged in user using AlertDialogs.
@@ -708,6 +703,87 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         }
     }
 
+    /**
+     * Finds the views used by this context.
+     *
+     * @author Mille Janos
+     */
+    private void findViewByIDs() {
+        textViewStatus = findViewById(R.id.textViewStatus);
+        startButton = findViewById(R.id.buttonStart);
+        stopButton = findViewById(R.id.buttonStop);
+        sendToServerButton = findViewById(R.id.buttonSend);
+        saveToFirebaseButton = findViewById(R.id.saveToFirebaseButton);
+        accelerometerX = findViewById(R.id.textViewAX2);
+        accelerometerY = findViewById(R.id.textViewAY2);
+        accelerometerZ = findViewById(R.id.textViewAZ2);
+        //goToRegistrationTextView = findViewById(R.id.);
+        //goToLoginTextView = findViewById(R.id.goToLoginTextView);
+        reportErrorTextView = findViewById(R.id.errorReportTextView);
+        accelerometerTitleTextView = findViewById(R.id.textViewAccelerometer2);
+        pythonServerImageView = findViewById(R.id.pythonServerImageView);
+
+        attachedLayout = findViewById(R.id.datacollector_main_layout);
+
+    }
+
+    @Override
+    public void onStart() {
+        Log.d(TAG, ">>>RUN>>>onStart()");
+        super.onStart();
+        Util.deviceId = Settings.Secure.getString(DataCollectorActivity.this.getContentResolver(), Settings.Secure.ANDROID_ID);
+    }
+
+    @Override
+    protected void onResume() {
+        Log.d(TAG, ">>>RUN>>>onResume()");
+        super.onResume();
+
+        // If close all Activities
+        if (Util.isFinished) {
+            Log.d(TAG, " isFinished() = true");
+            finish();
+        }
+
+        // Check if user is signed in (non-null) and update UI accordingly.
+        if (!Util.isSignedIn) {
+            Util.screenMode = Util.ScreenModeEnum.EMAIL_MODE;
+            Intent intent = new Intent(DataCollectorActivity.this, AuthenticationActivity.class);
+            startActivity(intent);
+        } else {
+            // Get and Load last logged in user name from Shared Preferences
+            String lastLoggedInEmail = Util.mSharedPref.getString(Util.LAST_LOGGED_IN_USER_NAME_KEY, null);
+            if (lastLoggedInEmail != null) {                                 // If was not set yet(in shared pref)
+                navigationMenuUserName.setText( lastLoggedInEmail );
+            }
+            navigationMenuEmail.setText( Util.userEmail );
+
+            // Test Gait for Mille Janos
+            if (mAuth.getUid().equals("LnntbFQGpBeHx3RwMu42e2yOks32")) {
+                showGaitResult();
+            }
+        }
+
+        sensorManager.registerListener(accelerometerEventListener, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
+
+        // Show on screen model status
+        if (Util.isSetUserModel) {
+            Log.d(TAG, "User Model is set.");
+            if (Util.hasUserModel) {
+                Log.d(TAG, "Snackbar: \"Model found :)\"");
+                Snackbar.make(findViewById(R.id.datacollector_main_layout), "Model found! :)", Snackbar.LENGTH_SHORT).show();
+            } else {
+                Log.d(TAG, "Snackbar: \"No model found! :(\"");
+                Snackbar.make(findViewById(R.id.datacollector_main_layout), "No model found! :(", Snackbar.LENGTH_SHORT).show();
+                Log.d(TAG, ">>>START ACTIVITY>>>ModelUploaderActivity");
+                // Addig a ModelUploaderActivity-nel kell maradjon amig nincs Modelje:
+                startActivity(new Intent(DataCollectorActivity.this, ModelUploaderActivity.class));
+            }
+        } else {
+            Log.d(TAG, "User Model is not set yet.");
+        }
+    }
+
     @Override
     protected void onPause() {
         Log.d(TAG, ">>>RUN>>>onPause()");
@@ -791,149 +867,161 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     }
 
     /**
-     * Finds the views used by this context.
-     *
-     * @author Mille Janos
+     * This is a click listener for handle the start recording button.
      */
-    private void findViewsById() {
-        textViewStatus = findViewById(R.id.textViewStatus);
-        startButton = findViewById(R.id.buttonStart);
-        stopButton = findViewById(R.id.buttonStop);
-        sendToServerButton = findViewById(R.id.buttonSend);
-        saveToFirebaseButton = findViewById(R.id.saveToFirebaseButton);
-        accelerometerX = findViewById(R.id.textViewAX2);
-        accelerometerY = findViewById(R.id.textViewAY2);
-        accelerometerZ = findViewById(R.id.textViewAZ2);
-        //goToRegistrationTextView = findViewById(R.id.);
-        //goToLoginTextView = findViewById(R.id.goToLoginTextView);
-        reportErrorTextView = findViewById(R.id.errorReportTextView);
-        accelerometerTitleTextView = findViewById(R.id.textViewAccelerometer2);
-        pythonServerImageView = findViewById(R.id.pythonServerImageView);
-
-        attachedLayout = findViewById(R.id.datacollector_main_layout);
-
-    }
+    public View.OnClickListener startButtonClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Log.d(TAG, ">>>RUN>>>startButtonClickListener");
+            recordCount = 0;
+            stepNumber = 0;
+            sensorManager.registerListener(DataCollectorActivity.this, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
+            accArray.clear();
+            isRecording = true;
+            startButton.setEnabled(false);
+            stopButton.setEnabled(true);
+            sendToServerButton.setEnabled(false);
+            saveToFirebaseButton.setEnabled(false);
+            Log.d("ConnectionActivity_", "Start Rec.");
+        }
+    };
 
     /**
-     * This method initializes the internal root and files paths.
+     * This is a click listener for handle the stop recording button.
      */
-    private void initializeInternalFileVariables() {
-        Util.internalFilesRoot = new File(getFilesDir().toString());
-        Log.i(TAG, "Util.internalFilesRoot.getAbsolutePath() = " + Util.internalFilesRoot.getAbsolutePath());
-
-        // Internal files Path:
-        mDate = new Date();
-        // Create folder if not exists:
-        File myInternalFilesRoot;
-        myInternalFilesRoot = new File(Util.internalFilesRoot.getAbsolutePath() /*+ customDIR*/);
-        if (!myInternalFilesRoot.exists()) {
-            myInternalFilesRoot.mkdirs();
-            Log.i(TAG, "Path not exists (" + myInternalFilesRoot.getAbsolutePath() + ") --> .mkdirs()");
+    public View.OnClickListener stopButtonClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Log.d(TAG, ">>>RUN>>>stopButtonClickListener");
+            mDate = new Date();
+            Util.recordDateAndTimeFormatted = DateFormat.format("yyyyMMdd_HHmmss", mDate.getTime());
+            //Toast.makeText(DataCollectorActivity.this, Util.recordDateAndTimeFormatted, Toast.LENGTH_LONG).show();
+            isRecording = false;
+            startButton.setEnabled(true);
+            stopButton.setEnabled(false);
+            sendToServerButton.setEnabled(true);
+            saveToFirebaseButton.setEnabled(true);
+            sensorManager.unregisterListener(DataCollectorActivity.this);
+            Log.d("ConnectionActivity", "Stop Rec. - Generating CMD");
+            textViewStatus.setText(R.string.calculating);
+            CMD = accArrayToString();
+            CMD += ",end";
+            Log.d("ConnectionActivity", "CMD Generated.");
+            textViewStatus.setText(("Recorded: " + recordCount + " datapoints and " + stepNumber + " step cycles."));
+            // Proxy sensor:
+            mSensorManager.unregisterListener(DataCollectorActivity.this);
         }
-
-        // Creating user's raw data file path:
-        Util.rawdata_user_path = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/rawdata_" + mAuth.getUid() + ".csv";
-        Util.feature_user_path = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/feature_" + mAuth.getUid() + ".arff";   //*// we need this for validation only
-        Util.feature_dummy_path = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/feature_dummy.arff";                   //*//  - dummy exists and it is not empty
-        rawdataUserFile = new File(Util.rawdata_user_path);
-        featureUserFile = new File(Util.feature_user_path);                                                                          //*//
-        Log.i(TAG, "PATH: Util.rawdata_user_path  = " + Util.rawdata_user_path);
-        Log.i(TAG, "PATH: Util.rawdata_user_path  = " + Util.feature_user_path);                                                   //*//
-
-        // Creating user's raw data file (if not exists):
-        if (!rawdataUserFile.exists()) {
-            try {
-                rawdataUserFile.createNewFile();
-            } catch (Exception e) {
-                e.printStackTrace();
-                Log.e(TAG, "File can't be created: " + Util.rawdata_user_path);
-            }
-        }
-        // Creating user's feature file (if not exists):
-        if (!featureUserFile.exists()) {
-            try {
-                featureUserFile.createNewFile();
-            } catch (Exception e) {
-                e.printStackTrace();
-                Log.e(TAG, "File can't be created: " + Util.feature_user_path);
-            }
-        }
-    }
+    };
 
     /**
-     * This method reports an error customized by user.
+     * This is a click listener for handle the send to firebase button.
      */
-    private void ReportError() {
-        Log.d(TAG, ">>>RUN>>>reportErrorTextViewClickListener");
-        Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri.fromParts("mailto", "abc@gmail.com", null));
-        emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Problem with authentication.");
-        emailIntent.putExtra(Intent.EXTRA_TEXT, "");
-        emailIntent.putExtra(Intent.EXTRA_EMAIL, "");
-        startActivity(Intent.createChooser(emailIntent, "Send mEmail..."));
-    }
+    public View.OnClickListener sendToServerButtonClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Log.d(TAG, ">>>RUN>>>sendButtonClickListener");
+            sendToServerButton.setEnabled(false);
+            Toast.makeText(DataCollectorActivity.this, "freq1: " + Util.samplingFrequency(accArray), Toast.LENGTH_LONG).show();
 
-    @Override
-    protected void onResume() {
-        Log.d(TAG, ">>>RUN>>>onResume()");
-        super.onResume();
-
-        // If close all Activities
-        if (Util.isFinished) {
-            Log.d(TAG, " isFinished() = true");
-            finish();
-        }
-
-        // Check if user is signed in (non-null) and update UI accordingly.
-        if (!Util.isSignedIn) {
-            Util.screenMode = Util.ScreenModeEnum.EMAIL_MODE;
-            Intent intent = new Intent(DataCollectorActivity.this, AuthenticationActivity.class);
-            startActivity(intent);
-        } else {
-            // Get and Load last logged in user name from Shared Preferences
-            String lastLoggedInEmail = Util.mSharedPref.getString(Util.LAST_LOGGED_IN_USER_NAME_KEY, null);
-            if (lastLoggedInEmail != null) {                                 // If was not set yet(in shared pref)
-                navigationMenuUserName.setText(lastLoggedInEmail);
+            // Sending the array in multiple packages:
+            accArrayGroupArrayToString();
+            for (int i = 0; i < accArrayStringGroups.size(); ++i) {
+                Log.i("accArrayString", "aASG.get(" + i + ")= " + accArrayStringGroups.get(i));
+                CMD = accArrayStringGroups.get(i);  //group of RECORDS_LIMIT_PER_PACKAGE records
+                //Prepare and Send
+                getIPandPort();
+                Socket_AsyncTask cmd_send_data = new Socket_AsyncTask();
+                cmd_send_data.execute();
             }
-            navigationMenuEmail.setText(Util.userEmail);
+            Toast.makeText(DataCollectorActivity.this, "Data has been sent. " + Calendar.getInstance().getTime(), Toast.LENGTH_LONG).show();
+        }
+    };
 
-            // Test Gait for Mille Janos
-            if (mAuth.getUid().equals("LnntbFQGpBeHx3RwMu42e2yOks32")) {
-                showGaitResult();
+    /**
+     * This is a click listener for handle the save to firebase button.
+     */
+    public View.OnClickListener saveToFirebaseButtonClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Log.d(TAG, ">>>RUN>>>saveToFirebaseButtonClickListener");
+
+            Util.progressDialog = new ProgressDialog(DataCollectorActivity.this, ProgressDialog.STYLE_SPINNER);
+            Util.progressDialog.setTitle("Progress Dialog");
+            Util.progressDialog.setMessage("Uploading");
+            Util.progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            Util.progressDialog.show();
+
+            try {
+
+                //region Explanation
+                /*
+                    We have to upload the files withDate then after upload
+                    the files has to be renamed withoutDate to make sure
+                    there will be no copy in the internal storage.
+                 */
+                if (checkCallingOrSelfPermission("android.permission.WRITE_EXTERNAL_STORAGE") != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(DataCollectorActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, Util.REQUEST_CODE);
+                }
+                if (checkCallingOrSelfPermission("android.permission.INTERNET") != PackageManager.PERMISSION_GRANTED) {
+                    ActivityCompat.requestPermissions(DataCollectorActivity.this, new String[]{Manifest.permission.INTERNET}, Util.REQUEST_CODE);
+                }
+
+                // Get debug value from shared pref
+                String debugModeStr = Util.mSharedPref.getString(Util.SETTING_DEBUG_MODE_KEY, null);
+                if (debugModeStr == null) {                                 // If was not set yet(in shared pref)
+                    Log.i(TAG, "debugModeStr= " + null);
+                    Util.debugMode = false;
+                } else {
+                    Log.i(TAG, "debugModeStr= " + "\"" + debugModeStr + "\"");
+                    int debugModeInt = Integer.parseInt(debugModeStr);
+                    Log.i(TAG, "debugModeInt= " + debugModeInt);
+                    Util.debugMode = debugModeInt == 1;
+                }
+
+                // Change Debug DIR
+                String fileStorageName;
+                String collectionName;
+                if (Util.debugMode) {
+                    fileStorageName = FirebaseUtil.STORAGE_FILES_DEBUG_KEY;
+                    collectionName = FirebaseUtil.USER_RECORDS_DEBUG_KEY;
+                } else {
+                    fileStorageName = FirebaseUtil.STORAGE_FILES_KEY;
+                    collectionName = FirebaseUtil.USER_RECORDS_NEW_KEY;
+                }
+
+                // Saving array into .CSV file (Local):
+                Util.saveAccArrayIntoCsvFile(accArray, rawdataUserFile);
+
+                // Saving CSV File to FireBase Storage:
+                StorageReference ref = mStorageReference.child(fileStorageName + "/" + rawdataUserFile.getName());
+                FirebaseUtil.uploadFileToFirebaseStorage(DataCollectorActivity.this, rawdataUserFile, ref);
+
+                // Updating (JSON) Object in the FireStore: (Collection->Documents->Collection->Documents->...)
+                String randomId = UUID.randomUUID().toString();
+                String downloadUrl = ref.getDownloadUrl().toString();
+                UserRecordObject info = new UserRecordObject(mDate.toString(), rawdataUserFile.getName(), downloadUrl);
+
+                mDocRef = FirebaseFirestore.getInstance()
+                        .collection(collectionName + "/")
+                        .document(mAuth.getUid() + "")
+                        .collection(Util.deviceId)
+                        .document(randomId);
+                // Upload Object To Firebase Firestore:
+                FirebaseUtil.uploadObjectToFirebaseFirestore(DataCollectorActivity.this, info, mDocRef);
+
+                // Update User Statistics in Firebase Firestore:
+                FirebaseUtil.updateStatsInFirestore(stepNumber);
+
+            } catch (Exception e) {
+                Util.progressDialog.dismiss();
+                e.printStackTrace();
             }
         }
-
-        // Register accelerometer
-        sensorManager.registerListener(accelerometerEventListener, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
-
-        // Hide keyboard if needed:
-        try {
-            Util.hideKeyboard(DataCollectorActivity.this);
-        } catch (Exception ignore) {
-
-        }
-
-        // Show on screen model status
-        if (Util.isSetUserModel) {
-            Log.d(TAG, "User Model is set.");
-            if (Util.hasUserModel) {
-                Log.d(TAG, "Snackbar: \"Model found :)\"");
-                Snackbar.make(findViewById(R.id.datacollector_main_layout), "Model found! :)", Snackbar.LENGTH_SHORT).show();
-            } else {
-                Log.d(TAG, "Snackbar: \"No model found! :(\"");
-                Snackbar.make(findViewById(R.id.datacollector_main_layout), "No model found! :(", Snackbar.LENGTH_SHORT).show();
-                Log.d(TAG, ">>>START ACTIVITY>>>ModelUploaderActivity");
-                // User can't leave ModelUploaderActivity unless he created new model Model:
-                startActivity(new Intent(DataCollectorActivity.this, ModelUploaderActivity.class));
-            }
-        } else {
-            Log.d(TAG, "User Model is not set yet.");
-        }
-    }
+    };
 
     /**
      * This method updates the x,y and z coordinates on the user interface
      * and is able to record this tree coordinates into accArray.
-     *
      * @param event contains the x,y and z
      */
     private void UpdateXYZ_and_RecordRawData(SensorEvent event) {
@@ -952,18 +1040,5 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         }
     }
 
-    @Override
-    public void onBackPressed() {
-        if (doubleBackToExitPressedOnce) {
-            super.onBackPressed();
-            Util.isFinished = true;
-            finish();
-        }
-
-        this.doubleBackToExitPressedOnce = true;
-        Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
-
-        new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
-    }
 
 }
