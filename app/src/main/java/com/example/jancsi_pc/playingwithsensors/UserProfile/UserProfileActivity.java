@@ -66,14 +66,14 @@ public class UserProfileActivity extends AppCompatActivity {
     /**
      *  This method download the data of the user from Firebase Firestore
      */
-    public void DownloadUserDataFromFirebase(){
+    public void downloadUserDataFromFirebase(){
         // Name:
 
 
         DocumentReference ref = FirebaseFirestore.getInstance()
                 .collection(  FirebaseUtil.USER_DATA_KEY + "/")
                 .document(Util.mAuth.getUid() + "");
-        FirebaseUtil.DownloadUserDataObjectFromFirebaseFirestore_AND_SetTheResult(UserProfileActivity.this, ref, 0); // 0 = from UserProfileActivity
+        FirebaseUtil.downloadUserDataObjectFromFirebaseFirestoreANDSetTheResult(UserProfileActivity.this, ref, 0); // 0 = from UserProfileActivity
         // Image:
 
         // Stats:
@@ -82,7 +82,7 @@ public class UserProfileActivity extends AppCompatActivity {
     /**
      * This method updates the User Interface.
      */
-    public static void UpdateUserDataObject(){
+    public static void updateUserDataObject(){
         userDataObject = Util.mUserDataObject_Temp;
         userNameTextView.setText( userDataObject.userName );
         userNameTextView.setEnabled(true);
@@ -97,7 +97,7 @@ public class UserProfileActivity extends AppCompatActivity {
     @Override
     protected void onStart(){
         super.onStart();
-        DownloadUserDataFromFirebase();
+        downloadUserDataFromFirebase();
     }
 
     @Override
@@ -105,7 +105,7 @@ public class UserProfileActivity extends AppCompatActivity {
         super.onResume();
         userNameTextView.setEnabled(false);
         userNameTextView.setText("Loading...");
-        DownloadUserDataFromFirebase();
+        downloadUserDataFromFirebase();
 
 
     }

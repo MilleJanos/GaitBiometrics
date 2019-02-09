@@ -172,7 +172,7 @@ public class Util {
      *         1 if there occurred an error
      */
     //endregion
-    public static short SaveAccArrayIntoCsvFile(ArrayList<Accelerometer> accArray, File file) {
+    public static short saveAccArrayIntoCsvFile(ArrayList<Accelerometer> accArray, File file) {
         String TAG = "Util";
         Log.d(TAG, ">>>RUN>>>savingAccArrayIntoCSV()");
 
@@ -223,7 +223,7 @@ public class Util {
      * @param userId user's ID
      * @return the resulting percentage
      */
-    public static double CheckUserInPercentage(Activity activity, String userRawDataFilePath, String userFeatureFilePath, String dummyFeatureFilePath, String userModelFilePath, String userId) {
+    public static double checkUserInPercentage(Activity activity, String userRawDataFilePath, String userFeatureFilePath, String dummyFeatureFilePath, String userModelFilePath, String userId) {
 
         // region OLD STUFF
         //       ArrayList<Feature> features = null;
@@ -301,15 +301,15 @@ public class Util {
      * @param activity the activity context where the method will display progress messages
      * @return true the device has an active network connection
      */
-    public static boolean RequireEnabledInternetAndInternetConnection(Activity activity) {
-        Log.d(TAG, ">>>RUN>>>RequireEnabledInternetAndInternetConnection()");
+    public static boolean requireEnabledInternetAndInternetConnection(Activity activity) {
+        Log.d(TAG, ">>>RUN>>>requireEnabledInternetAndInternetConnection()");
         Util.hideKeyboard(activity);
 
         //Asking the user to enable WiFi:
-        boolean isNetworkEnabled = CheckWiFiNetwork(activity);
+        boolean isNetworkEnabled = checkWiFiNetwork(activity);
 
         //Asking for connection:
-        boolean isNetworkConnection = RequireInternetConnection(activity);
+        boolean isNetworkConnection = requireInternetConnection(activity);
 
         if (!isNetworkEnabled) {
             //authButton.setError("Please enable internet connection!");
@@ -335,8 +335,8 @@ public class Util {
      * @return true if there is internet connection and false if not.
      */
     // B
-    public static boolean RequireInternetConnection(Activity activity) {
-        Log.d(TAG, ">>>RUN>>>RequireInternetConnection()");
+    public static boolean requireInternetConnection(Activity activity) {
+        Log.d(TAG, ">>>RUN>>>requireInternetConnection()");
         ConnectivityManager cm = (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         boolean isConnected = activeNetwork != null && activeNetwork.isConnected();
@@ -349,8 +349,8 @@ public class Util {
      * @return true if the FiWi module is on and false if not.
      */
     // A
-    public static boolean CheckWiFiNetwork(Context context) {
-        Log.d(TAG, ">>>RUN>>>CheckWiFiNetwork()");
+    public static boolean checkWiFiNetwork(Context context) {
+        Log.d(TAG, ">>>RUN>>>checkWiFiNetwork()");
 
         final WifiManager mWifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
 

@@ -32,11 +32,11 @@ public class SettingsActivity extends AppCompatActivity {
         /*
          * Initialize views
          */
-        FindViewsById();
+        findViewsById();
         /*
          * Load data from shared pref
          */
-        LoadSettings();
+        loadSettings();
 
         /*
          * Set switch state
@@ -67,7 +67,7 @@ public class SettingsActivity extends AppCompatActivity {
         Button settingsLoadButton = findViewById(R.id.settingsLoadButton);
         settingsLoadButton.setVisibility(View.GONE);
         settingsLoadButton.setOnClickListener(v -> {
-            LoadSettings();
+            loadSettings();
             Toast.makeText(SettingsActivity.this, (Util.debugMode) ? "TRUE" : "FALSE", Toast.LENGTH_SHORT).show();
         });
 
@@ -76,7 +76,7 @@ public class SettingsActivity extends AppCompatActivity {
     /**
      * Saves the app settings to shared preferences
      */
-    private void SaveSettings() {
+    private void saveSettings() {
         /*
          * Get fresh shared preferences
          */
@@ -93,7 +93,7 @@ public class SettingsActivity extends AppCompatActivity {
     /**
      * Loads the app settings from shared preferences
      */
-    public void LoadSettings() {
+    public void loadSettings() {
         /*
          * Get fresh shared preferences
          */
@@ -117,7 +117,7 @@ public class SettingsActivity extends AppCompatActivity {
 
 
     private View.OnClickListener saveButtonClickListener = v -> {
-        SaveSettings(); // Save Settings to shared pref
+        saveSettings(); // Save Settings to shared pref
         finish();
     };
 
@@ -126,7 +126,7 @@ public class SettingsActivity extends AppCompatActivity {
     /**
      * Finds the views used by SettingsActivity
      */
-    private void FindViewsById() {
+    private void findViewsById() {
         settingsSaveButton = findViewById(R.id.settingsSaveButton);
         settingsCancelButton = findViewById(R.id.settingsCancelButton);
         settingsDebugSwitch = findViewById(R.id.settingsDebugSwitch);

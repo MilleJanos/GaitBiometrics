@@ -3,12 +3,10 @@ package com.example.jancsi_pc.playingwithsensors.Activityes.Other;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
-import android.view.animation.AnimationUtils;
 import android.view.animation.ScaleAnimation;
 import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
@@ -16,7 +14,6 @@ import android.widget.TextView;
 
 import com.example.jancsi_pc.playingwithsensors.Activityes.Main.DataCollectorActivity;
 import com.example.jancsi_pc.playingwithsensors.R;
-import com.example.jancsi_pc.playingwithsensors.Utils.Util;
 
 // loading app activity
 
@@ -35,9 +32,9 @@ public class SplashScreenActivity extends AppCompatActivity {
         imageView = findViewById(R.id.imageView);
 
         // Animate icon
-        HandleAnimation_appSplashLogoIntro();
+        handleAnimationAppSplashLogoIntro();
         // Animate text
-        HandleAnimation_appSplashTextIntro();
+        handleAnimationAppSplashTextIntro();
 
         //Animation myAnimation = AnimationUtils.loadAnimation(this, R.anim.mytransition);
         //textView.setAnimation(myAnimation);
@@ -70,7 +67,7 @@ public class SplashScreenActivity extends AppCompatActivity {
 //    }
 
 
-    private void HandleAnimation_appSplashLogoIntro(){
+    private void handleAnimationAppSplashLogoIntro(){
         float distanceY = TypedValue.applyDimension(         // dip to pixels
                 TypedValue.COMPLEX_UNIT_DIP, 45,
                 getResources().getDisplayMetrics()
@@ -100,7 +97,7 @@ public class SplashScreenActivity extends AppCompatActivity {
         imageView.setAnimation(as);
     }
 
-    private void HandleAnimation_appSplashTextIntro(){
+    private void handleAnimationAppSplashTextIntro(){
         float distanceY = TypedValue.applyDimension(         // dip to pixels
                 TypedValue.COMPLEX_UNIT_DIP, 200,
                 getResources().getDisplayMetrics()

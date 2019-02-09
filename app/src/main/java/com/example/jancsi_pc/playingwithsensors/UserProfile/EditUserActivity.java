@@ -87,7 +87,7 @@ public class EditUserActivity extends AppCompatActivity {
                         .collection(FirebaseUtil.USER_DATA_KEY + "/")
                         .document(Util.mAuth.getUid() + "");
                 Log.e(TAG,"DocumentReference ref = " + ref.toString() );
-                FirebaseUtil.UploadObjectToFirebaseFirestore(EditUserActivity.this, udo, ref);
+                FirebaseUtil.uploadObjectToFirebaseFirestore(EditUserActivity.this, udo, ref);
                 finish();
             }
         });
@@ -149,7 +149,7 @@ public class EditUserActivity extends AppCompatActivity {
                 StorageReference ref  = storage.getReference();
                 ref = ref.child( "TEST" + "/");
 
-                FirebaseUtil.UploadFileToFirebaseStorage(EditUserActivity.this, file, ref);
+                FirebaseUtil.uploadFileToFirebaseStorage(EditUserActivity.this, file, ref);
             }catch (Exception e){
                 Log.e(TAG,"***ERROR CREATING FILE FROM URI");
             }
@@ -196,14 +196,14 @@ public class EditUserActivity extends AppCompatActivity {
     /**
      *  This method download the data of the user from Firebase Firestore
      */
-    public void DownloadUserDataFromFirebase(){
+    public void downloadUserDataFromFirebase(){
         // Name:
 
 
         DocumentReference ref = FirebaseFirestore.getInstance()
                 .collection(  FirebaseUtil.USER_DATA_KEY + "/")
                 .document(Util.mAuth.getUid() + "");
-        FirebaseUtil.DownloadUserDataObjectFromFirebaseFirestore_AND_SetTheResult(EditUserActivity.this, ref, 1);   // 1 = from EditUserActivity
+        FirebaseUtil.downloadUserDataObjectFromFirebaseFirestoreANDSetTheResult(EditUserActivity.this, ref, 1);   // 1 = from EditUserActivity
         // Image:
 
         // Stats
@@ -212,7 +212,7 @@ public class EditUserActivity extends AppCompatActivity {
     /**
      * This method updates the User Interface.
      */
-    public static void UpdateUserDataObject(){
+    public static void updateUserDataObject(){
         userNameEditText.setText( Util.mUserDataObject_Temp.userName);
         userNameEditText.setEnabled(true);
     }
@@ -222,7 +222,7 @@ public class EditUserActivity extends AppCompatActivity {
         super.onStart();
         userNameEditText.setEnabled(false);
         userNameEditText.setText("Loading...");
-        DownloadUserDataFromFirebase();
+        downloadUserDataFromFirebase();
     }
 
 }

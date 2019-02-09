@@ -62,12 +62,6 @@ public class GaitValidationActivity extends AppCompatActivity implements SensorE
     String offlineLastModelId;
     String offlineLastModelDate;
 
-    /*
-     *
-     *   OnCreate
-     *
-     */
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, ">>>RUN>>>onCreate()");
@@ -331,8 +325,7 @@ public class GaitValidationActivity extends AppCompatActivity implements SensorE
         //}
     }
 
-    //(STEPCOUNT)
-
+    //STEPCOUNTER
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
     }
@@ -365,6 +358,5 @@ public class GaitValidationActivity extends AppCompatActivity implements SensorE
 
         new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
     }
-    
 
 }

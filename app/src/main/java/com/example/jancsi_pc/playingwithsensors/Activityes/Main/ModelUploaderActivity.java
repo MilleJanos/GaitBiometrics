@@ -80,13 +80,6 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
     // for shared pres
     private CharSequence lastModelDate = "";
 
-
-    /*
-     *
-     *   OnCreate
-     *
-     */
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, ">>>RUN>>>onCreate()");
@@ -327,11 +320,11 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
                 }
 
                 // Saving array into .CSV file (Local):
-                Util.SaveAccArrayIntoCsvFile(accArray, rawdataUserFile);
+                Util.saveAccArrayIntoCsvFile(accArray, rawdataUserFile);
 
                 // Saving CSV File to FireBase Storage:
                 StorageReference ref = mStorageReference.child(fileStorageName + "/" + rawdataUserFile.getName());
-                FirebaseUtil.UploadFileToFirebaseStorage(ModelUploaderActivity.this, rawdataUserFile, ref);
+                FirebaseUtil.uploadFileToFirebaseStorage(ModelUploaderActivity.this, rawdataUserFile, ref);
 
                 // Updating (JSON) Object in the FireStore: (Collection->Documents->Collection->Documents->...)
                 String randomId = UUID.randomUUID().toString();
@@ -342,14 +335,14 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
                         .document(mAuth.getUid() + "")
                         .collection(Util.deviceId)
                         .document(randomId);
-                FirebaseUtil.UploadObjectToFirebaseFirestore(ModelUploaderActivity.this, info, mDocRef);
+                FirebaseUtil.uploadObjectToFirebaseFirestore(ModelUploaderActivity.this, info, mDocRef);
 
 
                 /*
                  * Model generating:
                  */
 
-                DownloadDummyDataFromFireBaseStorage_and_GenerateModel();
+                downloadDummyDataFromFireBaseStorage_and_GenerateModel();
 
             }
             catch (Exception e) {
@@ -377,9 +370,8 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
 
     }// OnCreate
 
-
     /**
-     * DownloadDummyDataFromFireBaseStorage_and_GenerateModel()
+     * downloadDummyDataFromFireBaseStorage_and_GenerateModel()
      * | This method downloads the
      * | dummy user data (.arff) from Firebase
      * | Storage
@@ -388,14 +380,14 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
      * | Generates the model
      * | for the current signed in user.
      * <p>
-     * UploadModelToFireBaseStorage()
+     * uploadModelToFireBaseStorage()
      * | Uploads the generated model
      * | to FireBase Storage.
      *
      * @author Mille Janos
      */
-    private void DownloadDummyDataFromFireBaseStorage_and_GenerateModel() {
-        Log.d(TAG, ">>>RUN>>>DownloadDummyDataFromFireBaseStorage_and_GenerateModel()");
+    private void downloadDummyDataFromFireBaseStorage_and_GenerateModel() {
+        Log.d(TAG, ">>>RUN>>>downloadDummyDataFromFireBaseStorage_and_GenerateModel()");
         // Downloading Dummy Feature from FireBase Storage:
         // Dummy is always in features folder (not in features_debug)
         Util.mRef = Util.mStorage.getReference().child( /*featureFolder*/ FirebaseUtil.STORAGE_FEATURES_KEY + "/" + Util.firebaseDummyFileName);
@@ -406,7 +398,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
             Util.mRef.getFile(featureDummyFile).addOnSuccessListener(taskSnapshot -> {
                 Log.i(TAG, "Dummy feature found and downloaded: Local PATH: " + featureDummyFile.getAbsolutePath());
                 try {
-                    ModelBuilder();
+                    modelBuilder();
                 } catch (Exception e) {
                     // do nothing
                 }
@@ -421,11 +413,11 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
     }
 
     /**
-     * Builds the model using the ModelBuilder library.
+     * Builds the model using the modelBuilder library.
      *
      * @author Mille Janos
      */
-    private void ModelBuilder() {
+    private void modelBuilder() {
         Log.d(TAG, ">>RUN>>>ContinueModelGenerating()");
 
         Toast.makeText(ModelUploaderActivity.this, "- under development -", Toast.LENGTH_SHORT).show();
@@ -436,7 +428,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
      *
      * @author Mille Janos
      */
-    private void UploadModelToFireBaseStorage() {
+    private void uploadModelToFireBaseStorage() {
         Log.d(TAG, ">>>RUN>>>uploadModeltoFireBaseStorage()");
         Util.progressDialog.dismiss();
         Util.progressDialog = new ProgressDialog(ModelUploaderActivity.this, ProgressDialog.STYLE_SPINNER);
@@ -640,7 +632,6 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
         sensorManager.unregisterListener(accelerometerEventListener);
     }
 
-
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
     }
@@ -677,6 +668,5 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
 
         new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
     }
-
 
 }

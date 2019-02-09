@@ -68,6 +68,10 @@ public class FirebaseUtil {
     public static boolean fileUploadFunctionFinished = false;
     public static boolean objectUploadFunctionFinished = false;
 
+    /*
+     * upload & download methods
+    */
+
     /**
      * This method uploads the file to FireBase Storage where the refrence is set.
      *
@@ -77,9 +81,9 @@ public class FirebaseUtil {
      *
      * @author Mille Janos
      */
-    public static void UploadFileToFirebaseStorage(Activity activity, File file, StorageReference ref) {
+    public static void uploadFileToFirebaseStorage(Activity activity, File file, StorageReference ref) {
         String TAG = "FirebaseUtil";
-        Log.d(TAG, ">>>RUN>>>UploadFileToFirebaseStorage()");
+        Log.d(TAG, ">>>RUN>>>uploadFileToFirebaseStorage()");
 
         fileUploadFunctionFinished = false;
 
@@ -101,13 +105,13 @@ public class FirebaseUtil {
                         //progressDialog.dismiss();
                         Util.progressDialog.dismiss();
                         Toast.makeText(activity, "File uploaded.", Toast.LENGTH_LONG).show();
-                        Log.d(TAG, "<<<FINISH(async)<<<UploadFileToFirebaseStorage - onSuccess");
+                        Log.d(TAG, "<<<FINISH(async)<<<uploadFileToFirebaseStorage - onSuccess");
                         fileUploadFunctionFinished = true;
                     })
                     .addOnFailureListener(e -> {
                         Util.progressDialog.dismiss();
                         Toast.makeText(activity, "File upload Failed!", Toast.LENGTH_LONG).show();
-                        Log.d(TAG, "<<<FINISH(async)<<<UploadFileToFirebaseStorage - onFailure");
+                        Log.d(TAG, "<<<FINISH(async)<<<uploadFileToFirebaseStorage - onFailure");
                         fileUploadFunctionFinished = true;
                     })
                     .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
@@ -122,7 +126,7 @@ public class FirebaseUtil {
             Log.e(TAG, "ERROR: path = null");
             fileUploadFunctionFinished = true;
         }
-        Log.d(TAG, "(<<<FINISH<<<)UploadFileToFirebaseStorage() - running task in background");
+        Log.d(TAG, "(<<<FINISH<<<)uploadFileToFirebaseStorage() - running task in background");
         /*
         if( task.isSuccessful() ){
             Log.d(TAG,"SUCCESS");
@@ -143,24 +147,24 @@ public class FirebaseUtil {
      *
      * @author Mille Janos
      */
-    public static void UploadObjectToFirebaseFirestore(Activity activity, UserObject info, DocumentReference ref) {
+    public static void uploadObjectToFirebaseFirestore(Activity activity, UserObject info, DocumentReference ref) {
         String TAG = "FirebaseUtil";
-        Log.d(TAG, ">>>RUN>>>UploadObjectToFirebaseFirestore()");
+        Log.d(TAG, ">>>RUN>>>uploadObjectToFirebaseFirestore()");
 
         objectUploadFunctionFinished = false;
 
         ref.set(info).addOnSuccessListener(aVoid -> {
             Util.progressDialog.dismiss();
             Toast.makeText(activity, "Object uploaded.", Toast.LENGTH_LONG).show();
-            Log.d(TAG, "<<<FINISH(async)<<<UploadObjectToFirebaseFirestore() - onSuccess");
+            Log.d(TAG, "<<<FINISH(async)<<<uploadObjectToFirebaseFirestore() - onSuccess");
             objectUploadFunctionFinished = true;
         }).addOnFailureListener(e -> {
             Util.progressDialog.dismiss();
             Toast.makeText(activity, "Object upload failed!", Toast.LENGTH_LONG).show();
-            Log.d(TAG, "<<<FINISH(async)<<<UploadObjectToFirebaseFirestore() - onFailure");
+            Log.d(TAG, "<<<FINISH(async)<<<uploadObjectToFirebaseFirestore() - onFailure");
             objectUploadFunctionFinished = true;
         });
-        Log.d(TAG, "(<<<FINISH<<<)UploadObjectToFirebaseFirestore() - running task in background");
+        Log.d(TAG, "(<<<FINISH<<<)uploadObjectToFirebaseFirestore() - running task in background");
     }
 
     /**
@@ -172,9 +176,9 @@ public class FirebaseUtil {
      *
      * @author Mille Janos
      */
-    public static void DownloadFileFromFirebaseStorage(Activity activity, StorageReference downloadFromRef, File saveToThisFile) {
+    public static void downloadFileFromFirebaseStorage(Activity activity, StorageReference downloadFromRef, File saveToThisFile) {
         String TAG = "FirebaseUtil";
-        Log.d(TAG, ">>>RUN>>>DownloadFileFromFirebaseStorage()");
+        Log.d(TAG, ">>>RUN>>>downloadFileFromFirebaseStorage()");
 
         //Util.mRef = Util.mStorage.getReference().child( /*featureFolder*/ FirebaseUtil.STORAGE_FEATURES_KEY + "/" + Util.firebaseDummyFileName );
 
@@ -182,7 +186,7 @@ public class FirebaseUtil {
             downloadFromRef.getFile(saveToThisFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                    Log.d(TAG, "<<<FINISHED<<<(async)DownloadFileFromFirebaseStorage() - onSuccess");
+                    Log.d(TAG, "<<<FINISHED<<<(async)downloadFileFromFirebaseStorage() - onSuccess");
                     Log.i(TAG, "File feature found and downloaded to: Local PATH: " + saveToThisFile.getAbsolutePath());
                     Toast.makeText(activity, "File downloaded.", Toast.LENGTH_LONG).show();
 
@@ -190,7 +194,7 @@ public class FirebaseUtil {
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
-                    Log.d(TAG, "<<<FINISHED<<<(async)DownloadFileFromFirebaseStorage() - onFailure");
+                    Log.d(TAG, "<<<FINISHED<<<(async)downloadFileFromFirebaseStorage() - onFailure");
                     Log.i(TAG, "File not found or internet problems; -> return;");
                     Toast.makeText(activity, "Download failed!", Toast.LENGTH_LONG).show();
                     e.printStackTrace();
@@ -201,7 +205,7 @@ public class FirebaseUtil {
             e.printStackTrace();
             return;
         }
-        Log.d(TAG, "(<<<FINISHED<<<)DownloadFileFromFirebaseStorage()");
+        Log.d(TAG, "(<<<FINISHED<<<)downloadFileFromFirebaseStorage()");
     }
 
     /**
@@ -211,26 +215,26 @@ public class FirebaseUtil {
      * @param activity activuty.
      * @param ref Firestore document reference.
      */
-    public static void DownloadUserDataObjectFromFirebaseFirestore_AND_SetTheResult(Activity activity, DocumentReference ref, int from){
+    public static void downloadUserDataObjectFromFirebaseFirestoreANDSetTheResult(Activity activity, DocumentReference ref, int from){
         String TAG = "FirebaseUtil";
-        Log.i(TAG,">>>RUN>>>DownloadUserDataObjectFromFirebaseFirestore_AND_SetTheResult()");
+        Log.i(TAG,">>>RUN>>>downloadUserDataObjectFromFirebaseFirestoreANDSetTheResult()");
         ref.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
-                Log.i(TAG,"<<<FINISHED<<<(async)DownloadUserDataObjectFromFirebaseFirestore_AND_SetTheResult() - running task in background");
+                Log.i(TAG,"<<<FINISHED<<<(async)downloadUserDataObjectFromFirebaseFirestoreANDSetTheResult() - running task in background");
                     UserDataObject udo = documentSnapshot.toObject( UserDataObject.class );
                     Util.mUserDataObject_Temp = udo;
                     if(from == 0){
-                        UserProfileActivity.UpdateUserDataObject();
+                        UserProfileActivity.updateUserDataObject();
                     }else{
                         if(from == 1){
-                            EditUserActivity.UpdateUserDataObject();
+                            EditUserActivity.updateUserDataObject();
                         }
                     }
 
                 }
             });
-        Log.i(TAG,"(<<<FINISHED<<<)DownloadUserDataObjectFromFirebaseFirestore_AND_SetTheResult() - running task in background");
+        Log.i(TAG,"(<<<FINISHED<<<)downloadUserDataObjectFromFirebaseFirestoreANDSetTheResult() - running task in background");
     }
 
     /**
@@ -243,9 +247,9 @@ public class FirebaseUtil {
      *
      * @author Mille Janos
      */
-    public static void DownloadFileFromFirebaseStorage_AND_CheckUserInPercentage(Activity activity, StorageReference downloadFromRef, File saveToThisFile) {
+    public static void downloadFileFromFirebaseStorageANDCheckUserInPercentage(Activity activity, StorageReference downloadFromRef, File saveToThisFile) {
         String TAG = "FirebaseUtil";
-        Log.d(TAG, ">>>RUN>>>DownloadFileFromFirebaseStorage()_AND_CheckUserInPercentage");
+        Log.d(TAG, ">>>RUN>>>downloadFileFromFirebaseStorage()_AND_CheckUserInPercentage");
 
         //Util.mRef = Util.mStorage.getReference().child( /*featureFolder*/ FirebaseUtil.STORAGE_FEATURES_KEY + "/" + Util.firebaseDummyFileName );
 
@@ -253,12 +257,12 @@ public class FirebaseUtil {
             downloadFromRef.getFile(saveToThisFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                    Log.d(TAG, "<<<FINISHED<<<(async)DownloadFileFromFirebaseStorage_AND_CheckUserInPercentage() - onSuccess");
+                    Log.d(TAG, "<<<FINISHED<<<(async)downloadFileFromFirebaseStorageANDCheckUserInPercentage() - onSuccess");
                     Log.i(TAG, "File feature found and downloaded to: Local PATH: " + saveToThisFile.getAbsolutePath());
                     Toast.makeText(activity, "File downloaded.", Toast.LENGTH_LONG).show();
 
                     // Check user:
-                    double percentage = Util.CheckUserInPercentage(
+                    double percentage = Util.checkUserInPercentage(
                             activity,
                             Util.rawdata_user_path,
                             Util.feature_user_path,
@@ -293,7 +297,7 @@ public class FirebaseUtil {
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
-                    Log.d(TAG, "<<<FINISHED<<<(async)DownloadFileFromFirebaseStorage_AND_CheckUserInPercentage() - onFailure");
+                    Log.d(TAG, "<<<FINISHED<<<(async)downloadFileFromFirebaseStorageANDCheckUserInPercentage() - onFailure");
                     Log.i(TAG, "File not found or internet problems; -> return;");
                     Toast.makeText(activity, "Download failed!", Toast.LENGTH_LONG).show();
                     e.printStackTrace();
@@ -304,10 +308,12 @@ public class FirebaseUtil {
             e.printStackTrace();
             return;
         }
-        Log.d(TAG, "(<<<FINISHED<<<)DownloadFileFromFirebaseStorage_AND_CheckUserInPercentage()");
+        Log.d(TAG, "(<<<FINISHED<<<)downloadFileFromFirebaseStorageANDCheckUserInPercentage()");
     }
 
-
+    /*
+     * user Stats
+     */
 
     /**
      * A constant that contains the name of the Firebase/Firestore collection where user statistics

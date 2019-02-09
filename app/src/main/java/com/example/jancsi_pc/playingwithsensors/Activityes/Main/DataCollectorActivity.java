@@ -135,7 +135,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         setContentView(R.layout.activity_data_collector_nav);
 
         // Find views for the current activity
-        FindViewsById();
+        findViewsById();
 
         // Load Navigation menu:
         NavigationView navigationView = findViewById(R.id.nav_view);
@@ -152,7 +152,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         Util.progressDialog = new ProgressDialog(DataCollectorActivity.this);
 
         // Internal Saving Location for ALL hidden files:
-        InitializeInternalFileVariables();
+        initializeInternalFileVariables();
 
         // Initialize Firebase:
         mFirestore = FirebaseStorage.getInstance();
@@ -454,7 +454,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
      *
      * @author Mille Janos
      */
-    private void ShowGaitResult() {
+    private void showGaitResult() {
         if (!Util.validatedOnce) {
             //region GAIT VALIDATER
 
@@ -518,13 +518,13 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                                     /*
                                      * This will show the result
                                      */
-                                    FirebaseUtil.DownloadFileFromFirebaseStorage_AND_CheckUserInPercentage(DataCollectorActivity.this, ref, downloadedUserModelFile);
+                                    FirebaseUtil.downloadFileFromFirebaseStorageANDCheckUserInPercentage(DataCollectorActivity.this, ref, downloadedUserModelFile);
 
 
                                     textViewStatus.setText(R.string.press_start_to_collect);
 
                                     // Saving array into .CSV file (Local):
-                                    if (Util.SaveAccArrayIntoCsvFile(accArray, rawdataUserFile) == 1) {
+                                    if (Util.saveAccArrayIntoCsvFile(accArray, rawdataUserFile) == 1) {
                                         Toast.makeText(DataCollectorActivity.this, "Error saving raw data!", Toast.LENGTH_LONG).show();
                                     }
 
@@ -555,7 +555,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
      *
      * @author Mille Janos
      */
-    private void FindViewsById() {
+    private void findViewsById() {
         textViewStatus = findViewById(R.id.textViewStatus);
         startButton = findViewById(R.id.buttonStart);
         stopButton = findViewById(R.id.buttonStop);
@@ -577,7 +577,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     /**
      * This method initializes the internal root and files paths.
      */
-    private void InitializeInternalFileVariables(){
+    private void initializeInternalFileVariables(){
         Util.internalFilesRoot = new File(getFilesDir().toString());
         Log.i(TAG, "Util.internalFilesRoot.getAbsolutePath() = " + Util.internalFilesRoot.getAbsolutePath());
 
@@ -665,7 +665,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
             // Test Gait for Mille Janos
             if (mAuth.getUid().equals("LnntbFQGpBeHx3RwMu42e2yOks32")) {
-                ShowGaitResult();
+                showGaitResult();
             }
         }
 
@@ -903,11 +903,11 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                 }
 
                 // Saving array into .CSV file (Local):
-                Util.SaveAccArrayIntoCsvFile(accArray, rawdataUserFile);
+                Util.saveAccArrayIntoCsvFile(accArray, rawdataUserFile);
 
                 // Saving CSV File to FireBase Storage:
                 StorageReference ref = mStorageReference.child(fileStorageName + "/" + rawdataUserFile.getName());
-                FirebaseUtil.UploadFileToFirebaseStorage(DataCollectorActivity.this, rawdataUserFile, ref);
+                FirebaseUtil.uploadFileToFirebaseStorage(DataCollectorActivity.this, rawdataUserFile, ref);
 
                 // Updating (JSON) Object in the FireStore: (Collection->Documents->Collection->Documents->...)
                 String randomId = UUID.randomUUID().toString();
@@ -920,7 +920,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                         .collection(Util.deviceId)
                         .document(randomId);
                 // Upload Object To Firebase Firestore:
-                FirebaseUtil.UploadObjectToFirebaseFirestore(DataCollectorActivity.this, info, mDocRef);
+                FirebaseUtil.uploadObjectToFirebaseFirestore(DataCollectorActivity.this, info, mDocRef);
 
                 // Update User Statistics in Firebase Firestore:
                 /*
