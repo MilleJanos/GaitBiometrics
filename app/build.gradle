@@ -66,26 +66,27 @@ dependencies {
     //implementation 'com.android.support:design:27.1.0'
     //implementation project(':MPChartLib')
     /*
-                                        //FireStore:
-                                        // implementation 'com.google.firebase:firebase-core:16.0.1'
-                                        implementation 'com.google.firebase:firebase-database:16.0.4'
-                                        // implementation com.google.firebase:firebase-firestore:17.1.2
-                                        */
+                                            //FireStore:
+                                            // implementation 'com.google.firebase:firebase-core:16.0.1'
+                                            implementation 'com.google.firebase:firebase-database:16.0.4'
+                                            // implementation com.google.firebase:firebase-firestore:17.1.2
+                                            */
     // Firebase:
-    implementation 'com.google.firebase:firebase-core:16.0.1'
-    implementation 'com.google.firebase:firebase-firestore:17.1.0'
+    implementation 'com.google.firebase:firebase-core:16.0.7'
+    implementation 'com.google.firebase:firebase-firestore:18.0.1'
     //implementation 'com.google.firebase:firebase-firestore:16.0.0'
-    implementation 'com.google.firebase:firebase-database:16.0.1'
+    implementation 'com.google.firebase:firebase-database:16.0.6'
     //implementation 'com.google.firebase:firebase-database:11.0.4'
-    implementation 'com.google.firebase:firebase-auth:15.1.0'
-    implementation 'com.google.firebase:firebase-storage:16.0.1'
-    implementation 'com.google.android.gms:play-services-auth:15.0.1'
+    implementation 'com.google.firebase:firebase-auth:16.1.0'
+    implementation 'com.google.firebase:firebase-storage:16.0.5'
+    implementation 'com.google.android.gms:play-services-auth:16.0.1'
     //Multidex because of:
     //Error: Cannot fit requested classes in a single dex file (# methods: 68706 > 65536)
     //and adding  android { defaultConfig {  multiDexEnabled true  } } // top of this file
-    implementation 'com.android.support:multidex:1.0.0'
+    implementation 'com.android.support:multidex:1.0.3'
     implementation files('libs/GaitModelBuilder.jar')
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'com.google.gms:google-services:4.2.0'
 }
 
 apply plugin: 'com.google.gms.google-services'

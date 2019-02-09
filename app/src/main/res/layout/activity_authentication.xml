@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:minHeight="164dp"
-    tools:context=".AuthenticationActivity"
+    tools:context=".activityes.main.AuthenticationActivity"
     android:background="@drawable/green_background_lighter_50"
     android:gravity="center">
 
@@ -30,23 +30,23 @@
 
     <TextView
         android:id="@+id/auth_offlineValidationTextView"
-        android:layout_width="116dp"
-        android:layout_height="42dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginEnd="4dp"
         android:layout_marginBottom="8dp"
         android:fontFamily="@font/aldrich"
         android:text="Offline\nvalidation"
         android:textColor="@color/colorBlue3"
+        android:padding="10dp"
         android:textSize="15sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="@+id/auth_imageView2"
+        android:textAlignment="center"
+        app:layout_constraintBottom_toTopOf="@+id/auth_guidelineHorisontal2"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toEndOf="@+id/auth_imageView2"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.981" />
+        app:layout_constraintStart_toEndOf="@+id/auth_AppIconImageView"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/auth_appNameTextView"
@@ -69,14 +69,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_begin="145dp" />
+        app:layout_constraintGuide_begin="178dp" />
 
     <android.support.constraint.Guideline
         android:id="@+id/auth_guidelineHorisontal2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_begin="170dp" />
+        app:layout_constraintGuide_begin="216dp" />
 
     <android.support.constraint.Guideline
         android:id="@+id/auth_guidelineVertical1"
@@ -263,12 +263,14 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
-        android:id="@+id/auth_deleteEmailImageView"
+        android:id="@+id/auth_deleteOrEditEmailImageView"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="14dp"
+        android:layout_marginEnd="8dp"
         android:padding="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/auth_guidelineVertical"
         app:layout_constraintTop_toTopOf="@+id/auth_guidelineHorisontal2"
         app:srcCompat="@drawable/ic_clear_black" />
@@ -316,24 +318,11 @@
         app:layout_constraintTop_toBottomOf="@+id/auth_passwordEditText2" />
 
     <ImageView
-        android:id="@+id/auth_editEmailImageView"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="14dp"
-        android:layout_marginEnd="8dp"
-        android:padding="10dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/auth_guidelineVertical"
-        app:layout_constraintTop_toTopOf="@+id/auth_guidelineHorisontal2"
-        app:srcCompat="@drawable/ic_edit_black" />
-
-    <ImageView
-        android:id="@+id/auth_imageView2"
+        android:id="@+id/auth_AppIconImageView"
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="1dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:background="@drawable/cornered_image"
         android:padding="0dp"
@@ -341,6 +330,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.6"
         app:srcCompat="@mipmap/ic_launcher" />
 
     <TextView
