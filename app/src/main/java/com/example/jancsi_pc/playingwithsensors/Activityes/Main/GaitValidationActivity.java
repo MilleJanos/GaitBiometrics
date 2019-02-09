@@ -7,6 +7,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.text.format.DateFormat;
 import android.util.Log;
@@ -29,16 +30,13 @@ import java.util.Date;
 public class GaitValidationActivity extends AppCompatActivity implements SensorEventListener, StepListener {
 
     private final String TAG = "GaitValidationActivity";
-
     private SensorManager sensorManager;
     private Sensor accelerometerSensor;
     private SensorEventListener accelerometerEventListener;
-
     private Button backButton;
     private Button startButton;
     private Button stopButton;
     private Button gaitVerificationButton;
-
     public static String CMD = "0";
     private boolean isRecording = false;
     private ArrayList<Accelerometer> accArray = new ArrayList<>();
@@ -50,6 +48,7 @@ public class GaitValidationActivity extends AppCompatActivity implements SensorE
     private TextView loggedInUserEmailTextView;
     private ImageView logoutImageView;
     private TextView reportErrorTextView;
+    private boolean doubleBackToExitPressedOnce = false;
     // For Step Detecting:
     private StepDetector simpleStepDetector;
     // local stored files:
@@ -57,9 +56,7 @@ public class GaitValidationActivity extends AppCompatActivity implements SensorE
     private File rawdataUserFile;
     private File featureUserFile;   // only the path exists !
     //private File modelUserFile;     // only the path exists !
-
     private Date mDate;
-
     // from shared pref;
     String offlineLastModelEmail;
     String offlineLastModelId;
@@ -354,5 +351,20 @@ public class GaitValidationActivity extends AppCompatActivity implements SensorE
         //mp.start();
         ModelUploaderActivity.stepNumber++;
     }
+
+    @Override
+    public void onBackPressed() {
+        if (doubleBackToExitPressedOnce) {
+            super.onBackPressed();
+            Util.isFinished = true;
+            finish();
+        }
+
+        this.doubleBackToExitPressedOnce = true;
+        Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
+
+        new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
+    }
+    
 
 }

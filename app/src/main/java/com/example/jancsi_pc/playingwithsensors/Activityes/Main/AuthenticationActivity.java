@@ -46,6 +46,7 @@ import java.util.Date;
  */
 public class AuthenticationActivity extends AppCompatActivity {
 
+    private final String TAG = "AuthenticationActivity";
     private final long ONE_MEGABYTE = 1024 * 1024;
     private final long ANIMATION_DURATION = 300; //miliseconds
     private TextView appNameTextView;
@@ -71,7 +72,6 @@ public class AuthenticationActivity extends AppCompatActivity {
     private String mEmail = "";
     private String mPassword = "";
     private String password2 = "";
-    private final String TAG = "AuthenticationActivity";
     private int requestPasswordResetCount = 0;
     private boolean doubleBackToExitPressedOnce = false;
     private boolean emailToPass = false;
@@ -524,6 +524,11 @@ public class AuthenticationActivity extends AppCompatActivity {
             HandleAnimation_emailToPassword();
         }
         HangleAnimation_switchTitle(titleTextView,"Login - Step 2");
+
+        // FILL DEBUG EMAILS:   // TODO: REMOVE THIS PASS AUTOFILL
+        if(mEmail.equals("millejanos31@gmail.com") || mEmail.equals("wolterwill31@gmail.com")){
+            passwordEditText.setText("01234567");
+        }
 
         // Remove error marks
         emailEditText.setError(null);
@@ -1278,6 +1283,32 @@ public class AuthenticationActivity extends AppCompatActivity {
      */
 
     @Override
+    public void onResume() {
+
+        Util.isSetUserModel = false;
+
+        if (Util.isFinished) {
+            Log.d(TAG, " isFinished() = true");
+            finish();
+        }
+
+        Date date = new Date();
+        CharSequence s = DateFormat.format("yyyyMMdd_HHmmss", date.getTime());
+        Util.mSharedPrefEditor.putString(Util.LAST_LOGGED_IN_DATE_KEY, s.toString());
+        Util.mSharedPrefEditor.apply();
+
+        super.onResume();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        // Animate Logo
+        HandleAnimation_appLogoIntro();
+    }
+
+    @Override
     public void onBackPressed() {
         // back button pressed:
         //  if EMAIL_MODE ==> exit app
@@ -1313,32 +1344,6 @@ public class AuthenticationActivity extends AppCompatActivity {
             Util.screenMode = Util.ScreenModeEnum.EMAIL_MODE;
             PrepareScreenUIFor_email();
         }
-    }
-
-    @Override
-    public void onResume() {
-
-        Util.isSetUserModel = false;
-
-        if (Util.isFinished) {
-            Log.d(TAG, " isFinished() = true");
-            finish();
-        }
-
-        Date date = new Date();
-        CharSequence s = DateFormat.format("yyyyMMdd_HHmmss", date.getTime());
-        Util.mSharedPrefEditor.putString(Util.LAST_LOGGED_IN_DATE_KEY, s.toString());
-        Util.mSharedPrefEditor.apply();
-
-        super.onResume();
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-
-        // Animate Logo
-        HandleAnimation_appLogoIntro();
     }
 
 }

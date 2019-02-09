@@ -10,6 +10,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.format.DateFormat;
@@ -45,8 +46,8 @@ import java.util.UUID;
  */
 
 public class ModelUploaderActivity extends AppCompatActivity implements SensorEventListener, StepListener {
-    private final String TAG = "ModelUploaderActivity";
 
+    private final String TAG = "ModelUploaderActivity";
     private SensorManager sensorManager;
     private Sensor accelerometerSensor;
     private SensorEventListener accelerometerEventListener;
@@ -62,24 +63,20 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
     private TextView loggedInUserEmailTextView;
     private ImageView logoutImageView;
     private TextView reportErrorTextView;
-
+    private boolean doubleBackToExitPressedOnce = false;
     // For Step Detecting:
     private StepDetector simpleStepDetector;
-
     //Firebase:
     private FirebaseStorage mFirestore;            // used to upload files
     private StorageReference mStorageReference;  // to storage
     private FirebaseAuth mAuth = FirebaseAuth.getInstance();
     private DocumentReference mDocRef; // = FirebaseFirestore.getInstance().document("usersFiles/information");
-
     private Date mDate;
-
     // local stored files:
     private File featureDummyFile;  // local stored dummy file from firebase
     private File rawdataUserFile;
     private File featureUserFile;   // only the path exists !
     private File modelUserFile;     // only the path exists !
-
     // for shared pres
     private CharSequence lastModelDate = "";
 
@@ -665,6 +662,20 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
         Log.d(TAG, ">>>RUN>>>step()");
         //mp.start();
         ModelUploaderActivity.stepNumber++;
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (doubleBackToExitPressedOnce) {
+            super.onBackPressed();
+            Util.isFinished = true;
+            finish();
+        }
+
+        this.doubleBackToExitPressedOnce = true;
+        Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
+
+        new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
     }
 
 

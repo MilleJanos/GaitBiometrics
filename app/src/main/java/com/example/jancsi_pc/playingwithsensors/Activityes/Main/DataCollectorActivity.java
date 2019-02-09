@@ -13,6 +13,7 @@ import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.Settings;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -64,8 +65,8 @@ import java.util.UUID;
  * @author MilleJanos
  */
 public class DataCollectorActivity extends AppCompatActivity implements SensorEventListener, StepListener, NavigationView.OnNavigationItemSelectedListener {
-    private static final String TAG = "DataCollectorActivity";
 
+    private static final String TAG = "DataCollectorActivity";
     private boolean NO_PYTHON_SERVER_YET = true;
     private SensorManager sensorManager;
     private Sensor accelerometerSensor;
@@ -100,6 +101,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     private TextView navigationMenuEmail;
     Date mDate;
     private String mFileName;
+    private boolean doubleBackToExitPressedOnce = false;
     // For Step Detecting:
     private StepDetector simpleStepDetector;
     // Firebase:
@@ -460,7 +462,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
             AlertDialog.Builder builderInitial = new AlertDialog.Builder(this);
             builderInitial.setTitle("Usage");
-            builderInitial.setMessage("Press OK then put the device in you pocket then after a walk press OK again");
+            builderInitial.setMessage("Press OK then put the device in your pocket then after a walk press OK again");
             builderInitial.setCancelable(false);
             builderInitial.setPositiveButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
                 @Override
@@ -475,7 +477,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                         startButton.callOnClick();
 
                         AlertDialog.Builder builder = new AlertDialog.Builder(DataCollectorActivity.this);
-                        builder.setTitle("Authentificate yourselfe");
+                        builder.setTitle("Authentificate yourself");
                         builder.setMessage("Walk then press OK.");
                         builder.setCancelable(false);
                         builder.setNeutralButton(android.R.string.ok,
@@ -687,7 +689,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                 Log.d(TAG, "Snackbar: \"No model found! :(\"");
                 Snackbar.make(findViewById(R.id.datacollector_main_layout), "No model found! :(", Snackbar.LENGTH_SHORT).show();
                 Log.d(TAG, ">>>START ACTIVITY>>>ModelUploaderActivity");
-                // Addig a ModelUploaderActivity-nel kell maradjon amig nincs Modelje:
+                // User can't leave ModelUploaderActivity unless he created new model Model:
                 startActivity(new Intent(DataCollectorActivity.this, ModelUploaderActivity.class));
             }
         } else {
@@ -952,5 +954,18 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        if (doubleBackToExitPressedOnce) {
+            super.onBackPressed();
+            Util.isFinished = true;
+            finish();
+        }
+
+        this.doubleBackToExitPressedOnce = true;
+        Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
+
+        new Handler().postDelayed(() -> doubleBackToExitPressedOnce = false, 2000);
+    }
 
 }
