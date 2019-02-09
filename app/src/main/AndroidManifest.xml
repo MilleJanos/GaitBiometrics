@@ -26,7 +26,7 @@
             android:screenOrientation="portrait">
         -->
         <activity
-            android:name=".Activityes.Main.MainActivity"
+            android:name=".activityes.main.MainActivity"
             android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -36,34 +36,38 @@
         </activity>
 
         <activity
-            android:name=".Activityes.Other.SplashScreenActivity"
+            android:name=".activityes.other.SplashScreenActivity"
             android:screenOrientation="portrait" />
 
         <activity
-            android:name=".StepCounter.StepCounterActivity"
+            android:name=".stepcounter.StepCounterActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".Activityes.Main.DataCollectorActivity"
+            android:name=".activityes.main.DataCollectorActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".Activityes.Main.AuthenticationActivity"
+            android:name=".activityes.main.AuthenticationActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".Activityes.Main.ModelUploaderActivity"
+            android:name=".activityes.main.ModelUploaderActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".Activityes.Main.GaitValidationActivity"
+            android:name=".activityes.main.GaitValidationActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".Activityes.Other.SettingsActivity"
+            android:name=".activityes.other.SettingsActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".UserProfile.UserProfileActivity"
+            android:name=".userprofile.UserProfileActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".UserProfile.EditUserActivity"
+            android:name=".userprofile.EditUserActivity"
             android:screenOrientation="portrait" />
 
+        <activity
+            android:name=".userstats.ListDataFromFirebaseActivity"
+            android:screenOrientation="portrait" />
+        
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
