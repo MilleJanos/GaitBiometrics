@@ -35,6 +35,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.ProviderQueryResult;
+import com.google.firebase.storage.FirebaseStorage;
 
 import java.io.File;
 import java.util.Date;
@@ -95,6 +96,12 @@ public class AuthenticationActivity extends AppCompatActivity {
 
         // Create the shared progress dialog:
         Util.progressDialog = new ProgressDialog(AuthenticationActivity.this);
+
+        if (Util.mAuth == null || Util.mStorage == null) {
+            Util.mAuth = FirebaseAuth.getInstance();
+            Util.mStorage = FirebaseStorage.getInstance();
+
+        }
 
         // Set the views of the activity:
         findViewsById();

@@ -52,6 +52,7 @@ public class Util {
 
     /**
      * Function that calculates the sampling frequency of the accelerometer
+     *
      * @param data list containing the Accelerometer data the frequency will be calculated from
      * @return sampling frequency value
      */
@@ -110,6 +111,7 @@ public class Util {
 
     /**
      * Method that hides the keyboard in the given activity
+     *
      * @param activity the activity context where the method will hide the keyboard
      */
     public static void hideKeyboard(Activity activity) {
@@ -164,12 +166,14 @@ public class Util {
     public static UserDataObject mUserDataObject_Temp = new UserDataObject();
 
     //region HELP
+
     /**
      * This method saves the accArray<Accelerometer> list into file including header.
+     *
      * @param accArray array that contains the data that will be writtem to the file
-     * @param file descriptor of the file all the writing will be made into
+     * @param file     descriptor of the file all the writing will be made into
      * @return 0 if there is no error
-     *         1 if there occurred an error
+     * 1 if there occurred an error
      */
     //endregion
     public static short saveAccArrayIntoCsvFile(ArrayList<Accelerometer> accArray, File file) {
@@ -215,12 +219,13 @@ public class Util {
 
     /**
      * Runs the classifier for the given parameters and calculates the match percentage of it's result
-     * @param activity the activity context where the method will display progress messages
-     * @param userRawDataFilePath String path of the user's ray_data_file
-     * @param userFeatureFilePath String path of the user's features_file
+     *
+     * @param activity             the activity context where the method will display progress messages
+     * @param userRawDataFilePath  String path of the user's ray_data_file
+     * @param userFeatureFilePath  String path of the user's features_file
      * @param dummyFeatureFilePath String path of the dummy's features_file
-     * @param userModelFilePath String path of the user's model_file
-     * @param userId user's ID
+     * @param userModelFilePath    String path of the user's model_file
+     * @param userId               user's ID
      * @return the resulting percentage
      */
     public static double checkUserInPercentage(Activity activity, String userRawDataFilePath, String userFeatureFilePath, String dummyFeatureFilePath, String userModelFilePath, String userId) {
@@ -298,6 +303,7 @@ public class Util {
 
     /**
      * Checks if the device has an active network connection.
+     *
      * @param activity the activity context where the method will display progress messages
      * @return true the device has an active network connection
      */
@@ -331,6 +337,7 @@ public class Util {
 
     /**
      * Tests the internet connection
+     *
      * @param activity
      * @return true if there is internet connection and false if not.
      */
@@ -345,6 +352,7 @@ public class Util {
 
     /**
      * Tests the WiFi module
+     *
      * @param context
      * @return true if the FiWi module is on and false if not.
      */

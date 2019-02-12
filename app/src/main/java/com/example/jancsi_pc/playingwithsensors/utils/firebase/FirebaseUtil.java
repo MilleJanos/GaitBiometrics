@@ -28,7 +28,9 @@ import com.google.firebase.storage.UploadTask;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This class contains the Util variables and methods for firebase transactions.
@@ -337,7 +339,14 @@ public class FirebaseUtil {
                             return;
                         }
                         List<String> devices = new ArrayList<>();
-                        devices.addAll(Arrays.asList(document.get("devices").toString().replace("[", "").replace("]", "").split(",")));
+                        try {
+                            devices.addAll(Arrays.asList(document.get("devices").toString().replace("[", "").replace("]", "").split(",")));
+                        } catch (NullPointerException ex) {
+                            Log.d("UpdateStatsInFirestore", "updateStatsInFirestoreException: " + ex.getMessage());
+                            FirebaseUtil.createStatsInFirestore(FirebaseAuth.getInstance().getCurrentUser().getEmail());
+                            updateStatsInFirestore(steps);
+                            return;
+                        }
                         UserStatsObject statsObject = new UserStatsObject(
                                 devices,
                                 document.get("email").toString(),
@@ -355,8 +364,16 @@ public class FirebaseUtil {
                         statsObject.addDevice(Util.deviceId);
                         statsObject.incrementFiles();
                         statsObject.incrementSteps(steps);
+                        Log.d("updateStatsInFireStore", statsObject.toString());
 
-                        docRef.set(statsObject); //TODO test
+                        Map<String, Object> data = new HashMap<>();
+                        data.put("devices", statsObject.getDevices());
+                        data.put("email", statsObject.getEmail());
+                        data.put("files", statsObject.getFiles());
+                        data.put("last_session", statsObject.getLast_session());
+                        data.put("sessions", statsObject.getSessions());
+                        data.put("steps", statsObject.getSteps());
+                        docRef.set(data); //TODO test
                     } else { //handle failure
                         //it means the user is new and does not have stats yet => creating stats
                         FirebaseUtil.createStatsInFirestore(FirebaseAuth.getInstance().getCurrentUser().getEmail());
@@ -372,10 +389,21 @@ public class FirebaseUtil {
      * @author Krisztian-Miklos Nemeth
      */
     public static void createStatsInFirestore(String email) {
+        UserStatsObject uso = new UserStatsObject(new ArrayList<>(), email, 0, System.currentTimeMillis() / 1000, 1, 0);
+        Log.d("createStatsInFireStore", uso.toString());
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("devices", new ArrayList<String>());
+        data.put("email", uso.getEmail());
+        data.put("files", uso.getFiles());
+        data.put("last_session", uso.getLast_session());
+        data.put("sessions", uso.getSessions());
+        data.put("steps", uso.getSteps());
+
         FirebaseFirestore.getInstance()
                 .collection(FIRESTORE_STATS_NODE + "/")
                 .document(Util.mAuth.getUid())
-                .set(new UserStatsObject(new ArrayList<>(), email, 0, System.currentTimeMillis() / 1000, 0, 0));
+                .set(data);
     }
 
     /**

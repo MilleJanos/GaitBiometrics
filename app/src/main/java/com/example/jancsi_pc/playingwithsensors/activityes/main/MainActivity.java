@@ -7,6 +7,8 @@ import android.util.Log;
 
 import com.example.jancsi_pc.playingwithsensors.activityes.other.SplashScreenActivity;
 import com.example.jancsi_pc.playingwithsensors.utils.Util;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.storage.FirebaseStorage;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -17,6 +19,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //setContentView(R.layout.activity_main);
+
+        Util.mAuth = FirebaseAuth.getInstance();
+        Util.mStorage = FirebaseStorage.getInstance();
+
         startActivity(new Intent(MainActivity.this, SplashScreenActivity.class));
 
     }

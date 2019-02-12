@@ -2,6 +2,7 @@ package com.example.jancsi_pc.playingwithsensors.utils.firebase;
 
 import android.support.annotation.NonNull;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -38,6 +39,8 @@ public class UserStatsObject {
         this.last_session = last_session;
         this.sessions = sessions;
         this.steps = steps;
+
+        cleanDevicesList();
     }
 
     /**
@@ -101,5 +104,35 @@ public class UserStatsObject {
         boolean sameDay = cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR) &&
                 cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR);
         return !sameDay;
+    }
+
+    public List<String> getDevices() {
+        return devices;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public int getFiles() {
+        return files;
+    }
+
+    public int getSessions() {
+        return sessions;
+    }
+
+    public int getSteps() {
+        return steps;
+    }
+
+    private void cleanDevicesList() {
+        List<String> devs = new ArrayList<>();
+        for (String dev : devices) {
+            if (!dev.isEmpty()) {
+                devs.add(dev.replace(" ", ""));
+            }
+        }
+        this.devices = devs;
     }
 }
