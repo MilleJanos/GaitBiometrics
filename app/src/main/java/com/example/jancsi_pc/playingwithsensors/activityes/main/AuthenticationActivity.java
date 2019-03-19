@@ -94,6 +94,30 @@ public class AuthenticationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_authentication);
         Log.d(TAG, ">>>RUN>>>onCreate()");
 
+        /*<DELETE THIS>*/ // TODO DELETE THIS
+        Button xbutton = (Button) findViewById(R.id.deleteMePleaseButton);
+        xbutton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(emailEditText.getText().toString().equals("")){
+                    emailEditText.setText("millejanos31@gmail.com");
+                }else{
+                    if(emailEditText.getText().toString().equals("millejanos31@gmail.com")){
+                        emailEditText.setText("wolterwill31@gmail.com");
+                    }else {
+                        if (emailEditText.getText().toString().equals("wolterwill31@gmail.com")) {
+                            emailEditText.setText("fuloptimea1427@gmail.com");
+                        }else{
+                            emailEditText.setText("");
+                        }
+                    }
+                }
+            }
+        });
+        /*</DELETE THIS>*/
+
+        Util.addToDebugActivityStackList(TAG);
+
         // Create the shared progress dialog:
         Util.progressDialog = new ProgressDialog(AuthenticationActivity.this);
 
@@ -1313,6 +1337,12 @@ public class AuthenticationActivity extends AppCompatActivity {
 
         // Animate Logo
         handleAnimationAppLogoIntro();
+    }
+
+    @Override
+    public void onDestroy(){
+        Util.removeFromDebugActivityStackList(TAG);
+        super.onDestroy();
     }
 
     @Override

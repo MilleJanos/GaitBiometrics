@@ -39,6 +39,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.UUID;
 
+import ro.sapientia.gaitbiom.GaitHelperFunctions;
+import ro.sapientia.gaitbiom.GaitModelBuilder;
+import ro.sapientia.gaitbiom.IGaitModelBuilder;
+import weka.classifiers.Classifier;
+
 /**
  * Activity that handle the user model: download model, upload model, generate model.
  *
@@ -88,6 +93,8 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_model_uploader);
 
+        Util.addToDebugActivityStackList(TAG);
+
         Util.progressDialog = new ProgressDialog(ModelUploaderActivity.this);
 
         /*
@@ -108,7 +115,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
         }
 
 
-        //endregion
+        // locate files
         Util.feature_dummy_path = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/feature_dummy.arff";
         Util.rawdata_user_path = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/rawdata_" + mAuth.getUid() + ".csv";
         Util.feature_user_path = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/feature_" + mAuth.getUid() + ".arff";  // The date and time will be added before uploading the files
@@ -322,7 +329,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
                 // Saving array into .CSV file (Local):
                 Util.saveAccArrayIntoCsvFile(accArray, rawdataUserFile);
 
-                // Saving CSV File to FireBase Storage:
+                // Uploading CSV File to FireBase Storage:
                 StorageReference ref = mStorageReference.child(fileStorageName + "/" + rawdataUserFile.getName());
                 FirebaseUtil.uploadFileToFirebaseStorage(ModelUploaderActivity.this, rawdataUserFile, ref);
 
@@ -342,7 +349,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
                  * Model generating:
                  */
 
-                downloadDummyDataFromFireBaseStorage_and_GenerateModel();
+                downloadNegativeDataFromFireBaseStorage_and_GenerateModel();
 
             }
             catch (Exception e) {
@@ -371,7 +378,7 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
     }// OnCreate
 
     /**
-     * downloadDummyDataFromFireBaseStorage_and_GenerateModel()
+     * downloadNegativeDataFromFireBaseStorage_and_GenerateModel()
      * | This method downloads the
      * | dummy user data (.arff) from Firebase
      * | Storage
@@ -386,8 +393,8 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
      *
      * @author Mille Janos
      */
-    private void downloadDummyDataFromFireBaseStorage_and_GenerateModel() {
-        Log.d(TAG, ">>>RUN>>>downloadDummyDataFromFireBaseStorage_and_GenerateModel()");
+    private void downloadNegativeDataFromFireBaseStorage_and_GenerateModel() {
+        Log.d(TAG, ">>>RUN>>>downloadNegativeDataFromFireBaseStorage_and_GenerateModel()");
         // Downloading Dummy Feature from FireBase Storage:
         // Dummy is always in features folder (not in features_debug)
         Util.mRef = Util.mStorage.getReference().child( /*featureFolder*/ FirebaseUtil.STORAGE_FEATURES_KEY + "/" + Util.firebaseDummyFileName);
@@ -398,7 +405,9 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
             Util.mRef.getFile(featureDummyFile).addOnSuccessListener(taskSnapshot -> {
                 Log.i(TAG, "Dummy feature found and downloaded: Local PATH: " + featureDummyFile.getAbsolutePath());
                 try {
+
                     modelBuilder();
+
                 } catch (Exception e) {
                     // do nothing
                 }
@@ -418,9 +427,71 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
      * @author Mille Janos
      */
     private void modelBuilder() {
-        Log.d(TAG, ">>RUN>>>ContinueModelGenerating()");
+        Log.d(TAG,">>RUN>>>ContinueModelGenerating()");
 
-        Toast.makeText(ModelUploaderActivity.this, "- under development -", Toast.LENGTH_SHORT).show();
+        //region *
+        Log.i(TAG," |IN| String Util.rawdata_user_path [size:"+ new File(Util.rawdata_user_path).length() +"]= "   + Util.rawdata_user_path );
+        Log.i(TAG," |IN| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= " + Util.feature_user_path);
+        //endregion
+        GaitHelperFunctions.createFeaturesFileFromRawFile(
+                Util.rawdata_user_path,                                                                 // INPUT
+                Util.feature_user_path.substring(0,Util.feature_user_path.length()-(".arff").length()), // OUTPUT       // getFeatures will add the ".arff" to the end of the file (and saves it)
+                Util.mAuth.getUid() );                                                                  // INPUT
+        //region *
+        Log.i(TAG," |OUT| String Util.rawdata_user_path [size:"+ new File(Util.rawdata_user_path).length() +"]= "   + Util.rawdata_user_path );
+        Log.i(TAG," |OUT| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= " + Util.feature_user_path);
+        //endregion
+        //region *
+        Log.i(TAG," |IN| String Util.feature_dummy_path [size:"+ new File(Util.feature_dummy_path).length() +"]= " + Util.feature_dummy_path);
+        Log.i(TAG," |IN| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= "  + Util.feature_user_path);
+        //endregion
+        GaitHelperFunctions.mergeEquallyArffFiles(
+                Util.feature_dummy_path,    // INPUT
+                Util.feature_user_path);    // INPUT & OUTPUT
+        //region *
+        Log.i(TAG," |OUT| String Util.feature_dummy_path [size:"+ new File(Util.feature_dummy_path).length() +"]= " + Util.feature_dummy_path);
+        Log.i(TAG," |OUT| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= "  + Util.feature_user_path);
+        //endregion
+        try{
+            //region *
+            Log.i(TAG," |IN| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= "  + Util.feature_user_path );
+            Log.i(TAG," |IN| String Util.model_user_path = [size:"+ new File(Util.model_user_path).length() +"]" + Util.model_user_path);
+            //endregion
+            IGaitModelBuilder builder = new GaitModelBuilder();
+            //region **
+            Log.d(TAG,">RUN>builder.createModel()");
+            //endregion
+            // Creates the model from feature
+            Classifier classifier = builder.createModel(Util.feature_user_path);
+            //region **
+            Log.d(TAG,"<FINISH<builder.createModel()");
+            //endregion
+            // Save model to file
+            //region **
+            Log.d(TAG,">RUN>builder.saveModel()");
+            //endregion
+            ((GaitModelBuilder) builder).saveModel(classifier, Util.model_user_path );
+            //region **
+            Log.d(TAG,"<FINISHED<builder.saveModel()");
+            //endregion
+            //region *
+            Log.i(TAG," |OUT| String Util.feature_user_path [size:"+ new File(Util.feature_user_path).length() +"]= "  + Util.feature_user_path );
+            Log.i(TAG," |OUT| String Util.model_user_path = [size:"+ new File(Util.model_user_path).length() +"]" + Util.model_user_path);
+            //endregion
+        }
+        catch (Exception e){
+            Util.progressDialog.dismiss();
+            Toast.makeText(ModelUploaderActivity.this,"Model generating failed!",Toast.LENGTH_LONG).show();
+            Log.e(TAG,"ERROR: ModelBuilderMain.CreateAndSaveModel(Util.feature_user_path, Util.model_user_path)");
+            e.printStackTrace();
+        }
+
+
+        //UploadModelToFireBaseStorage();
+
+
+        Util.progressDialog.dismiss();
+
     }
 
     /**
@@ -630,6 +701,12 @@ public class ModelUploaderActivity extends AppCompatActivity implements SensorEv
         Util.mSharedPrefEditor.apply();
 
         sensorManager.unregisterListener(accelerometerEventListener);
+    }
+
+    @Override
+    public void onDestroy(){
+        Util.removeFromDebugActivityStackList(TAG);
+        super.onDestroy();
     }
 
     @Override

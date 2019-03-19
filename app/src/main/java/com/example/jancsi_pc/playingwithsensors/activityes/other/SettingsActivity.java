@@ -34,6 +34,9 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
+
+        Util.addToDebugActivityStackList(TAG);
+
         /*
          * Initialize views
          */
@@ -76,6 +79,12 @@ public class SettingsActivity extends AppCompatActivity {
             Toast.makeText(SettingsActivity.this, (Util.debugMode) ? "TRUE" : "FALSE", Toast.LENGTH_SHORT).show();
         });
 
+    }
+
+    @Override
+    public void onDestroy(){
+        Util.removeFromDebugActivityStackList(TAG);
+        super.onDestroy();
     }
 
     /**

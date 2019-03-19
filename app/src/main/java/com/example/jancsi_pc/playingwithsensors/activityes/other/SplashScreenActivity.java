@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import com.example.jancsi_pc.playingwithsensors.R;
 import com.example.jancsi_pc.playingwithsensors.activityes.main.DataCollectorActivity;
+import com.example.jancsi_pc.playingwithsensors.utils.Util;
 
 // loading app activity
 
@@ -30,6 +31,8 @@ public class SplashScreenActivity extends AppCompatActivity {
         setContentView(R.layout.activity_splesh_screen);
         textView = findViewById(R.id.textView);
         imageView = findViewById(R.id.imageView);
+
+        Util.addToDebugActivityStackList(TAG);
 
         // Animate icon
         handleAnimationAppSplashLogoIntro();
@@ -66,6 +69,11 @@ public class SplashScreenActivity extends AppCompatActivity {
 //    finish();
 //    }
 
+    @Override
+    public void onDestroy(){
+        Util.removeFromDebugActivityStackList(TAG);
+        super.onDestroy();
+    }
 
     private void handleAnimationAppSplashLogoIntro() {
         float distanceY = TypedValue.applyDimension(         // dip to pixels

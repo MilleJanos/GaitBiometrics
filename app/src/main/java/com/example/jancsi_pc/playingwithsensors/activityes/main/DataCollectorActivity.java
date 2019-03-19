@@ -49,7 +49,12 @@ import com.google.firebase.storage.StorageReference;
 
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -138,6 +143,8 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_data_collector_nav);
 
+        Util.addToDebugActivityStackList(TAG);
+
         findViewByIDs();
 
         /*
@@ -173,48 +180,8 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         Util.internalFilesRoot = new File(getFilesDir().toString());
         Log.i(TAG, "Util.internalFilesRoot.getAbsolutePath() = " + Util.internalFilesRoot.getAbsolutePath());
 
-
-        //
-        // Internal files Path:
-        //
-        mDate = new Date();
-
-        // Create folder if not exists:
-        File myInternalFilesRoot;
-
-        myInternalFilesRoot = new File(Util.internalFilesRoot.getAbsolutePath() /*+ customDIR*/);
-        if (!myInternalFilesRoot.exists()) {
-            myInternalFilesRoot.mkdirs();
-            Log.i(TAG, "Path not exists (" + myInternalFilesRoot.getAbsolutePath() + ") --> .mkdirs()");
-        }
-
-        // Creating user's raw data file path:
-        Util.rawdata_user_path = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/rawdata_" + mAuth.getUid() + ".csv";
-        Util.feature_user_path = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/feature_" + mAuth.getUid() + ".arff";   //*// we need this for validation only
-        Util.feature_dummy_path = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/feature_dummy.arff";                   //*//  - dummy exists and it is not empty
-        rawdataUserFile = new File(Util.rawdata_user_path);
-        featureUserFile = new File(Util.feature_user_path);                                                                          //*//
-        Log.i(TAG, "PATH: Util.rawdata_user_path  = " + Util.rawdata_user_path);
-        Log.i(TAG, "PATH: Util.rawdata_user_path  = " + Util.feature_user_path);                                                   //*//
-
-        // Creating user's raw data file (if not exists):
-        if (!rawdataUserFile.exists()) {
-            try {
-                rawdataUserFile.createNewFile();
-            } catch (Exception e) {
-                e.printStackTrace();
-                Log.e(TAG, "File can't be created: " + Util.rawdata_user_path);
-            }
-        }
-        // Creating user's feature file (if not exists):
-        if (!featureUserFile.exists()) {
-            try {
-                featureUserFile.createNewFile();
-            } catch (Exception e) {
-                e.printStackTrace();
-                Log.e(TAG, "File can't be created: " + Util.feature_user_path);
-            }
-        }
+        //INIT INTERNAL STORAGE:
+        // initInternalFiles(); // will be run when the user Logged in
 
         //FIREBASE INIT:
         mFirestore = FirebaseStorage.getInstance();
@@ -271,23 +238,10 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
             sendToServerButton.setVisibility(View.INVISIBLE);
             pythonServerImageView.setVisibility((View.INVISIBLE));
         }
-
         accelerometerEventListener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent event) {
-                long timeStamp = event.timestamp;
-                float x = event.values[0];
-                float y = event.values[1];
-                float z = event.values[2];
-                accelerometerX.setText(("X: " + x));
-                accelerometerY.setText(("Y: " + y));
-                accelerometerZ.setText(("Z: " + z));
-
-                if (isRecording) {
-                    accArray.add(new Accelerometer(timeStamp, x, y, z, stepNumber));
-                    recordCount++;
-                    textViewStatus.setText(("Recording: " + stepNumber + " steps made."));
-                }
+                updateXYZAndRecordRawData(event);
             }
 
             @Override
@@ -296,83 +250,16 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
             }
         };
 
-        /*
-         *
-         *   Start recording
-         *
-         */
+        // Start recording
+        startButton.setOnClickListener(startButtonClickListener);
 
-        startButton.setOnClickListener(v -> {
-            Log.d(TAG, ">>>RUN>>>startButtonClickListener");
-            recordCount = 0;
-            stepNumber = 0;
-            sensorManager.registerListener(DataCollectorActivity.this, accelerometerSensor, SensorManager.SENSOR_DELAY_FASTEST);
-            accArray.clear();
-            isRecording = true;
-            startButton.setEnabled(false);
-            stopButton.setEnabled(true);
-            sendToServerButton.setEnabled(false);
-            saveToFirebaseButton.setEnabled(false);
-            Log.d("ConnectionActivity_", "Start Rec.");
-        });
+        // Stop recording
+        stopButton.setOnClickListener(stopButtonClickListener);
 
-        /*
-         *
-         *   Stop recording
-         *
-         */
+         // Sending records to server
+        sendToServerButton.setOnClickListener(sendToServerButtonClickListener);
 
-        stopButton.setOnClickListener(v -> {
-            Log.d(TAG, ">>>RUN>>>stopButtonClickListener");
-            mDate = new Date();
-            Util.recordDateAndTimeFormatted = DateFormat.format("yyyyMMdd_HHmmss", mDate.getTime());
-            //Toast.makeText(DataCollectorActivity.this, Util.recordDateAndTimeFormatted, Toast.LENGTH_LONG).show();
-            isRecording = false;
-            startButton.setEnabled(true);
-            stopButton.setEnabled(false);
-            sendToServerButton.setEnabled(true);
-            saveToFirebaseButton.setEnabled(true);
-            sensorManager.unregisterListener(DataCollectorActivity.this);
-            Log.d("ConnectionActivity", "Stop Rec. - Generating CMD");
-            textViewStatus.setText(R.string.calculating);
-            CMD = accArrayToString();
-            CMD += ",end";
-            Log.d("ConnectionActivity", "CMD Generated.");
-            textViewStatus.setText(("Recorded: " + recordCount + " datapoints and " + stepNumber + " step cycles."));
-            // Proxy sensor:
-            mSensorManager.unregisterListener(DataCollectorActivity.this);
-        });
-
-        /*
-         *
-         *   Sending records to server
-         *
-         */
-        sendToServerButton.setOnClickListener(v -> {
-            Log.d(TAG, ">>>RUN>>>sendButtonClickListener");
-            sendToServerButton.setEnabled(false);
-            Toast.makeText(DataCollectorActivity.this, "freq1: " + Util.samplingFrequency(accArray), Toast.LENGTH_LONG).show();
-
-            // Sending the array in multiple packages:
-            accArrayGroupArrayToString();
-            for (int i = 0; i < accArrayStringGroups.size(); ++i) {
-                Log.i("accArrayString", "aASG.get(" + i + ")= " + accArrayStringGroups.get(i));
-                CMD = accArrayStringGroups.get(i);  //group of RECORDS_LIMIT_PER_PACKAGE records
-                //Prepare and Send
-                getIPandPort();
-                Socket_AsyncTask cmd_send_data = new Socket_AsyncTask();
-                cmd_send_data.execute();
-            }
-            Toast.makeText(DataCollectorActivity.this, "Data has been sent. " + Calendar.getInstance().getTime(), Toast.LENGTH_LONG).show();
-        });
-
-        /*
-         *
-         *   Sending to Firebase
-         *   from Start to End
-         *
-         */
-
+        // Sending to Firebase from Start to End
         saveToFirebaseButton.setOnClickListener(saveToFirebaseButtonClickListener);
 
 
@@ -559,6 +446,51 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         wifiModulePort = Integer.parseInt(temp[1]);
         Log.d("getIPandPort", "IP: " + wifiModuleIp);
         Log.d("getIPandPort", "Port: " + wifiModulePort);
+    }
+
+    /**
+     *
+     */
+    private void initInternalFiles(){
+        // Internal files Path:
+        mDate = new Date();
+        Util.recordDateAndTimeFormatted = DateFormat.format("yyyyMMdd_HHmmss", mDate.getTime());
+        // Create folder if not exists:
+        File myInternalFilesRoot;
+
+        myInternalFilesRoot = new File(Util.internalFilesRoot.getAbsolutePath() /*+ customDIR*/);
+        if (!myInternalFilesRoot.exists()) {
+            myInternalFilesRoot.mkdirs();
+            Log.i(TAG, "Path not exists (" + myInternalFilesRoot.getAbsolutePath() + ") --> .mkdirs()");
+        }
+
+        // Creating user's raw data file path:
+        Util.rawdata_user_path = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/rawdata_" + mAuth.getUid() +  "_" + Util.recordDateAndTimeFormatted + ".csv";
+        Util.feature_user_path = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/feature_" + mAuth.getUid() +  "_" + Util.recordDateAndTimeFormatted + ".arff";   //*// we need this for validation only
+        Util.feature_dummy_path = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/feature_dummy.arff";                   //*//  - dummy exists and it is not empty
+        rawdataUserFile = new File(Util.rawdata_user_path);
+        featureUserFile = new File(Util.feature_user_path);                                                                          //*//
+        Log.i(TAG, "PATH: Util.rawdata_user_path  = " + Util.rawdata_user_path);
+        Log.i(TAG, "PATH: Util.rawdata_user_path  = " + Util.feature_user_path);                                                   //*//
+
+        // Creating user's raw data file (if not exists):
+        if (!rawdataUserFile.exists()) {
+            try {
+                rawdataUserFile.createNewFile();
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e(TAG, "File can't be created: " + Util.rawdata_user_path);
+            }
+        }
+        // Creating user's feature file (if not exists):
+        if (!featureUserFile.exists()) {
+            try {
+                featureUserFile.createNewFile();
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e(TAG, "File can't be created: " + Util.feature_user_path);
+            }
+        }
     }
 
     /**
@@ -758,6 +690,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
             }
             navigationMenuEmail.setText( Util.userEmail );
 
+            // TODO : Delete this:
             // Test Gait for Mille Janos
             if (mAuth.getUid().equals("LnntbFQGpBeHx3RwMu42e2yOks32")) {
                 showGaitResult();
@@ -769,16 +702,16 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         // Show on screen model status
         if (Util.isSetUserModel) {
             Log.d(TAG, "User Model is set.");
-            if (Util.hasUserModel) {
+            /*MODEL_TEST*///if (Util.hasUserModel) {
                 Log.d(TAG, "Snackbar: \"Model found :)\"");
                 Snackbar.make(findViewById(R.id.datacollector_main_layout), "Model found! :)", Snackbar.LENGTH_SHORT).show();
-            } else {
-                Log.d(TAG, "Snackbar: \"No model found! :(\"");
-                Snackbar.make(findViewById(R.id.datacollector_main_layout), "No model found! :(", Snackbar.LENGTH_SHORT).show();
-                Log.d(TAG, ">>>START ACTIVITY>>>ModelUploaderActivity");
-                // Addig a ModelUploaderActivity-nel kell maradjon amig nincs Modelje:
-                startActivity(new Intent(DataCollectorActivity.this, ModelUploaderActivity.class));
-            }
+            /*MODEL_TEST*///} else {
+            /*MODEL_TEST*///    Log.d(TAG, "Snackbar: \"No model found! :(\"");
+            /*MODEL_TEST*///    Snackbar.make(findViewById(R.id.datacollector_main_layout), "No model found! :(", Snackbar.LENGTH_SHORT).show();
+            /*MODEL_TEST*///    Log.d(TAG, ">>>START ACTIVITY>>>ModelUploaderActivity");
+            /*MODEL_TEST*///    // Addig a ModelUploaderActivity-nel kell maradjon amig nincs Modelje:
+            /*MODEL_TEST*///    startActivity(new Intent(DataCollectorActivity.this, ModelUploaderActivity.class));
+            /*MODEL_TEST*///}
         } else {
             Log.d(TAG, "User Model is not set yet.");
         }
@@ -796,6 +729,12 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         Util.mSharedPrefEditor.apply();
 
         sensorManager.unregisterListener(accelerometerEventListener);
+    }
+
+    @Override
+    public void onDestroy(){
+        Util.removeFromDebugActivityStackList(TAG);
+        super.onDestroy();
     }
 
     //(STEPCOUNT)
@@ -893,6 +832,10 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         @Override
         public void onClick(View v) {
             Log.d(TAG, ">>>RUN>>>stopButtonClickListener");
+
+            // Init internal storage instead of onCreate:
+            initInternalFiles();
+
             mDate = new Date();
             Util.recordDateAndTimeFormatted = DateFormat.format("yyyyMMdd_HHmmss", mDate.getTime());
             //Toast.makeText(DataCollectorActivity.this, Util.recordDateAndTimeFormatted, Toast.LENGTH_LONG).show();
@@ -989,11 +932,28 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                     collectionName = FirebaseUtil.USER_RECORDS_NEW_KEY;
                 }
 
+
+
                 // Saving array into .CSV file (Local):
                 Util.saveAccArrayIntoCsvFile(accArray, rawdataUserFile);
 
+                /*
+                // Copy CSV File containing the date to be unique in FireBase:
+                mDate = new Date();
+                Util.recordDateAndTimeFormatted = DateFormat.format("yyyyMMdd_HHmmss", mDate.getTime());
+                String begin = Util.rawdata_user_path.substring(Util.rawdata_user_path.length()-4,Util.rawdata_user_path.length()); // "<path>/<filename>"
+                String end = Util.rawdata_user_path.substring(0,Util.rawdata_user_path.length()-4);                                 // ".csv"
+                String uploadableRawDataPath = begin + "_" + Util.recordDateAndTimeFormatted + "." + end;
+                //File uploadableRawDataFile = new File(uploadableRawDataPath);
+                String inputPath = "";
+                String inputFile = rawdataUserFile.getName();
+                String outputPath = "";
+                //copyFile(inputPath, inputFile, outputPath);
+                */
+
+
                 // Saving CSV File to FireBase Storage:
-                StorageReference ref = mStorageReference.child(fileStorageName + "/" + rawdataUserFile.getName());
+                StorageReference ref = mStorageReference.child(fileStorageName + "/"+ mAuth.getUid() +"/" + rawdataUserFile.getName());
                 FirebaseUtil.uploadFileToFirebaseStorage(DataCollectorActivity.this, rawdataUserFile, ref);
 
                 // Updating (JSON) Object in the FireStore: (Collection->Documents->Collection->Documents->...)
@@ -1006,6 +966,8 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                         .document(mAuth.getUid() + "")
                         .collection(Util.deviceId)
                         .document(randomId);
+
+
                 // Upload Object To Firebase Firestore:
                 FirebaseUtil.uploadObjectToFirebaseFirestore(DataCollectorActivity.this, info, mDocRef);
 
@@ -1019,12 +981,51 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         }
     };
 
+    private void copyFile(String inputPath, String inputFile, String outputPath) {
+
+        InputStream in = null;
+        OutputStream out = null;
+        try {
+
+            //create output directory if it doesn't exist
+            File dir = new File (outputPath);
+            if (!dir.exists())
+            {
+                dir.mkdirs();
+            }
+
+
+            in = new FileInputStream(inputPath + inputFile);
+            out = new FileOutputStream(outputPath + inputFile);
+
+            byte[] buffer = new byte[1024];
+            int read;
+            while ((read = in.read(buffer)) != -1) {
+                out.write(buffer, 0, read);
+            }
+            in.close();
+            in = null;
+
+            // write the output file (You have now copied the file)
+            out.flush();
+            out.close();
+            out = null;
+
+        }  catch (FileNotFoundException fnfe1) {
+            Log.e("tag", fnfe1.getMessage());
+        }
+        catch (Exception e) {
+            Log.e("tag", e.getMessage());
+        }
+
+    }
+
     /**
      * This method updates the x,y and z coordinates on the user interface
      * and is able to record this tree coordinates into accArray.
      * @param event contains the x,y and z
      */
-    private void UpdateXYZ_and_RecordRawData(SensorEvent event) {
+    private void updateXYZAndRecordRawData(SensorEvent event) {
         long timeStamp = event.timestamp;
         float x = event.values[0];
         float y = event.values[1];

@@ -78,6 +78,8 @@ public class EditUserActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_user_profile);
 
+        Util.addToDebugActivityStackList(TAG);
+
         userNameEditText = findViewById(R.id.user_name_edit_text);
 
         backButton = findViewById(R.id.edit_profile_backButton);
@@ -224,6 +226,12 @@ public class EditUserActivity extends AppCompatActivity {
         userNameEditText.setEnabled(false);
         userNameEditText.setText("Loading...");
         downloadUserDataFromFirebase();
+    }
+
+    @Override
+    public void onDestroy(){
+        Util.removeFromDebugActivityStackList(TAG);
+        super.onDestroy();
     }
 
 }

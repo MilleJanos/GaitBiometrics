@@ -26,7 +26,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import ro.sapientia.gaitbiom.GaitHelperFunctions;
 import ro.sapientia.gaitbiom.GaitModelBuilder;
@@ -369,5 +371,33 @@ public class Util {
         return true;
     }
 
+    /*
+     * Activity stack debug methods:
+    */
+
+    public static Map<String, Integer> debugActivityStackList = new HashMap<>();
+
+    public static void printDebugActivityStackList(){
+        Log.i(TAG+"_activity_stack","Activity Stack:");
+        for(Map.Entry<String,Integer> entry : debugActivityStackList.entrySet()){
+            Log.i(TAG+"_activity_stack"," |" + entry.getKey() +":"+ entry.getValue());
+        }
+        Log.i(TAG+"_activity_stack"," |");
+    }
+
+    // Call it onCreate's
+    public static void addToDebugActivityStackList(String key){
+        Integer s = debugActivityStackList.size();
+        Util.debugActivityStackList.put(key,s);
+        Log.i(TAG+"_activity_stack","New Activity created ("+key+":"+s+")");
+        printDebugActivityStackList();
+    }
+
+    // Call it onDestroy's
+    public static void removeFromDebugActivityStackList(String key){
+        Util.debugActivityStackList.remove(key);
+        Log.i(TAG+"_activity_stack","Activity destroyed ("+key+")");
+        printDebugActivityStackList();
+    }
 
 }

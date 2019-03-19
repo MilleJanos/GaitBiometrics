@@ -70,6 +70,8 @@ public class GaitValidationActivity extends AppCompatActivity implements SensorE
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gait_validation);
 
+        Util.addToDebugActivityStackList(TAG);
+
         //
         // Reading from Shared preferences
         //
@@ -323,6 +325,12 @@ public class GaitValidationActivity extends AppCompatActivity implements SensorE
         offlineLastModelId = Util.mSharedPref.getString(Util.LAST_MODEL_ID_KEY, "");
         offlineLastModelDate = Util.mSharedPref.getString(Util.LAST_MODEL_ID_KEY, "");
         //}
+    }
+
+    @Override
+    public void onDestroy(){
+        Util.removeFromDebugActivityStackList(TAG);
+        super.onDestroy();
     }
 
     //STEPCOUNTER

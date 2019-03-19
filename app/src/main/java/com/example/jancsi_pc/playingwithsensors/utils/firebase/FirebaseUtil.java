@@ -42,13 +42,13 @@ public class FirebaseUtil {
     public static final String USER_RECORDS_OLD_KEY = "user_records";
     public static final String USER_RECORDS_NEW_KEY = "user_records_2";
     public static final String USER_RECORDS_DEBUG_KEY = "user_records_debug";
-    /* <user_id> */
-    /* <device_id> */
-    /* <random_id> */
-    public static final String DATE_KEY = "date";                   // they will be used more
-    public static final String FILE_ID_KEY = "fileId";              // often in UserRecordObject
-    public static final String DOWNLOAD_URL_KEY = "downloadUrl";    // class
-    public static final String USER_DATA_KEY = "user_data";
+        /* <user_id> */
+            /* <device_id> */
+                /* <random_id> */
+                    public static final String DATE_KEY = "date";                   // they will be used more
+                    public static final String FILE_ID_KEY = "fileId";              // often in UserRecordObject
+                    public static final String DOWNLOAD_URL_KEY = "downloadUrl";    // class
+                    public static final String USER_DATA_KEY = "user_data";
     /* <user_id> */
     public static final String USER_DATE_KEY = "date";                   // they will be used more
     public static final String USER_FILE_ID_KEY = "fileId";              // often in UserRecordObject

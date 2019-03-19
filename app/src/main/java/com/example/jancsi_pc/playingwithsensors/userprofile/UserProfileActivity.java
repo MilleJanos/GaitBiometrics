@@ -21,6 +21,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
  */
 public class UserProfileActivity extends AppCompatActivity {
 
+    private final String TAG = "UserProfileActivity";
     private static UserDataObject userDataObject = null;
 
     private static TextView userNameTextView;
@@ -34,6 +35,8 @@ public class UserProfileActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_profile);
+
+        Util.addToDebugActivityStackList(TAG);
 
         backButton = findViewById(R.id.user_profile_backButton);
         backButton.setOnClickListener(new View.OnClickListener() {
@@ -108,6 +111,12 @@ public class UserProfileActivity extends AppCompatActivity {
         downloadUserDataFromFirebase();
 
 
+    }
+
+    @Override
+    public void onDestroy(){
+        Util.removeFromDebugActivityStackList(TAG);
+        super.onDestroy();
     }
 
 }
