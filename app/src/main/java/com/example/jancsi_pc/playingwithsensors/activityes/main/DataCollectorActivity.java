@@ -969,10 +969,10 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
 
                 // Upload Object To Firebase Firestore:
-                FirebaseUtil.uploadObjectToFirebaseFirestore(DataCollectorActivity.this, info, mDocRef);
+                /*STAT*///FirebaseUtil.uploadObjectToFirebaseFirestore(DataCollectorActivity.this, info, mDocRef);
 
                 // Update User Statistics in Firebase Firestore:
-                FirebaseUtil.updateStatsInFirestore(stepNumber);
+                /*STAT*///FirebaseUtil.updateStatsInFirestore(stepNumber);
 
             } catch (Exception e) {
                 Util.progressDialog.dismiss();
