@@ -51,10 +51,6 @@ public class GaitValidationActivity extends AppCompatActivity implements SensorE
     private boolean doubleBackToExitPressedOnce = false;
     // For Step Detecting:
     private StepDetector simpleStepDetector;
-    // local stored files:
-    private File featureDummyFile;  // local stored dummy file from firebase
-    private File rawdataUserFile;
-    private File featureUserFile;   // only the path exists !
     //private File modelUserFile;     // only the path exists !
     private Date mDate;
     // from shared pref;
@@ -81,20 +77,6 @@ public class GaitValidationActivity extends AppCompatActivity implements SensorE
         Log.i(TAG, "offlineLastModelId: " + offlineLastModelId);
         Log.i(TAG, "offlineLastModelDate: " + offlineLastModelDate);
 
-        //
-        // Internal files Path:
-        //
-        mDate = new Date();
-
-        // Create folder if not exists:
-        File myInternalFilesRoot;
-
-        myInternalFilesRoot = new File(Util.internalFilesRoot.getAbsolutePath() /*+ customDIR*/);
-        if (!myInternalFilesRoot.exists()) {
-            myInternalFilesRoot.mkdirs();
-            Log.i(TAG, "Path not exists (" + myInternalFilesRoot.getAbsolutePath() + ") --> .mkdirs()");
-        }
-
 
         //region
         /*
@@ -118,19 +100,19 @@ public class GaitValidationActivity extends AppCompatActivity implements SensorE
         //endregion
 
         // internal files as File type:
-        featureDummyFile = new File(Util.feature_dummy_path);
-        rawdataUserFile = new File(Util.rawdata_user_path);
-        featureUserFile = new File(Util.feature_user_path);
+        Util.featureDummyFile = new File(Util.feature_dummy_path);
+        Util.rawdataUserFile = new File(Util.rawdata_user_path);
+        Util.featureUserFile = new File(Util.feature_user_path);
         //modelUserFile    = new File( Util.model_user_path );
 
 
-        if (!featureDummyFile.exists()) {
+        if (!Util.featureDummyFile.exists()) {
             Log.e(TAG, "File is missing: " + Util.feature_dummy_path);
         }
-        if (!rawdataUserFile.exists()) {
+        if (!Util.rawdataUserFile.exists()) {
             Log.e(TAG, "File is missing: " + Util.rawdata_user_path);
         }
-        if (!featureUserFile.exists()) {
+        if (!Util.featureUserFile.exists()) {
             Log.e(TAG, "File is missing: " + Util.feature_user_path);
         }
         /*
@@ -241,6 +223,10 @@ public class GaitValidationActivity extends AppCompatActivity implements SensorE
 
         stopButton.setOnClickListener(v -> {
             Log.d(TAG, ">>>RUN>>>stopButtonClickListener");
+
+            // Init internal files
+            Util.initInternalFiles();
+
             Util.recordDateAndTimeFormatted = DateFormat.format("yyyyMMdd_HHmmss", mDate.getTime());
             isRecording = false;
             startButton.setEnabled(true);

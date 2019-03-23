@@ -103,6 +103,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     private ImageView pythonServerImageView;
     private TextView navigationMenuUserName;
     private TextView navigationMenuEmail;
+    private TextView goToModelUploader;
 
     Date mDate;
     private String mFileName;
@@ -117,11 +118,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
     private FirebaseFirestore mFirebaseFirestore = FirebaseFirestore.getInstance();
     private FirebaseDatabase mFirebaseDatabase = FirebaseDatabase.getInstance();
     private DocumentReference mDocRef; // = FirebaseFirestore.getInstance().document("usersFiles/information");
-
-    // Internal Files:
-    private File rawdataUserFile;
-    private File featureUserFile;
-
 
     // Proxy sensor:
     private SensorManager mSensorManager;
@@ -262,6 +258,9 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         // Sending to Firebase from Start to End
         saveToFirebaseButton.setOnClickListener(saveToFirebaseButtonClickListener);
 
+        // Go To Model Uploader
+        goToModelUploader.setOnClickListener(goToModelUploaderOnClickListener);
+
 
     }// OnCreate
 
@@ -290,7 +289,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
         try {
             f = new File(Util.rawdata_user_path);
-            rawdataUserFile.renameTo(f);
+            Util.rawdataUserFile.renameTo(f);
         } catch (Exception e) {
             Log.e(TAG, "renameIternalFiles_withDate() - CANNOT RENAME FILE TO: " + f.getAbsolutePath());
             e.printStackTrace();
@@ -324,7 +323,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
         try {
             f = new File(Util.rawdata_user_path);
-            rawdataUserFile.renameTo(f);
+            Util.rawdataUserFile.renameTo(f);
 
         } catch (Exception e) {
             Log.e(TAG, "renameIternalFiles_withoutDate() - CANNOT RENAME FILE TO: " + f.getAbsolutePath());
@@ -448,50 +447,6 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         Log.d("getIPandPort", "Port: " + wifiModulePort);
     }
 
-    /**
-     *
-     */
-    private void initInternalFiles(){
-        // Internal files Path:
-        mDate = new Date();
-        Util.recordDateAndTimeFormatted = DateFormat.format("yyyyMMdd_HHmmss", mDate.getTime());
-        // Create folder if not exists:
-        File myInternalFilesRoot;
-
-        myInternalFilesRoot = new File(Util.internalFilesRoot.getAbsolutePath() /*+ customDIR*/);
-        if (!myInternalFilesRoot.exists()) {
-            myInternalFilesRoot.mkdirs();
-            Log.i(TAG, "Path not exists (" + myInternalFilesRoot.getAbsolutePath() + ") --> .mkdirs()");
-        }
-
-        // Creating user's raw data file path:
-        Util.rawdata_user_path = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/rawdata_" + mAuth.getUid() +  "_" + Util.recordDateAndTimeFormatted + ".csv";
-        Util.feature_user_path = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/feature_" + mAuth.getUid() +  "_" + Util.recordDateAndTimeFormatted + ".arff";   //*// we need this for validation only
-        Util.feature_dummy_path = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/feature_dummy.arff";                   //*//  - dummy exists and it is not empty
-        rawdataUserFile = new File(Util.rawdata_user_path);
-        featureUserFile = new File(Util.feature_user_path);                                                                          //*//
-        Log.i(TAG, "PATH: Util.rawdata_user_path  = " + Util.rawdata_user_path);
-        Log.i(TAG, "PATH: Util.rawdata_user_path  = " + Util.feature_user_path);                                                   //*//
-
-        // Creating user's raw data file (if not exists):
-        if (!rawdataUserFile.exists()) {
-            try {
-                rawdataUserFile.createNewFile();
-            } catch (Exception e) {
-                e.printStackTrace();
-                Log.e(TAG, "File can't be created: " + Util.rawdata_user_path);
-            }
-        }
-        // Creating user's feature file (if not exists):
-        if (!featureUserFile.exists()) {
-            try {
-                featureUserFile.createNewFile();
-            } catch (Exception e) {
-                e.printStackTrace();
-                Log.e(TAG, "File can't be created: " + Util.feature_user_path);
-            }
-        }
-    }
 
     /**
      * This class is used to send package set by getIPandPort() method.
@@ -609,7 +564,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                                     textViewStatus.setText(R.string.press_start_to_collect);
 
                                     // Saving array into .CSV file (Local):
-                                    if (Util.saveAccArrayIntoCsvFile(accArray, rawdataUserFile) == 1) {
+                                    if (Util.saveAccArrayIntoCsvFile(accArray, Util.rawdataUserFile) == 1) {
                                         Toast.makeText(DataCollectorActivity.this, "Error saving raw data!", Toast.LENGTH_LONG).show();
                                     }
 
@@ -656,6 +611,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
         pythonServerImageView = findViewById(R.id.pythonServerImageView);
 
         attachedLayout = findViewById(R.id.datacollector_main_layout);
+        goToModelUploader = findViewById(R.id.buttonGoToModelUploader);
 
     }
 
@@ -834,7 +790,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
             Log.d(TAG, ">>>RUN>>>stopButtonClickListener");
 
             // Init internal storage instead of onCreate:
-            initInternalFiles();
+            Util.initInternalFiles();
 
             mDate = new Date();
             Util.recordDateAndTimeFormatted = DateFormat.format("yyyyMMdd_HHmmss", mDate.getTime());
@@ -935,7 +891,7 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
 
                 // Saving array into .CSV file (Local):
-                Util.saveAccArrayIntoCsvFile(accArray, rawdataUserFile);
+                Util.saveAccArrayIntoCsvFile(accArray, Util.rawdataUserFile);
 
                 /*
                 // Copy CSV File containing the date to be unique in FireBase:
@@ -953,13 +909,13 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
 
 
                 // Saving CSV File to FireBase Storage:
-                StorageReference ref = mStorageReference.child(fileStorageName + "/"+ mAuth.getUid() +"/" + rawdataUserFile.getName());
-                FirebaseUtil.uploadFileToFirebaseStorage(DataCollectorActivity.this, rawdataUserFile, ref);
+                StorageReference ref = mStorageReference.child(fileStorageName + "/"+ mAuth.getUid() +"/" + Util.rawdataUserFile.getName());
+                FirebaseUtil.uploadFileToFirebaseStorage(DataCollectorActivity.this, Util.rawdataUserFile, ref);
 
                 // Updating (JSON) Object in the FireStore: (Collection->Documents->Collection->Documents->...)
                 String randomId = UUID.randomUUID().toString();
                 String downloadUrl = ref.getDownloadUrl().toString();
-                UserRecordObject info = new UserRecordObject(mDate.toString(), rawdataUserFile.getName(), downloadUrl);
+                UserRecordObject info = new UserRecordObject(mDate.toString(), Util.rawdataUserFile.getName(), downloadUrl);
 
                 mDocRef = FirebaseFirestore.getInstance()
                         .collection(collectionName + "/")
@@ -978,6 +934,18 @@ public class DataCollectorActivity extends AppCompatActivity implements SensorEv
                 Util.progressDialog.dismiss();
                 e.printStackTrace();
             }
+        }
+    };
+
+    /**
+     * Opens the Model Uploader activity.
+     */
+    public View.OnClickListener goToModelUploaderOnClickListener = new View.OnClickListener(){
+
+        @Override
+        public void onClick(View v) {
+            Intent intent = new Intent(DataCollectorActivity.this, ModelUploaderActivity.class);
+            startActivity(intent);
         }
     };
 

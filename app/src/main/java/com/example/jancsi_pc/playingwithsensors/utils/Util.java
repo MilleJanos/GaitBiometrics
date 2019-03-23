@@ -8,6 +8,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.support.design.widget.Snackbar;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -26,6 +27,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -89,6 +91,12 @@ public class Util {
     public static String rawdata_user_path = "";
     public static String feature_user_path = "";
     public static String model_user_path = "";
+    // internal stored File types
+    // Internal Files:
+    public static File rawdataUserFile;
+    public static File featureUserFile;
+    public static File modelUserFile;
+    public static File featureDummyFile;  // local stored dummy file from firebase
 
     public static boolean rawDataHasHeader = false;
     public static String rawDataHeaderStr = "timestamp,accx,accy,accz,stepnum";
@@ -146,6 +154,76 @@ public class Util {
     public static final String SETTING_DEBUG_MODE_KEY = "debugmode";
     public static final String LAST_LOGGED_IN_USER_NAME_KEY = "lastloggedinusername";
 
+    // Initial Files
+    public static void initInternalFiles(){
+        // Internal files Path:
+        Date date = new Date();
+        Util.recordDateAndTimeFormatted = DateFormat.format("yyyyMMdd_HHmmss", date.getTime());
+        // Create folder if not exists:
+        File myInternalFilesRoot;
+
+        myInternalFilesRoot = new File(Util.internalFilesRoot.getAbsolutePath() /*+ customDIR*/);
+        if (!myInternalFilesRoot.exists()) {
+            myInternalFilesRoot.mkdirs();
+            Log.i(TAG, "Path not exists (" + myInternalFilesRoot.getAbsolutePath() + ") --> .mkdirs()");
+        }
+
+        // Creating user's raw data file path:
+        Util.rawdata_user_path = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/rawdata_" + mAuth.getUid() + "_" + Util.recordDateAndTimeFormatted + ".csv";
+        Util.feature_user_path = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/feature_" + mAuth.getUid() + "_" + Util.recordDateAndTimeFormatted + ".arff";   //*// we need this for validation only
+        Util.model_user_path = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/model_" + mAuth.getUid() + "_" + Util.recordDateAndTimeFormatted + ".mdl";
+        Util.feature_dummy_path = Util.internalFilesRoot.getAbsolutePath() + Util.customDIR + "/feature_negative.arff";                   //*//  - dummy(negative) exists and it is not empty
+        //region Print this 4 paths
+        Log.i(TAG, "PATH: Util.feature_dummy_path = " + Util.feature_dummy_path);
+        Log.i(TAG, "PATH: Util.rawdata_user_path  = " + Util.rawdata_user_path);
+        Log.i(TAG, "PATH: Util.feature_user_path  = " + Util.feature_user_path);
+        Log.i(TAG, "PATH: Util.model_user_path    = " + Util.model_user_path);
+        //endregion                                                   //*//
+
+        // internal files as File type:
+        featureDummyFile = new File(Util.feature_dummy_path);
+        rawdataUserFile = new File(Util.rawdata_user_path);
+        featureUserFile = new File(Util.feature_user_path);
+        modelUserFile = new File(Util.model_user_path);
+
+        //*//
+        // Creating user's raw data file (if not exists):
+        if (!Util.rawdataUserFile.exists()) {
+            try {
+                Util.rawdataUserFile.createNewFile();
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e(TAG, "File can't be created: " + Util.rawdata_user_path);
+            }
+        }
+        // Creating user's feature file (if not exists):
+        if (!Util.featureUserFile.exists()) {
+            try {
+                Util.featureUserFile.createNewFile();
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e(TAG, "File can't be created: " + Util.feature_user_path);
+            }
+        }
+        // Creating user's model file (if not exists):
+        if (!modelUserFile.exists()) {
+            try {
+                modelUserFile.createNewFile();
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e(TAG, "File can't be created: " + Util.model_user_path);
+            }
+        }
+        // Creating dummy's(negative data) feature file (if not exists):
+        if (!featureDummyFile.exists()) {
+            try {
+                featureDummyFile.createNewFile();
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e(TAG, "File can't be created: " + Util.feature_dummy_path);
+            }
+        }
+    }
 
     // progressDialog
     public static ProgressDialog progressDialog;
